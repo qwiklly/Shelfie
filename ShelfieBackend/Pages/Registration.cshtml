@@ -1,0 +1,108 @@
+﻿@page
+@model RegistrationModel
+@{
+	ViewData["Title"] = "Registration";
+}
+<br />
+<div class="container mt-5">
+	<div class="row justify-content-center">
+		<div class="col-md-6">
+			<h2 class="text-center">Registration</h2>
+
+			@if (TempData["ErrorMessage"] != null)
+			{
+				<div class="alert alert-danger" role="alert">
+					@TempData["ErrorMessage"]
+				</div>
+			}
+
+			<form method="post" onsubmit="showLoading()">
+				<div class="form-group mt-3">
+					<label for="inputName" class="form-label">Name</label>
+					<input asp-for="Register.Name" class="form-control" id="inputName" />
+				</div>
+
+				<div class="form-group mt-3">
+					<label for="inputEmail" class="form-label">Email address</label>
+					<input asp-for="Register.Email" type="email" class="form-control" id="inputEmail" />
+				</div>
+
+				<div class="form-group mt-3">
+					<label for="inputPassword" class="form-label">Password</label>
+					<div class="input-group">
+						<input asp-for="Register.Password" type="password" class="form-control" id="inputPassword" />
+						<button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">👁️‍🗨️</button>
+					</div>
+				</div>
+
+				<div class="form-group mt-3">
+					<label for="inputConfirmPassword" class="form-label">Confirm password</label>
+					<div class="input-group">
+						<input asp-for="Register.ConfirmPassword" type="password" class="form-control" id="inputConfirmPassword" />
+						<button type="button" class="btn btn-outline-secondary" onclick="toggleConfirmPasswordVisibility()">👁️‍🗨️</button>
+					</div>
+				</div>
+
+				<input type="hidden" asp-for="Register.Role" value="User" />
+
+				<div class="form-group mt-3">
+					<button type="submit" id="submitButton" class="btn btn-primary w-100">
+						<span>Регистрация</span>
+						<div id="loadingSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></div>
+					</button>
+				</div>
+
+				<div asp-validation-summary="All" class="text-danger"></div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="successModalLabel">Успех</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body text-center">
+				You have successfully registered!
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">ОК</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			var isUserAdded = '@Model.IsUserAdded';
+
+			if (isUserAdded === 'True') {
+				var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+				successModal.show();
+			}
+		});
+
+		function togglePasswordVisibility() {
+			var passwordField = document.getElementById('inputPassword');
+			passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+		}
+
+		function toggleConfirmPasswordVisibility() {
+			var passwordField = document.getElementById('inputConfirmPassword');
+			passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+		}
+
+		function showLoading() {
+			var button = document.getElementById('submitButton');
+			var spinner = document.getElementById('loadingSpinner');
+
+			button.disabled = true;
+			spinner.style.display = 'inline-block';
+		}
+	</script>
+}

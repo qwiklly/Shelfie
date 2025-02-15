@@ -1,0 +1,89 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login Page";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4">Login</h2>
+
+            @* Bad authorize *@
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <form method="post" onsubmit="showLoading()">
+                <div class="form-group">
+                    <label for="inputEmail" class="form-label">Email address</label>
+                    <input type="email" id="inputEmail" name="Email" class="form-control" asp-for="Login.Email" autocomplete="email" required />
+                </div>
+                <div class="form-group mt-3">
+                    <label for="inputPassword" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input type="password" id="inputPassword" name="Password" class="form-control" asp-for="Login.Password" autocomplete="current-password" required />
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">👁️‍🗨️</button>
+                    </div>
+                </div>
+                <div class="form-group mt-3">
+                    <button type="submit" id="submitButton" class="btn btn-primary w-100">
+                        <span>Login</span>
+                        <div id="loadingSpinner" class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></div>
+                    </button>
+                </div>
+                <div asp-validation-summary="All" class="text-danger"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="successModalLabel">Success</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                You have successfully logged in!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">ОК</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var isUserLoggedIn = '@Model.IsUserLoggedIn';
+
+            if (isUserLoggedIn === 'True') {
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            }
+        });
+
+        function togglePasswordVisibility() {
+            var passwordField = document.getElementById('inputPassword');
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
+        }
+
+        function showLoading() {
+            var button = document.getElementById('submitButton');
+            var spinner = document.getElementById('loadingSpinner');
+
+            button.disabled = true;
+            spinner.style.display = 'inline-block';
+        }
+    </script>
+}
+
+
+
