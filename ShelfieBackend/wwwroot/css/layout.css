@@ -1,0 +1,33 @@
+﻿.sidebar {
+    background-color: #343a40;
+    min-height: 100vh;
+    color: #ffffff;
+    padding-top: 20px;
+}
+
+    .sidebar .nav-link {
+        color: #ffffff;
+    }
+
+        .sidebar .nav-link:hover {
+            background-color: #495057;
+            border-radius: 5px;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            border-radius: 5px;
+        }
+
+.navbar-brand, .navbar-nav .nav-link {
+    color: #ffffff !important;
+}
+
+.navbar {
+    background-color: #007bff;
+}
+
+.footer {
+    background-color: #f8f9fa;
+    padding: 10px 0;
+}
