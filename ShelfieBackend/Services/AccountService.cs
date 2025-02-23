@@ -1,12 +1,11 @@
 ﻿using ShelfieBackend.DTOs;
 using ShelfieBackend.States;
 using static ShelfieBackend.Responses.CustomResponses;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace ShelfieBackend.Services
 {
-    public class ApplicationService(HttpClient _httpClient) : IApplicationService
+    public class AccountService(HttpClient _httpClient) : IAccountService
     {
         private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
@@ -60,4 +59,3 @@ namespace ShelfieBackend.Services
             SendRequestAsync<RegisterResponse>((ct) => _httpClient.PostAsJsonAsync(ApiEndpoints.Register, model, ct), cancellationToken);
     }
 }
-
