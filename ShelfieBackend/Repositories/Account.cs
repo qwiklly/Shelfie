@@ -56,7 +56,7 @@ namespace ShelfieBackend.Repositories
 
                 // Если роль не указана, то по умолчанию - User
                 var newRole = model.Role ?? UserRole.User;
-
+                
                 // Проверка: если пытаются создать админа или работника, но текущий пользователь не админ — запретить
                 if ((newRole == UserRole.Admin || newRole == UserRole.Worker) && !currentUser.IsInRole("Admin"))
                 {
@@ -98,7 +98,7 @@ namespace ShelfieBackend.Repositories
                     Role = u.Role,
                     Name = u.Name,
                     Email = u.Email,
-                    Phone = u.Phone,
+                    Phone = u.Phone!,
                     DateOfBirth = u.DateOfBirth
                 })
                 .ToListAsync();
@@ -190,6 +190,7 @@ namespace ShelfieBackend.Repositories
                 // Define the user claims to be included in the token.
                 var userClaims = new[]
                 {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Name!),
                     new Claim(ClaimTypes.Email, user.Email!),
                     new Claim(ClaimTypes.Role, user.Role.ToString()),

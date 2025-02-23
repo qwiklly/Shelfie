@@ -12,9 +12,9 @@ namespace ShelfieBackend.Pages
 
         public bool IsUserAdded { get; set; } = false;
 
-        private readonly IApplicationService _accountService;
+        private readonly IAccountService _accountService;
 
-        public AddUserModel(IApplicationService accountService)
+        public AddUserModel(IAccountService accountService)
         {
             _accountService = accountService;
         }

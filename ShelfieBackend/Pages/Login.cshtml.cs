@@ -16,10 +16,10 @@ namespace ShelfieBackend.Pages
 
         public bool IsUserLoggedIn { get; set; } = false;
 
-        private readonly IApplicationService _accountService;
+        private readonly IAccountService _accountService;
         private readonly AuthenticationStateProvider _authStateProvider;
 
-        public LoginModel(IApplicationService accountService, AuthenticationStateProvider authStateProvider)
+        public LoginModel(IAccountService accountService, AuthenticationStateProvider authStateProvider)
         {
             _accountService = accountService;
             _authStateProvider = authStateProvider;
