@@ -13,7 +13,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Настройка Serilog
+// Settings of Serilog
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
@@ -23,24 +23,22 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Добавляем сервисы в контейнер.
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
-// Настройка Swagger
+// Swagger settings
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "My API", Version = "v1" });
     options.EnableAnnotations();
 });
 
-// Настройка подключения к базе данных
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Настройка аутентификации JWT
+// JWT settings
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -71,13 +69,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Регистрация сервисов приложения
 builder.Services.AddScoped<IAccount, Account>();
-builder.Services.AddScoped<IApplicationService, ApplicationService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
-
-// Регистрация HttpClient с базовым адресом (можно вынести в конфигурацию)
-builder.Services.AddHttpClient<IApplicationService, ApplicationService>(client =>
+builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5111");
 });
@@ -85,14 +82,12 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// Конфигурация middleware для обработки ошибок и безопасности
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
 
-// Конфигурация CORS
 app.UseCors(policy =>
 {
     policy.AllowAnyOrigin()
@@ -119,17 +114,13 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
 
-// Seed-данные для режима разработки: добавление администратора, если его нет.
+// while dev
 if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        // Применяем миграции (если требуется)
-        //dbContext.Database.Migrate();
-
-        // Проверяем наличие администратора
         if (!dbContext.Users.Any(u => u.Role == UserRole.Admin))
         {
             var adminUser = new ApplicationUser
@@ -138,7 +129,7 @@ if (app.Environment.IsDevelopment())
                 Email = "admin@example.com",
                 Role = UserRole.Admin,
                 Phone = "1234567890",
-                DateOfBirth = new DateOnly(2001, 1, 1), // Можно указать другую дату по необходимости
+                DateOfBirth = new DateOnly(2001, 1, 1), 
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("AdminPassword123!")
             };
 
