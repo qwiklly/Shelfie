@@ -9,5 +9,18 @@
         public const string Register = $"{Base}/register";
         public const string DeleteUser = $"{Base}/deleteUser/";
         public const string UpdateUser = $"{Base}/updateUser";
+
+
+        // Эндпоинты для продуктов
+        public const string ProductBase = "api/products";
+        public const string GetProducts = $"{ProductBase}/getAll";
+        public const string GetProduct = $"{ProductBase}/get/";
+        public const string AddProduct = $"{ProductBase}/add";
+        public const string UpdateProduct = $"{ProductBase}/update";
+        public const string DeleteProduct = $"{ProductBase}/delete/";
+
+        // Эндпоинты для истории изменений
+        public const string HistoryBase = "api/history";
+        public const string GetAllHistory = $"{HistoryBase}/getAll";
     }
 }

@@ -98,7 +98,8 @@ namespace ShelfieBackend.States
 			return new ClaimsPrincipal(new ClaimsIdentity(
 				new List<Claim>
 				{
-					new(ClaimTypes.Name, claims.Name!),
+                    new(ClaimTypes.NameIdentifier, claims.Id),
+                    new(ClaimTypes.Name, claims.Name!),
 					new(ClaimTypes.Email, claims.Email!),
 					new(ClaimTypes.Role, claims.Role.ToString()),
 				}, "JwtAuth"));
@@ -109,15 +110,17 @@ namespace ShelfieBackend.States
 			if (string.IsNullOrEmpty(jwtToken)) return new CustomUserClaims();
 			var handler = new JwtSecurityTokenHandler();
 			var token = handler.ReadJwtToken(jwtToken);
-			var name = token.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.Name);
+            var id = token.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.NameIdentifier);
+            var name = token.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.Name);
 			var email = token.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.Email);
 			var role = token.Claims.FirstOrDefault(_ => _.Type == ClaimTypes.Role);
 
-            if (name == null || email == null || role == null)
+            if (name == null || email == null || role == null || id == null)
                 return new CustomUserClaims();
 
             return new CustomUserClaims(
-				name!.Value,
+                id.Value,
+                name!.Value,
 				email!.Value,
 				Enum.TryParse<UserRole>(role!.Value, out var parsedRole) ? parsedRole : UserRole.User
 			);
