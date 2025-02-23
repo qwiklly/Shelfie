@@ -2,5 +2,5 @@
 
 namespace ShelfieBackend.DTOs
 {
-	public record CustomUserClaims(string Name = null!, string Email = null!, UserRole Role = UserRole.User);
+	public record CustomUserClaims(string Id = null!, string Name = null!, string Email = null!, UserRole Role = UserRole.User);
 }
