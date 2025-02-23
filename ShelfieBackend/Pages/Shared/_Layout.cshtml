@@ -74,10 +74,15 @@
 							<li class="nav-item">
 								<a class="nav-link @((ViewContext.RouteData.Values["page"]?.ToString() == "/AddUser") ? "active" : "")" asp-area="" asp-page="/AddUser">Добавление пользователей</a>
 							</li>
+							<li class="nav-item">
+								<a class="nav-link @((ViewContext.RouteData.Values["page"]?.ToString() == "/Products") ? "active" : "")" asp-area="" asp-page="/Products">Продукты</a>
+							</li>
 						}
 						@if (await IsUserInRole("User"))
 						{
-
+							<li class="nav-item">
+								<a class="nav-link @((ViewContext.RouteData.Values["page"]?.ToString() == "/Products") ? "active" : "")" asp-area="" asp-page="/Products">Продукты</a>
+							</li>
 						}
 						@if (await IsUserAuthenticated() == false)
 						{

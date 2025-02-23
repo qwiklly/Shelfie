@@ -1,0 +1,117 @@
+﻿@page
+@model ProductsModel
+@{
+    ViewData["Title"] = "Products";
+}
+
+<h2>Список продуктов</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Категория</th>
+            <th>Дата истечения</th>
+            <th>Количество</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody id="productTableBody">
+    </tbody>
+</table>
+
+<h3>Добавить продукт</h3>
+<form id="productForm">
+    <input type="hidden" id="productId" />
+    <div>
+        <label>Название:</label>
+        <input type="text" id="name" required />
+    </div>
+    <div>
+        <label>Категория:</label>
+        <input type="number" id="categoryId" required />
+    </div>
+    <div>
+        <label>Дата истечения:</label>
+        <input type="date" id="expirationDate" required />
+    </div>
+    <div>
+        <label>Количество:</label>
+        <input type="number" id="quantity" required />
+    </div>
+    <button type="submit">Сохранить</button>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        loadProducts();
+
+        document.getElementById("productForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+            const productId = document.getElementById("productId").value;
+            const product = {
+                name: document.getElementById("name").value,
+                categoryId: parseInt(document.getElementById("categoryId").value),
+                expirationDate: document.getElementById("expirationDate").value,
+                quantity: parseInt(document.getElementById("quantity").value)
+            };
+
+            if (productId) {
+                product.id = parseInt(productId);
+                await fetch("/api/application/update", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(product)
+                });
+            } else {
+                await fetch("/api/application/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(product)
+                });
+            }
+            loadProducts();
+            document.getElementById("productForm").reset();
+        });
+    });
+
+    async function loadProducts() {
+        const response = await fetch("/api/application/getAll");
+        const products = await response.json();
+        const tableBody = document.getElementById("productTableBody");
+        tableBody.innerHTML = "";
+
+        products.forEach(product => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = product.name;
+            row.insertCell(1).textContent = product.categoryId;
+            row.insertCell(2).textContent = product.expirationDate;
+            row.insertCell(3).textContent = product.quantity;
+            const actionsCell = row.insertCell(4);
+
+            const editButton = document.createElement("button");
+            //editButton.textContent = "Изменить";
+            editButton.onclick = function () {
+                document.getElementById("productId").value = product.id;
+                document.getElementById("name").value = product.name;
+                document.getElementById("categoryId").value = product.categoryId;
+                document.getElementById("expirationDate").value = product.expirationDate;
+                document.getElementById("quantity").value = product.quantity;
+            };
+
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Удалить";
+            deleteButton.onclick = async function () {
+                await fetch("/api/application/delete", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name: product.name })
+                });
+                loadProducts();
+            };
+
+            // actionsCell.appendChild(editButton);
+            actionsCell.appendChild(deleteButton);
+        });
+    }
+</script>
