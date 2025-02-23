@@ -4,13 +4,12 @@ using static ShelfieBackend.Responses.CustomResponses;
 using Swashbuckle.AspNetCore.Annotations;
 using ShelfieBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace ShelfieBackend.Controllers
 {
 	[Route("api/application")]
 	[ApiController]
-	public class ApplicationController(IAccount _accountrepo) : ControllerBase
+	public class AccountController(IAccount _accountrepo) : ControllerBase
 	{
         [Authorize]
         [HttpGet("getUsers")]
@@ -42,7 +41,7 @@ namespace ShelfieBackend.Controllers
 		)]
         public async Task<ActionResult<RegisterResponse>> RegisterAsync([FromBody] RegisterDTO model)
         {
-            var currentUser = HttpContext.User; // Получаем текущего пользователя из контекста
+            var currentUser = HttpContext.User;
 
             var result = await _accountrepo.RegisterAsync(model, currentUser);
             return Ok(result);
@@ -79,9 +78,9 @@ namespace ShelfieBackend.Controllers
 		)]
 		public async Task<ActionResult<BaseResponse>> UpdateUserAsync(string email, RegisterDTO model)
 		{
-            var currentUser = HttpContext.User; // Получаем текущего пользователя из контекста
+            var currentUser = HttpContext.User;
             var result = await _accountrepo.UpdateUserAsync(email, model, currentUser);
 			return Ok(result);
 		}
-	}
+    }
 }
