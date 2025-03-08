@@ -9,6 +9,7 @@ using System.Text;
 using ShelfieBackend.Data;
 using Microsoft.EntityFrameworkCore;
 using ShelfieBackend.States;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Repositories
 {
