@@ -1,13 +1,15 @@
 ﻿namespace ShelfieBackend.Models
 {
-	public class Medication
-	{
-		public int Id { get; set; }
-		public string Name { get; set; } = string.Empty;
-		public string Dosage { get; set; } = string.Empty;
-		public DateTime ExpirationDate { get; set; }
-		public int Quantity { get; set; }
-		public int UserId { get; set; }
-		public ApplicationUser User { get; set; } = null!;
-	}
+    public class Medication
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Dosage { get; set; } = string.Empty;
+        public DateTime ExpirationDate { get; set; }
+        public int Quantity { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; } = null!;
+        public int UserId { get; set; }
+        public ApplicationUser User { get; set; } = null!;
+    }
 }
