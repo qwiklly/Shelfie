@@ -7,9 +7,9 @@ namespace ShelfieBackend.DTOs
     {
         [Required]
         public string Name { get; set; } = string.Empty;
-
         [Required]
-        public int CategoryId { get; set; }
+        public string Creator { get; set; } = string.Empty;
+        public int CategoryId { get; set; } = 1 ;
 
         public DateOnly? ExpirationDate { get; set; }
         public DateOnly? CreatedAt { get; set; }
