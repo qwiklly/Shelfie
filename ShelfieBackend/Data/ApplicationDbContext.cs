@@ -8,7 +8,8 @@ namespace ShelfieBackend.Data
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Medication> Medications { get; set; }
-        public DbSet<ProductCategory> ProductCategories { get; set; }
-        public DbSet<ProductHistory> ProductHistories { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<HistoryRecord> HistoryRecords { get; set; }
+        public DbSet<CategoryField> CategoryFields { get; set; }
     }
 }
