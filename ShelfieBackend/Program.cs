@@ -10,6 +10,8 @@ using ShelfieBackend.Services;
 using ShelfieBackend.States;
 using ShelfieBackend.Models;
 using System.Text;
+using System.Reflection;
+using ShelfieBackend.Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,10 +29,15 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllers();
 
 // Swagger settings
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "My API", Version = "v1" });
     options.EnableAnnotations();
+    options.IncludeXmlComments(xmlPath);
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -74,6 +81,8 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
+builder.Services.AddScoped<IHistoryRepo, HistoryRepo>();
 builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5111");
@@ -121,6 +130,7 @@ if (app.Environment.IsDevelopment())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+        // Создаем администратора, если его нет
         if (!dbContext.Users.Any(u => u.Role == UserRole.Admin))
         {
             var adminUser = new ApplicationUser
@@ -129,15 +139,49 @@ if (app.Environment.IsDevelopment())
                 Email = "admin@example.com",
                 Role = UserRole.Admin,
                 Phone = "1234567890",
-                DateOfBirth = new DateOnly(2001, 1, 1), 
+                DateOfBirth = new DateOnly(2001, 1, 1),
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("AdminPassword123!")
             };
 
             dbContext.Users.Add(adminUser);
             dbContext.SaveChanges();
         }
+
+        // Добавляем предопределенные категории, если их еще нет
+        if (!dbContext.Categories.Any(c => c.Name == "Продукты"))
+        {
+            dbContext.Categories.Add(new Category
+            {
+                Name = "Продукты",
+                Type = "Product",
+                UserId = null
+            });
+        }
+
+        if (!dbContext.Categories.Any(c => c.Name == "Медикаменты"))
+        {
+            dbContext.Categories.Add(new Category
+            {
+                Name = "Медикаменты",
+                Type = "Medication",
+                UserId = null
+            });
+        }
+
+        if (!dbContext.Categories.Any(c => c.Name == "Книги"))
+        {
+            dbContext.Categories.Add(new Category
+            {
+                Name = "Книги",
+                Type = "Book",
+                UserId = null
+            });
+        }
+
+        dbContext.SaveChanges();
     }
 }
+
 
 app.Run();
 
