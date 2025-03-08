@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Serilog;
 using ShelfieBackend.Data;
 using ShelfieBackend.DTOs;
 using ShelfieBackend.Models;
+using ShelfieBackend.Repositories.Interfaces;
 using System.Security.Claims;
 using static ShelfieBackend.Responses.CustomResponses;
 
@@ -12,42 +14,34 @@ namespace ShelfieBackend.Repositories
     {
         private readonly ApplicationDbContext _appDbContext;
         private readonly IConfiguration _config;
+        private readonly IHistoryRepo _historyRepository;   
 
-        public ProductRepo(ApplicationDbContext appDbContext, IConfiguration config)
+        public ProductRepo(ApplicationDbContext appDbContext, IConfiguration config, IHistoryRepo historyRepository)
         {
             _appDbContext = appDbContext;
             _config = config;
+            _historyRepository = historyRepository;
         }
 
         public async Task<BaseResponse> AddProductAsync(AddProductDTO model, ClaimsPrincipal currentUser)
         {
             try
             {
-                // ВРЕМЕННОЕ РЕШЕНИЕ: убедиться, что категория "Без категории" существует
-                var defaultCategory = await _appDbContext.ProductCategories
-                    .FirstOrDefaultAsync(c => c.Name == "Без категории");
-
-                if (defaultCategory == null)
-                {
-                    defaultCategory = new ProductCategory { Id = 1, Name = "Без категории" };
-                    await _appDbContext.ProductCategories.AddAsync(defaultCategory);
-                    await _appDbContext.SaveChangesAsync();
-                }
-
                 // Получаем идентификатор пользователя
                 int? userId = GetUserId(currentUser);
                 if (userId == null)
                     return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
 
                 // Проверяем наличие указанной категории
-                var category = await _appDbContext.ProductCategories.FindAsync(model.CategoryId);
+                var category = await _appDbContext.Categories.FindAsync(model.CategoryId);
                 if (category == null)
-                    return new BaseResponse { Flag = false, Message = "Категория не найдена." };
+                    model.CategoryId = 1;
 
                 var product = new Product
                 {
                     Name = model.Name,
-                    CategoryId = model.CategoryId,
+                    Creator = model.Creator,
+                    CategoryId = 1,
                     ExpirationDate = model.ExpirationDate,
                     Quantity = model.Quantity,
                     UserId = userId.Value,
@@ -59,7 +53,16 @@ namespace ShelfieBackend.Repositories
                 await _appDbContext.Products.AddAsync(product);
                 await _appDbContext.SaveChangesAsync();
 
-                await AddProductHistoryAsync(product.Id, "Added", product.Quantity, userId.Value);
+                await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
+                {
+                    ItemType = "Product",
+                    ItemName = product.Creator,
+                    ItemId = product.Id,
+                    CategoryId = product.CategoryId, 
+                    ChangeType = "Added",
+                    QuantityChange = product.Quantity, 
+                    UserId = userId.Value
+                });
                 await transaction.CommitAsync();
 
                 return new BaseResponse { Flag = true, Message = "Продукт успешно добавлен." };
@@ -70,6 +73,7 @@ namespace ShelfieBackend.Repositories
                 return new BaseResponse(false, "Error while adding a product");
             }
         }
+
 
         public async Task<List<GetProductDTO>> GetProductsAsync(ClaimsPrincipal currentUser)
         {
@@ -85,6 +89,7 @@ namespace ShelfieBackend.Repositories
                     .Select(p => new GetProductDTO
                     {
                         Name = p.Name,
+                        Creator = p.Creator,
                         CategoryId = p.CategoryId,
                         ExpirationDate = p.ExpirationDate,
                         Quantity = p.Quantity,
@@ -129,8 +134,15 @@ namespace ShelfieBackend.Repositories
                 using var transaction = await _appDbContext.Database.BeginTransactionAsync();
 
                 // Добавляем запись истории до удаления продукта
-                await AddProductHistoryAsync(product.Id, "Removed", -quantity, userId.Value);
-
+                await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
+                {
+                    ItemType = "Products",
+                    ItemName = product.Creator,
+                    ItemId = product.Id,
+                    ChangeType = "Removed",
+                    QuantityChange = -quantity,
+                    UserId = userId.Value
+                });
                 // Удаляем продукт
                 _appDbContext.Products.Remove(product);
                 await _appDbContext.SaveChangesAsync();
@@ -155,7 +167,6 @@ namespace ShelfieBackend.Repositories
                 if (userId == null)
                     return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
 
-                // Находим продукт по текущему имени и идентификатору пользователя
                 var product = await _appDbContext.Products
                     .FirstOrDefaultAsync(p => p.Name == currentName && p.UserId == userId.Value);
                 if (product == null)
@@ -163,30 +174,26 @@ namespace ShelfieBackend.Repositories
 
                 int oldQuantity = product.Quantity;
 
-                // Если передано новое имя, обновляем его
-                if (!string.IsNullOrEmpty(model.Name))
-                    product.Name = model.Name;
-
-                if (model.CategoryId.HasValue)
-                {
-                    var category = await _appDbContext.ProductCategories.FindAsync(model.CategoryId.Value);
-                    if (category == null)
-                        return new BaseResponse { Flag = false, Message = "Категория не найдена." };
-
-                    product.CategoryId = model.CategoryId.Value;
-                }
-
-                if (model.ExpirationDate.HasValue)
-                    product.ExpirationDate = model.ExpirationDate;
-
-                if (model.Quantity.HasValue)
-                    product.Quantity = model.Quantity.Value;
+                // Обновляем свойства, если они не null/пустые
+                product.Name = model.Name ?? product.Name;
+                product.Creator = model.Creator ?? product.Creator;
+                product.ExpirationDate = model.ExpirationDate ?? product.ExpirationDate;
+                product.Quantity = model.Quantity ?? product.Quantity;
 
                 using var transaction = await _appDbContext.Database.BeginTransactionAsync();
                 await _appDbContext.SaveChangesAsync();
 
                 int quantityChange = product.Quantity - oldQuantity;
-                await AddProductHistoryAsync(product.Id, "Updated", quantityChange, userId.Value);
+                await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
+                {
+                    ItemType = "Product",
+                    ItemName = product.Name,
+                    ItemId = product.Id,
+                    ChangeType = "Updated",
+                    QuantityChange = quantityChange,
+                    UserId = userId.Value
+                });
+
                 await transaction.CommitAsync();
 
                 return new BaseResponse { Flag = true, Message = "Продукт успешно обновлён." };
@@ -198,52 +205,8 @@ namespace ShelfieBackend.Repositories
             }
         }
 
-        public async Task<List<ProductHistoryDTO>> GetAllHistory(ClaimsPrincipal currentUser)
-        {
-            try
-            {
-                int? userId = GetUserId(currentUser);
-                if (userId == null)
-                    return new List<ProductHistoryDTO>();
-
-                // Возвращаем историю изменений только для текущего пользователя
-                return await _appDbContext.ProductHistories
-                    .Where(p => p.UserId == userId.Value)
-                    .Select(p => new ProductHistoryDTO
-                    {
-                        Id = p.Id,
-                        Product = p.Product != null ? p.Product.Name : "Unknown",
-                        ProductId = p.ProductId,
-                        ChangeDate = p.ChangeDate,
-                        QuantityChange = p.QuantityChange,
-                        UserId = p.UserId,
-                    })
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred while getting product history");
-                throw new Exception("Error while getting product history");
-            }
-        }
-
-        // Метод для создания записи истории изменений продукта.
-        private async Task AddProductHistoryAsync(int productId, string changeType, int quantityChange, int userId)
-        {
-            var history = new ProductHistory
-            {
-                ProductId = productId,
-                ChangeDate = DateTime.UtcNow,
-                ChangeType = changeType,
-                QuantityChange = quantityChange,
-                UserId = userId
-            };
-            await _appDbContext.ProductHistories.AddAsync(history);
-            await _appDbContext.SaveChangesAsync();
-        }
-
         // Метод извлекает идентификатор пользователя из Claims. Если идентификатор отсутствует, неверен или равен 0, возвращает null.
-        private int? GetUserId(ClaimsPrincipal user)
+        protected internal int? GetUserId(ClaimsPrincipal user)
         {
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId) || userId == 0)
