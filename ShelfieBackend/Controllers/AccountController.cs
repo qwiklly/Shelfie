@@ -2,8 +2,8 @@
 using ShelfieBackend.DTOs;
 using static ShelfieBackend.Responses.CustomResponses;
 using Swashbuckle.AspNetCore.Annotations;
-using ShelfieBackend.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Controllers
 {
@@ -11,23 +11,29 @@ namespace ShelfieBackend.Controllers
 	[ApiController]
 	public class AccountController(IAccount _accountrepo) : ControllerBase
 	{
-        [Authorize]
-        [HttpGet("getUsers")]
-		[SwaggerOperation(
-			Summary = "Get all users",
-			Description = "Retrieve a list of all users from the database."
-		)]
+		/// <summary>
+		/// Get a list of all users.
+		/// </summary>
+		/// <remarks>
+		/// This method retrieves all user records from the database.
+		/// </remarks>
+		/// <returns>List of all users from the database.</returns>
+		[Authorize]
+		[HttpGet("getUsers")]
 		public async Task<ActionResult<BaseResponse>> GetUsersAsync()
 		{
 			var result = await _accountrepo.GetUsersAsync();
 			return Ok(result);
 		}
 
+        /// <summary>
+        /// Get one user by id.
+        /// </summary>
+        /// <remarks>
+        /// Retrieve a single user from the database using their email address.
+        /// </remarks>
+        /// <returns>Return one user.</returns>
         [HttpGet("getUser")]
-		[SwaggerOperation(
-			Summary = "Get one user by id",
-			Description = "Retrieve a single user from the database using their email address."
-		)]
 		public async Task<ActionResult<BaseResponse>> GetUserAsync(string email)
 		{
 			var result = await _accountrepo.GetUserAsync(email);

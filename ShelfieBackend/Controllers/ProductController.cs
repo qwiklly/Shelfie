@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.DTOs;
 using static ShelfieBackend.Responses.CustomResponses;
 using Swashbuckle.AspNetCore.Annotations;
-using ShelfieBackend.Repositories;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Controllers
 {
@@ -50,7 +50,6 @@ namespace ShelfieBackend.Controllers
             var result = await _productRepo.UpdateProductAsync(currentName, model, currentUser);
             return Ok(result);
         }
-
 
         [Authorize]
         [HttpDelete("delete/{name}")]
