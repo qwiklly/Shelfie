@@ -12,7 +12,7 @@ using ShelfieBackend.Data;
 namespace ShelfieBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250216192324_First")]
+    [Migration("20250307135920_First")]
     partial class First
     {
         /// <inheritdoc />
@@ -49,7 +49,6 @@ namespace ShelfieBackend.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Role")
@@ -60,6 +59,91 @@ namespace ShelfieBackend.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("ShelfieBackend.Models.Category", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("ShelfieBackend.Models.CategoryField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FieldName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CategoryFields");
+                });
+
+            modelBuilder.Entity("ShelfieBackend.Models.HistoryRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("ChangeDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangeType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("QuantityChange")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("HistoryRecords");
+                });
+
             modelBuilder.Entity("ShelfieBackend.Models.Medication", b =>
                 {
                     b.Property<int>("Id")
@@ -67,6 +151,9 @@ namespace ShelfieBackend.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Dosage")
                         .IsRequired()
@@ -87,6 +174,8 @@ namespace ShelfieBackend.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("UserId");
 
                     b.ToTable("Medications");
@@ -106,6 +195,14 @@ namespace ShelfieBackend.Migrations
                     b.Property<DateOnly>("CreatedAt")
                         .HasColumnType("date");
 
+                    b.Property<string>("Creator")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<DateOnly?>("ExpirationDate")
                         .HasColumnType("date");
 
@@ -119,6 +216,9 @@ namespace ShelfieBackend.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
+                    b.Property<double>("Weight")
+                        .HasColumnType("double precision");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -128,57 +228,16 @@ namespace ShelfieBackend.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("ShelfieBackend.Models.ProductCategory", b =>
+            modelBuilder.Entity("ShelfieBackend.Models.Category", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.HasOne("ShelfieBackend.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductCategories");
+                    b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ShelfieBackend.Models.ProductHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateOnly>("ChangeDate")
-                        .HasColumnType("date");
-
-                    b.Property<string>("ChangeType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("QuantityChange")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ProductHistories");
-                });
-
-            modelBuilder.Entity("ShelfieBackend.Models.Medication", b =>
+            modelBuilder.Entity("ShelfieBackend.Models.HistoryRecord", b =>
                 {
                     b.HasOne("ShelfieBackend.Models.ApplicationUser", "User")
                         .WithMany()
@@ -189,10 +248,10 @@ namespace ShelfieBackend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ShelfieBackend.Models.Product", b =>
+            modelBuilder.Entity("ShelfieBackend.Models.Medication", b =>
                 {
-                    b.HasOne("ShelfieBackend.Models.ProductCategory", "Category")
-                        .WithMany("Products")
+                    b.HasOne("ShelfieBackend.Models.Category", "Category")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -208,11 +267,11 @@ namespace ShelfieBackend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ShelfieBackend.Models.ProductHistory", b =>
+            modelBuilder.Entity("ShelfieBackend.Models.Product", b =>
                 {
-                    b.HasOne("ShelfieBackend.Models.Product", "Product")
+                    b.HasOne("ShelfieBackend.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -222,14 +281,9 @@ namespace ShelfieBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Product");
+                    b.Navigation("Category");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ShelfieBackend.Models.ProductCategory", b =>
-                {
-                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }
