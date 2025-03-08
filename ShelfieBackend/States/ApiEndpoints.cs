@@ -22,5 +22,10 @@
         // Эндпоинты для истории изменений
         public const string HistoryBase = "api/history";
         public const string GetAllHistory = $"{HistoryBase}/getAll";
+
+        // Эндпоинты для категорий 
+        public const string CategoryBase = "api/category";
+        public const string CreateCategory = $"{CategoryBase}/createCategory";
+        public const string GetAllCategories = $"{CategoryBase}/getAllCategories";
     }
 }
