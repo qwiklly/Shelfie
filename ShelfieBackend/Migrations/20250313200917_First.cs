@@ -13,17 +13,17 @@ namespace ShelfieBackend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "CategoryFields",
+                name: "CategoryFieldValues",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    FieldName = table.Column<string>(type: "text", nullable: false)
+                    CategoryFieldId = table.Column<int>(type: "integer", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CategoryFields", x => x.Id);
+                    table.PrimaryKey("PK_CategoryFieldValues", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,7 +61,8 @@ namespace ShelfieBackend.Migrations
                         name: "FK_Categories_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -83,6 +84,55 @@ namespace ShelfieBackend.Migrations
                     table.PrimaryKey("PK_HistoryRecords", x => x.Id);
                     table.ForeignKey(
                         name: "FK_HistoryRecords_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CategoryFields",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    FieldName = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryFields", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CategoryFields_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomItem",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomItem", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomItem_Categories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CustomItem_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -128,8 +178,9 @@ namespace ShelfieBackend.Migrations
                     Name = table.Column<string>(type: "text", nullable: false),
                     Creator = table.Column<string>(type: "text", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
                     Weight = table.Column<double>(type: "double precision", nullable: false),
+                    WeightUnit = table.Column<string>(type: "text", nullable: false),
                     ExpirationDate = table.Column<DateOnly>(type: "date", nullable: true),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UserId = table.Column<int>(type: "integer", nullable: false),
@@ -155,6 +206,21 @@ namespace ShelfieBackend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Categories_UserId",
                 table: "Categories",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CategoryFields_CategoryId",
+                table: "CategoryFields",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomItem_CategoryId",
+                table: "CustomItem",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomItem_UserId",
+                table: "CustomItem",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -188,6 +254,12 @@ namespace ShelfieBackend.Migrations
         {
             migrationBuilder.DropTable(
                 name: "CategoryFields");
+
+            migrationBuilder.DropTable(
+                name: "CategoryFieldValues");
+
+            migrationBuilder.DropTable(
+                name: "CustomItem");
 
             migrationBuilder.DropTable(
                 name: "HistoryRecords");
