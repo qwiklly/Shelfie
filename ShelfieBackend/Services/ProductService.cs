@@ -59,8 +59,8 @@ namespace ShelfieBackend.Services
         public Task<BaseResponse> DeleteProductAsync(string name, CancellationToken cancellationToken = default) =>
             SendRequestAsync<BaseResponse>((ct) => _httpClient.DeleteAsync($"{ApiEndpoints.DeleteProduct}{Uri.EscapeDataString(name)}", ct), cancellationToken);
 
-        public Task<List<ProductHistory>> GetAllHistoryAsync(CancellationToken cancellationToken = default) =>
-            SendRequestAsync<List<ProductHistory>>((ct) => _httpClient.GetAsync(ApiEndpoints.GetAllHistory, ct), cancellationToken);
+        public Task<List<HistoryRecord>> GetAllHistoryAsync(CancellationToken cancellationToken = default) =>
+            SendRequestAsync<List<HistoryRecord>>((ct) => _httpClient.GetAsync(ApiEndpoints.GetAllHistory, ct), cancellationToken);
 
     }
 }
