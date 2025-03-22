@@ -5,7 +5,6 @@ namespace ShelfieBackend.DTOs
 {
 	public class RegisterDTO : LoginDTO
 	{
-
 		[Required, Compare(nameof(Password)), DataType(DataType.Password)]
 		public string ConfirmPassword { get; set; } = string.Empty;
 
@@ -15,8 +14,8 @@ namespace ShelfieBackend.DTOs
 		[Required]
 		public UserRole? Role { get; set; }
 
-        [Phone]
-        public string? Phone { get; set; } = string.Empty;
+        [RegularExpression(@"^\+?[1-9]\d{1,14}$", ErrorMessage = "The phone number is not valid.")]
+        public string? Phone { get; set; } 
 
         [Required, DataType(DataType.Date)]
         public DateOnly DateOfBirth { get; set; }
