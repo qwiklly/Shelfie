@@ -18,7 +18,8 @@ namespace ShelfieBackend.Controllers
         public async Task<ActionResult<BaseResponse>> AddProductAsync([FromBody] AddProductDTO model)
         {
             var currentUser = HttpContext.User;
-            var result = await _productRepo.AddProductAsync(model, currentUser);
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.AddProductAsync(model, currentUser, cancellationToken);
             return Ok(result);
         }
         [Authorize]
@@ -27,7 +28,8 @@ namespace ShelfieBackend.Controllers
         public async Task<ActionResult<BaseResponse>> GetProductsAsync()
         {
             var currentUser = HttpContext.User;
-            var result = await _productRepo.GetProductsAsync(currentUser);
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.GetProductsAsync(currentUser, cancellationToken);
             return Ok(result);
         }
 
@@ -37,7 +39,8 @@ namespace ShelfieBackend.Controllers
         public async Task<ActionResult<BaseResponse>> GetProductAsync(string name)
         {
             var currentUser = HttpContext.User;
-            var result = await _productRepo.GetProductAsync(name, currentUser);
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.GetProductAsync(name, currentUser, cancellationToken);
             return Ok(result);
         }
 
@@ -47,7 +50,8 @@ namespace ShelfieBackend.Controllers
         public async Task<ActionResult<BaseResponse>> UpdateProductAsync(string currentName, [FromBody] UpdateProductDTO model)
         {
             var currentUser = HttpContext.User;
-            var result = await _productRepo.UpdateProductAsync(currentName, model, currentUser);
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.UpdateProductAsync(currentName, model, currentUser, cancellationToken);
             return Ok(result);
         }
 
@@ -57,7 +61,8 @@ namespace ShelfieBackend.Controllers
         public async Task<ActionResult<BaseResponse>> DeleteProductAsync(string name)
         {
             var currentUser = HttpContext.User;
-            var result = await _productRepo.DeleteProductAsync(name, currentUser);
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.DeleteProductAsync(name, currentUser, cancellationToken);
             return Ok(result);
         }
     }

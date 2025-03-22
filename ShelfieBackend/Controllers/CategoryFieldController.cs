@@ -1,59 +1,27 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShelfieBackend.Data;
-using ShelfieBackend.Models;
-using System;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Controllers
 {
     [ApiController]
-    [Route("api/category/{categoryId:int}/fields")]
-    public class CategoryFieldsController : ControllerBase
+    [Route("api/category/{categoryId:int}")]
+    public class CategoryFieldsController(ICategoryFieldRepo _categoryFieldRepo) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
 
-        public CategoryFieldsController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        // Получить список полей для категории
-        [HttpGet]
+        [HttpGet("getCategoryFields")]
         public async Task<IActionResult> GetCategoryFields(int categoryId)
         {
-            var fields = await _context.CategoryFields
-                .Where(f => f.CategoryId == categoryId)
-                .Select(f => f.FieldName)
-                .ToListAsync();
-
-            return Ok(fields);
+            var cancellationToken = HttpContext.RequestAborted;
+            var response = await _categoryFieldRepo.GetCategoryFieldsAsync(categoryId, User, cancellationToken);
+            return Ok(response);
         }
 
-        // Сохранить или обновить поля категории
-        [HttpPost]
+        [HttpPost("addOrChangeFields")]
         public async Task<IActionResult> SaveCategoryFields(int categoryId, [FromBody] List<string> fieldNames)
         {
-            if (fieldNames == null || !fieldNames.Any())
-            {
-                return BadRequest("Необходимо передать хотя бы одно поле.");
-            }
-
-            // Удаляем старые поля
-            var existingFields = _context.CategoryFields.Where(f => f.CategoryId == categoryId);
-            _context.CategoryFields.RemoveRange(existingFields);
-
-            // Создаём новые
-            var newFields = fieldNames.Select(name => new CategoryField
-            {
-                CategoryId = categoryId,
-                FieldName = name
-            }).ToList();
-
-            await _context.CategoryFields.AddRangeAsync(newFields);
-            await _context.SaveChangesAsync();
-
-            return Ok("Поля сохранены.");
+            var cancellationToken = HttpContext.RequestAborted;
+            var response = await _categoryFieldRepo.SaveCategoryFieldsAsync(categoryId, fieldNames, User, cancellationToken);
+            return Ok(response);
         }
     }
-
 }

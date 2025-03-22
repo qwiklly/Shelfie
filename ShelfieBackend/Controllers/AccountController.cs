@@ -82,7 +82,7 @@ namespace ShelfieBackend.Controllers
 			Summary = "Update a user",
 			Description = "Update a user's information, such as name, role, or password."
 		)]
-		public async Task<ActionResult<BaseResponse>> UpdateUserAsync(string email, RegisterDTO model)
+		public async Task<ActionResult<BaseResponse>> UpdateUserAsync(string email, UpdateUserDTO model)
 		{
             var currentUser = HttpContext.User;
             var result = await _accountrepo.UpdateUserAsync(email, model, currentUser);
