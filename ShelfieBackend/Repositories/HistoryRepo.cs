@@ -4,20 +4,24 @@ using ShelfieBackend.Data;
 using ShelfieBackend.DTOs;
 using ShelfieBackend.Models;
 using ShelfieBackend.Repositories.Interfaces;
+using ShelfieBackend.Services;
 using System.Security.Claims;
+using static ShelfieBackend.Responses.CustomResponses;
 
 namespace ShelfieBackend.Repositories
 {
     public class HistoryRepo : IHistoryRepo
     {
         private readonly ApplicationDbContext _appDbContext;
+        private readonly IUserIdService _userService;
 
-        public HistoryRepo(ApplicationDbContext appDbContext) 
+        public HistoryRepo(ApplicationDbContext appDbContext, IUserIdService userService) 
         { 
             _appDbContext = appDbContext;
+            _userService = userService;
         }
 
-        public async Task AddHistoryRecordAsync(HistoryRecordDTO model)
+        public async Task AddHistoryRecordAsync(HistoryRecordDTO model, CancellationToken cancellationToken)
         {
             var history = new HistoryRecord
             {
@@ -30,20 +34,19 @@ namespace ShelfieBackend.Repositories
                 UserId = model.UserId
             };
             await _appDbContext.HistoryRecords.AddAsync(history);
-            await _appDbContext.SaveChangesAsync();
+            await _appDbContext.SaveChangesAsync(cancellationToken);
         }
 
-
-        public async Task<List<HistoryRecordDTO>> GetUserHistoryAsync(ClaimsPrincipal currentUser)
+        public async Task<List<HistoryRecordDTO>> GetUserHistoryAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try
             {
-                int? userId = GetUserId(currentUser);
+                int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
                     return new List<HistoryRecordDTO>();
 
-                // Возвращаем историю изменений только для текущего пользователя
                 return await _appDbContext.HistoryRecords
+                    .AsNoTracking()
                     .Where(p => p.UserId == userId.Value)
                      .Select(h => new HistoryRecordDTO
                      {
@@ -55,20 +58,27 @@ namespace ShelfieBackend.Repositories
                          ChangeType = h.ChangeType,
                          QuantityChange = h.QuantityChange,
                      })
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "An error occurred while getting product history");
-                throw new Exception("Error while getting product history");
+                Log.Error(ex, "An error occurred while getting history operations");
+                throw new Exception("Error while getting history operations", ex);
             }
         }
-        protected internal int? GetUserId(ClaimsPrincipal user)
+
+        public async Task<BaseResponse> ClearHistoryAsync(CancellationToken cancellationToken)
         {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId) || userId == 0)
-                return null;
-            return userId;
+            try
+            {
+                await _appDbContext.HistoryRecords.ExecuteDeleteAsync(cancellationToken);
+                return new BaseResponse(true, "История успешно очищена");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Ошибка при очистке истории");
+                return new BaseResponse(false, "Ошибка при очистке истории");
+            }
         }
     }
 }

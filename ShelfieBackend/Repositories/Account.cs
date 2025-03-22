@@ -117,7 +117,7 @@ namespace ShelfieBackend.Repositories
             => await _appDbContext.Users.FirstOrDefaultAsync(e => e.Email == email);
 
         // Updates an existing user's details if found, otherwise returns an error message.
-        public async Task<RegisterResponse> UpdateUserAsync(string email, RegisterDTO model, ClaimsPrincipal currentUser)
+        public async Task<RegisterResponse> UpdateUserAsync(string email, UpdateUserDTO model, ClaimsPrincipal currentUser)
         {
             try
             {

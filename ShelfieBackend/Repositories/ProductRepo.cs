@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Serilog;
 using ShelfieBackend.Data;
 using ShelfieBackend.DTOs;
 using ShelfieBackend.Models;
 using ShelfieBackend.Repositories.Interfaces;
+using ShelfieBackend.Services;
 using System.Security.Claims;
 using static ShelfieBackend.Responses.CustomResponses;
 
@@ -13,57 +13,56 @@ namespace ShelfieBackend.Repositories
     public class ProductRepo : IProductRepo
     {
         private readonly ApplicationDbContext _appDbContext;
-        private readonly IConfiguration _config;
         private readonly IHistoryRepo _historyRepository;   
+        private readonly IUserIdService _userService;
 
-        public ProductRepo(ApplicationDbContext appDbContext, IConfiguration config, IHistoryRepo historyRepository)
+        public ProductRepo(ApplicationDbContext appDbContext, IConfiguration config, IHistoryRepo historyRepository, IUserIdService userService)
         {
             _appDbContext = appDbContext;
-            _config = config;
             _historyRepository = historyRepository;
+            _userService = userService;
         }
 
-        public async Task<BaseResponse> AddProductAsync(AddProductDTO model, ClaimsPrincipal currentUser)
+        public async Task<BaseResponse> AddProductAsync(AddProductDTO model, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try
             {
-                // Получаем идентификатор пользователя
-                int? userId = GetUserId(currentUser);
+                int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
                     return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
 
-                // Проверяем наличие указанной категории
-                var category = await _appDbContext.Categories.FindAsync(model.CategoryId);
-                if (category == null)
-                    model.CategoryId = 1;
+                var category = await _appDbContext.Categories.FindAsync(model.CategoryId, cancellationToken);
+                var categoryId = category != null ? model.CategoryId : 1;
 
                 var product = new Product
                 {
                     Name = model.Name,
                     Creator = model.Creator,
-                    CategoryId = 1,
+                    CategoryId = categoryId,
                     ExpirationDate = model.ExpirationDate,
                     Quantity = model.Quantity,
                     UserId = userId.Value,
-                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow)
+                    CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Weight = model.Weight,
+                    WeightUnit = model.WeightUnit,
                 };
 
-                // Используем транзакцию, чтобы сохранить продукт и запись истории атомарно
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync();
-                await _appDbContext.Products.AddAsync(product);
-                await _appDbContext.SaveChangesAsync();
+                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
+                await _appDbContext.Products.AddAsync(product, cancellationToken);
+                await _appDbContext.SaveChangesAsync(cancellationToken);
 
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
                     ItemType = "Product",
-                    ItemName = product.Creator,
+                    ItemName = product.Name, 
                     ItemId = product.Id,
-                    CategoryId = product.CategoryId, 
+                    CategoryId = product.CategoryId,
                     ChangeType = "Added",
-                    QuantityChange = product.Quantity, 
+                    QuantityChange = product.Quantity,
                     UserId = userId.Value
-                });
-                await transaction.CommitAsync();
+                }, cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return new BaseResponse { Flag = true, Message = "Продукт успешно добавлен." };
             }
@@ -74,16 +73,14 @@ namespace ShelfieBackend.Repositories
             }
         }
 
-
-        public async Task<List<GetProductDTO>> GetProductsAsync(ClaimsPrincipal currentUser)
+        public async Task<List<GetProductDTO>> GetProductsAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try
             {
-                int? userId = GetUserId(currentUser);
+                int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
                     return new List<GetProductDTO>();
 
-                // Используем проекцию на уровне базы данных для оптимизации
                 return await _appDbContext.Products
                     .Where(p => p.UserId == userId.Value)
                     .Select(p => new GetProductDTO
@@ -93,9 +90,11 @@ namespace ShelfieBackend.Repositories
                         CategoryId = p.CategoryId,
                         ExpirationDate = p.ExpirationDate,
                         Quantity = p.Quantity,
-                        CreatedAt = p.CreatedAt
+                        CreatedAt = p.CreatedAt,
+                        Weight = p.Weight,
+                        WeightUnit = p.WeightUnit,
                     })
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
             }
             catch (Exception ex)
             {
@@ -104,50 +103,48 @@ namespace ShelfieBackend.Repositories
             }
         }
 
-        public async Task<Product?> GetProductAsync(string name, ClaimsPrincipal currentUser)
+        public async Task<Product?> GetProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
-            int? userId = GetUserId(currentUser);
+            int? userId = _userService.GetUserId(currentUser);
             if (userId == null)
                 return null;
 
-            // Фильтруем по имени и по идентификатору пользователя
             return await _appDbContext.Products
-                .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value);
+                .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value, cancellationToken);
         }
 
-        public async Task<BaseResponse> DeleteProductAsync(string name, ClaimsPrincipal currentUser)
+        public async Task<BaseResponse> DeleteProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try
             {
-                int? userId = GetUserId(currentUser);
+                int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
                     return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
 
                 var product = await _appDbContext.Products
-                    .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value);
+                    .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value, cancellationToken);
                 if (product == null)
                     return new BaseResponse { Flag = false, Message = "Продукт не найден." };
 
-                // Сохраним количество для истории
+                // Сохранить количество для истории
                 int quantity = product.Quantity;
 
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync();
+                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
 
-                // Добавляем запись истории до удаления продукта
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
-                    ItemType = "Products",
+                    ItemType = "Product",
                     ItemName = product.Creator,
                     ItemId = product.Id,
                     ChangeType = "Removed",
                     QuantityChange = -quantity,
                     UserId = userId.Value
-                });
-                // Удаляем продукт
-                _appDbContext.Products.Remove(product);
-                await _appDbContext.SaveChangesAsync();
+                }, cancellationToken);
 
-                await transaction.CommitAsync();
+                _appDbContext.Products.Remove(product);
+                await _appDbContext.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
 
                 return new BaseResponse { Flag = true, Message = "Продукт успешно удалён." };
             }
@@ -158,32 +155,31 @@ namespace ShelfieBackend.Repositories
             }
         }
 
-
-        public async Task<BaseResponse> UpdateProductAsync(string currentName, UpdateProductDTO model, ClaimsPrincipal currentUser)
+        public async Task<BaseResponse> UpdateProductAsync(string currentName, UpdateProductDTO model, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try
             {
-                int? userId = GetUserId(currentUser);
+                int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
                     return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
 
                 var product = await _appDbContext.Products
-                    .FirstOrDefaultAsync(p => p.Name == currentName && p.UserId == userId.Value);
+                    .FirstOrDefaultAsync(p => p.Name == currentName && p.UserId == userId.Value, cancellationToken);
                 if (product == null)
                     return new BaseResponse { Flag = false, Message = "Продукт не найден." };
 
                 int oldQuantity = product.Quantity;
 
-                // Обновляем свойства, если они не null/пустые
                 product.Name = model.Name ?? product.Name;
                 product.Creator = model.Creator ?? product.Creator;
                 product.ExpirationDate = model.ExpirationDate ?? product.ExpirationDate;
                 product.Quantity = model.Quantity ?? product.Quantity;
+                product.Weight = model.Weight == 0 ? product.Weight : model.Weight;
+                product.WeightUnit = model.WeightUnit ?? product.WeightUnit;
 
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync();
-                await _appDbContext.SaveChangesAsync();
-
+                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
                 int quantityChange = product.Quantity - oldQuantity;
+
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
                     ItemType = "Product",
@@ -192,9 +188,10 @@ namespace ShelfieBackend.Repositories
                     ChangeType = "Updated",
                     QuantityChange = quantityChange,
                     UserId = userId.Value
-                });
+                }, cancellationToken);
 
-                await transaction.CommitAsync();
+                await _appDbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
 
                 return new BaseResponse { Flag = true, Message = "Продукт успешно обновлён." };
             }
@@ -203,15 +200,6 @@ namespace ShelfieBackend.Repositories
                 Log.Error(ex, "An error occurred while updating a product");
                 return new BaseResponse(false, "Error while updating a product");
             }
-        }
-
-        // Метод извлекает идентификатор пользователя из Claims. Если идентификатор отсутствует, неверен или равен 0, возвращает null.
-        protected internal int? GetUserId(ClaimsPrincipal user)
-        {
-            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId) || userId == 0)
-                return null;
-            return userId;
         }
     }
 }
