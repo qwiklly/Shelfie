@@ -78,11 +78,14 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddScoped<IAccount, Account>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IUserIdService, UserIdService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IHistoryRepo, HistoryRepo>();
+builder.Services.AddScoped<ICategoryFieldRepo, CategoryFieldRepo>();
+builder.Services.AddScoped<ICategoryFieldValueRepo, CategoryFieldValueRepo>();
 builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:5111");
