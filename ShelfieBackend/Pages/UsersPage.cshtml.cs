@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShelfieBackend.DTOs;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Pages
 {
 	public class UsersPageModel : PageModel
 	{
-		private readonly Repositories.IAccount _applicationService;
+		private readonly IAccount _applicationService;
 
 		public List<GetUsersDTO> Users { get; set; } = new List<GetUsersDTO>();
 		public DeleteUserDTO Delete = new();
 
-		public UsersPageModel(Repositories.IAccount applicationService)
+		public UsersPageModel(IAccount applicationService)
 
 		{
 			_applicationService = applicationService;

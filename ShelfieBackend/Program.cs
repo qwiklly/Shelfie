@@ -81,6 +81,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserIdService, UserIdService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IMedicineRepo, MedicineRepo>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IHistoryRepo, HistoryRepo>();

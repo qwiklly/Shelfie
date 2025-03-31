@@ -72,6 +72,28 @@ namespace ShelfieBackend.Repositories
                 if (newFields.Any())
                     await _appDbContext.CategoryFields.AddRangeAsync(newFields, cancellationToken);
 
+                var existingRecordIds = await _appDbContext.CategoryFieldValues
+                    .Where(v => v.CategoryId == categoryId)
+                    .Select(v => v.RecordId)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                // Добавляем новое поле для всех существующих записей с пустым значением
+                var newFieldValues = existingRecordIds.Select(recordId => new CategoryFieldValue
+                {
+                    CategoryId = categoryId,
+                    RecordId = recordId,
+                    FieldOrder = maxOrder, // Новый порядок, который был присвоен новому полю
+                    Value = "" // Пустое значение для нового поля
+                }).ToList();
+
+                if (newFieldValues.Any())
+                {
+                    await _appDbContext.CategoryFieldValues.AddRangeAsync(newFieldValues, cancellationToken);
+                }
+
+
+                // Сохраняем изменения
                 await _appDbContext.SaveChangesAsync(cancellationToken);
                 return new BaseResponse(true, "Поля успешно сохранены");
             }
@@ -81,6 +103,7 @@ namespace ShelfieBackend.Repositories
                 return new BaseResponse(false, "Ошибка при сохранении полей категории");
             }
         }
+
 
         public async Task<List<string>> GetCategoryFieldsAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {

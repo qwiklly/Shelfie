@@ -43,18 +43,18 @@ namespace ShelfieBackend.Repositories
                 if (recordExists)
                     return new BaseResponse(false, "Запись с таким RecordId уже существует");
 
-                var validFieldIds = await _appDbContext.CategoryFields
+                var validFieldOrders = await _appDbContext.CategoryFields
                     .Where(f => f.CategoryId == categoryId)
-                    .Select(f => f.Id)
+                    .Select(f => f.FieldOrder)
                     .ToListAsync(cancellationToken);
 
                 var newValues = request.FieldValues
-                    .Where(fv => validFieldIds.Contains(fv.Key))
+                    .Where(fv => validFieldOrders.Contains(fv.Key))
                     .Select(fv => new CategoryFieldValue
                     {
                         CategoryId = categoryId,
                         RecordId = request.RecordId,
-                        CategoryFieldId = fv.Key,
+                        FieldOrder = fv.Key,
                         Value = fv.Value.Trim()
                     }).ToList();
 
@@ -112,7 +112,7 @@ namespace ShelfieBackend.Repositories
                 foreach (var value in existingValues)
                 {
                     // Используем CategoryFieldId для сопоставления
-                    if (request.FieldValues.TryGetValue(value.CategoryFieldId, out var newValue))
+                    if (request.FieldValues.TryGetValue(value.FieldOrder, out var newValue))
                     {
                         value.Value = newValue;
                     }
@@ -170,7 +170,7 @@ namespace ShelfieBackend.Repositories
                     .Select(g => new FieldValuesRequest
                     {
                         RecordId = g.Key,
-                        FieldValues = g.ToDictionary(v => v.CategoryFieldId, v => v.Value)
+                        FieldValues = g.ToDictionary(v => v.FieldOrder, v => v.Value)
                     })
                     .ToList();
             }

@@ -18,7 +18,9 @@ namespace ShelfieBackend.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CategoryFieldId = table.Column<int>(type: "integer", nullable: false),
+                    RecordId = table.Column<int>(type: "integer", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    FieldOrder = table.Column<int>(type: "integer", nullable: false),
                     Value = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
@@ -97,7 +99,8 @@ namespace ShelfieBackend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    FieldName = table.Column<string>(type: "text", nullable: false)
+                    FieldName = table.Column<string>(type: "text", nullable: false),
+                    FieldOrder = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -146,11 +149,15 @@ namespace ShelfieBackend.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
-                    Dosage = table.Column<string>(type: "text", nullable: false),
-                    ExpirationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Creator = table.Column<string>(type: "text", nullable: false),
                     CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    UserId = table.Column<int>(type: "integer", nullable: false)
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Weight = table.Column<double>(type: "double precision", nullable: true),
+                    WeightUnit = table.Column<string>(type: "text", nullable: false),
+                    ExpirationDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateOnly>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {

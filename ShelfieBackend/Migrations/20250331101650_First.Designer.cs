@@ -12,8 +12,8 @@ using ShelfieBackend.Data;
 namespace ShelfieBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250317142945_Second")]
-    partial class Second
+    [Migration("20250331101650_First")]
+    partial class First
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,6 +100,9 @@ namespace ShelfieBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("FieldOrder")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -115,10 +118,13 @@ namespace ShelfieBackend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryFieldId")
+                    b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int>("FieldOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RecordId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Value")
@@ -213,12 +219,18 @@ namespace ShelfieBackend.Migrations
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Dosage")
+                    b.Property<DateOnly>("CreatedAt")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Creator")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("ExpirationDate")
+                        .HasColumnType("date");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -229,6 +241,13 @@ namespace ShelfieBackend.Migrations
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
+
+                    b.Property<double?>("Weight")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("WeightUnit")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

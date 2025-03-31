@@ -5,5 +5,6 @@
         public int Id { get; set; }
         public int CategoryId { get; set; }
         public string FieldName { get; set; } = string.Empty;
+        public int FieldOrder { get; set; }
     }
 }
