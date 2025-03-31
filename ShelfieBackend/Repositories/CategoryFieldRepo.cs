@@ -27,7 +27,6 @@ namespace ShelfieBackend.Repositories
                 if (!fieldNames.Any())
                     return new BaseResponse(false, "Необходимо передать хотя бы одно поле");
 
-
                 fieldNames = fieldNames.Select(name => name.Trim()).Distinct().ToList();
 
                 var category = await _appDbContext.Categories
@@ -39,21 +38,31 @@ namespace ShelfieBackend.Repositories
                 var existingFields = await _appDbContext.CategoryFields
                     .Where(f => f.CategoryId == categoryId)
                     .ToListAsync(cancellationToken);
-                var existingFieldNames = new HashSet<string>(existingFields.Select(f => f.FieldName));
 
-                // Определяем, какие поля удалить и какие добавить
+                var existingFieldMap = existingFields.ToDictionary(f => f.FieldName, f => f);
+
+                int maxOrder = existingFields.Any() ? existingFields.Max(f => f.FieldOrder) : 0;
+
+                // Определяем, какие поля удалить
                 var fieldsToDelete = existingFields.Where(f => !fieldNames.Contains(f.FieldName)).ToList();
+
+                // Определяем новые поля и присваиваем им порядковый номер
                 var newFields = fieldNames
-                    .Where(name => !existingFieldNames.Contains(name))
-                    .Select(name => new CategoryField { CategoryId = categoryId, FieldName = name })
+                    .Where(name => !existingFieldMap.ContainsKey(name))
+                    .Select(name => new CategoryField
+                    {
+                        CategoryId = categoryId,
+                        FieldName = name,
+                        FieldOrder = ++maxOrder // Увеличиваем порядок на 1
+                    })
                     .ToList();
 
-                // Удаление связанных полей
+                // Удаление значений, связанных с удаляемыми полями
                 if (fieldsToDelete.Any())
                 {
-                    var fieldIdsToDelete = fieldsToDelete.Select(f => f.Id).ToList();
+                    var fieldOrdersToDelete = fieldsToDelete.Select(f => f.FieldOrder).ToList();
                     var valuesToDelete = _appDbContext.CategoryFieldValues
-                        .Where(v => fieldIdsToDelete.Contains(v.CategoryFieldId));
+                        .Where(v => fieldOrdersToDelete.Contains(v.FieldOrder) && v.CategoryId == categoryId);
 
                     _appDbContext.CategoryFieldValues.RemoveRange(valuesToDelete);
                     _appDbContext.CategoryFields.RemoveRange(fieldsToDelete);
@@ -63,6 +72,28 @@ namespace ShelfieBackend.Repositories
                 if (newFields.Any())
                     await _appDbContext.CategoryFields.AddRangeAsync(newFields, cancellationToken);
 
+                var existingRecordIds = await _appDbContext.CategoryFieldValues
+                    .Where(v => v.CategoryId == categoryId)
+                    .Select(v => v.RecordId)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+
+                // Добавляем новое поле для всех существующих записей с пустым значением
+                var newFieldValues = existingRecordIds.Select(recordId => new CategoryFieldValue
+                {
+                    CategoryId = categoryId,
+                    RecordId = recordId,
+                    FieldOrder = maxOrder, // Новый порядок, который был присвоен новому полю
+                    Value = "" // Пустое значение для нового поля
+                }).ToList();
+
+                if (newFieldValues.Any())
+                {
+                    await _appDbContext.CategoryFieldValues.AddRangeAsync(newFieldValues, cancellationToken);
+                }
+
+
+                // Сохраняем изменения
                 await _appDbContext.SaveChangesAsync(cancellationToken);
                 return new BaseResponse(true, "Поля успешно сохранены");
             }
@@ -72,6 +103,7 @@ namespace ShelfieBackend.Repositories
                 return new BaseResponse(false, "Ошибка при сохранении полей категории");
             }
         }
+
 
         public async Task<List<string>> GetCategoryFieldsAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {

@@ -82,7 +82,23 @@ namespace ShelfieBackend.Repositories
                 throw new Exception("Error while retrieving categories");
             }
         }
+        public async Task<Category?> GetCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
+        {
+            try
+            {
+                int? userId = _userService.GetUserId(currentUser);
+                if (userId == null)
+                    return null;
 
+                return await _appDbContext.Categories
+                    .FirstOrDefaultAsync(p => p.Id == categoryId && p.UserId == userId.Value, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while retrieving the category");
+                return null;
+            }
+        }
         public async Task<BaseResponse> DeleteCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             try

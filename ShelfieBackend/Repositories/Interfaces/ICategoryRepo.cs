@@ -1,4 +1,5 @@
 ﻿using ShelfieBackend.DTOs;
+using ShelfieBackend.Models;
 using System.Security.Claims;
 using static ShelfieBackend.Responses.CustomResponses;
 
@@ -9,5 +10,6 @@ namespace ShelfieBackend.Repositories.Interfaces
         Task<BaseResponse> CreateCategoryAsync(string categoryName, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<List<GetCategoriesDTO>> GetAllCategories(ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<BaseResponse> DeleteCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
+        Task<Category?> GetCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
     }
 }

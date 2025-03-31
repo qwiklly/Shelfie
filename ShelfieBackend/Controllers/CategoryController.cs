@@ -33,6 +33,17 @@ namespace ShelfieBackend.Controllers
             return Ok(result);
         }
 
+        [Authorize]
+        [HttpGet("getOneCategory/{categoryId}")]
+        [SwaggerOperation(Summary = "add new Category", Description = "adding new Category.")]
+        public async Task<ActionResult<GetCategoriesDTO>> GetOneCategoryAsync(int categoryId)
+        {
+            var currentUser = HttpContext.User;
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _categoryRepository.GetCategoryAsync(categoryId, currentUser, cancellationToken);
+            return Ok(result);
+        }
+
         [HttpDelete("{categoryId}")]
         public async Task<IActionResult> DeleteCategory(int categoryId)
         {
