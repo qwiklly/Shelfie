@@ -19,11 +19,9 @@ namespace ShelfieBackend.Data
 
             // -------------------------------
             // Связь ApplicationUser -> Category
-            // Если категория привязана к пользователю (UserId не null),
-            // то при удалении пользователя удаляются его категории.
             modelBuilder.Entity<Category>()
                 .HasOne(c => c.User)
-                .WithMany() // можно добавить коллекцию Categories в ApplicationUser для навигации
+                .WithMany() 
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -31,7 +29,7 @@ namespace ShelfieBackend.Data
             // Связь ApplicationUser -> Product
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.User)
-                .WithMany() // можно добавить коллекцию Products в ApplicationUser
+                .WithMany() 
                 .HasForeignKey(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -39,7 +37,7 @@ namespace ShelfieBackend.Data
             // Связь ApplicationUser -> HistoryRecord
             modelBuilder.Entity<HistoryRecord>()
                 .HasOne(hr => hr.User)
-                .WithMany() // можно добавить коллекцию HistoryRecords в ApplicationUser
+                .WithMany() 
                 .HasForeignKey(hr => hr.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -47,7 +45,7 @@ namespace ShelfieBackend.Data
             // Связь ApplicationUser -> CustomItem
             modelBuilder.Entity<CustomItem>()
                 .HasOne(ci => ci.User)
-                .WithMany() // можно добавить коллекцию CustomItems в ApplicationUser
+                .WithMany() 
                 .HasForeignKey(ci => ci.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -56,7 +54,7 @@ namespace ShelfieBackend.Data
             // При удалении категории удаляются все продукты, привязанные к ней.
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
-                .WithMany() // если в Category добавить коллекцию Products
+                .WithMany() 
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -65,7 +63,7 @@ namespace ShelfieBackend.Data
             // При удалении категории удаляются все её поля.
             modelBuilder.Entity<CategoryField>()
                 .HasOne<Category>()
-                .WithMany() // можно добавить коллекцию CategoryFields в Category
+                .WithMany() 
                 .HasForeignKey(cf => cf.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -74,12 +72,10 @@ namespace ShelfieBackend.Data
             // При удалении категории удаляются и связанные кастомные элементы.
             modelBuilder.Entity<CustomItem>()
                 .HasOne(ci => ci.Category)
-                .WithMany() // можно добавить коллекцию CustomItems в Category
+                .WithMany() 
                 .HasForeignKey(ci => ci.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Если потребуется настроить каскадное удаление для Medications или других сущностей,
-            // можно добавить аналогичные настройки.
         }
     }
 }

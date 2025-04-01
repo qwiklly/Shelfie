@@ -12,7 +12,7 @@ using ShelfieBackend.Data;
 namespace ShelfieBackend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250331101650_First")]
+    [Migration("20250401114220_First")]
     partial class First
     {
         /// <inheritdoc />

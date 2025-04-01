@@ -5,7 +5,6 @@ namespace ShelfieBackend.DTOs
 {
 	public class GetUsersDTO
 	{
-
 		[Required, DataType(DataType.EmailAddress), EmailAddress]
 		public string Email { get; set; } = string.Empty;
 

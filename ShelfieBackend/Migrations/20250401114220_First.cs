@@ -254,6 +254,36 @@ namespace ShelfieBackend.Migrations
                 name: "IX_Products_UserId",
                 table: "Products",
                 column: "UserId");
+
+
+            // Add admin user if not exists
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword("AdminPassword123!");
+
+            var adminUserInsertQuery = $@"
+            INSERT INTO ""Users"" (""Name"", ""Email"", ""Role"", ""Phone"", ""DateOfBirth"", ""PasswordHash"")
+            SELECT 'Admin', 'admin@example.com', 0, '1234567890', '2001-01-01', '{passwordHash}' 
+            WHERE NOT EXISTS (SELECT 1 FROM ""Users"" WHERE ""Role"" = 0)";
+            migrationBuilder.Sql(adminUserInsertQuery);
+
+            // add default categories
+            var categoryInsertQueryProduct = @"
+            INSERT INTO ""Categories"" (""Name"", ""Type"")
+            SELECT 'Продукты', 'Product' 
+            WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Name"" = 'Продукты')";
+            migrationBuilder.Sql(categoryInsertQueryProduct);
+
+            var categoryInsertQueryMedication = @"
+            INSERT INTO ""Categories"" (""Name"", ""Type"")
+            SELECT 'Медикаменты', 'Medication' 
+            WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Name"" = 'Медикаменты')";
+            migrationBuilder.Sql(categoryInsertQueryMedication);
+
+            var categoryInsertQueryBook = @"
+            INSERT INTO ""Categories"" (""Name"", ""Type"")
+            SELECT 'Книги', 'Book' 
+            WHERE NOT EXISTS (SELECT 1 FROM ""Categories"" WHERE ""Name"" = 'Книги')";
+            migrationBuilder.Sql(categoryInsertQueryBook);
+
         }
 
         /// <inheritdoc />
@@ -282,6 +312,18 @@ namespace ShelfieBackend.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            var deleteAdminUserQuery = "DELETE FROM \"Users\" WHERE \"Email\" = 'admin@example.com'";
+            migrationBuilder.Sql(deleteAdminUserQuery);
+
+            var deleteProductCategoryQuery = "DELETE FROM \"Categories\" WHERE \"Name\" = 'Продукты'";
+            migrationBuilder.Sql(deleteProductCategoryQuery);
+
+            var deleteMedicationCategoryQuery = "DELETE FROM \"Categories\" WHERE \"Name\" = 'Медикаменты'";
+            migrationBuilder.Sql(deleteMedicationCategoryQuery);
+
+            var deleteBookCategoryQuery = "DELETE FROM \"Categories\" WHERE \"Name\" = 'Книги'";
+            migrationBuilder.Sql(deleteBookCategoryQuery);
         }
     }
 }

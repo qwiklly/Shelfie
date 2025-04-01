@@ -1,5 +1,4 @@
-﻿using ShelfieBackend.Models;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace ShelfieBackend.DTOs
 {

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using System.Net;
 using System.Text.Json;
 
 namespace ShelfieBackend.Middleware
@@ -81,7 +80,6 @@ namespace ShelfieBackend.Middleware
                 }
             }
         }
-
 
         private static async Task ModifyHeader(HttpContext context, string title, string message, int statusCode)
         {

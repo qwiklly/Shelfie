@@ -8,7 +8,6 @@ using ShelfieBackend.Middleware;
 using ShelfieBackend.Repositories;
 using ShelfieBackend.Services;
 using ShelfieBackend.States;
-using ShelfieBackend.Models;
 using System.Text;
 using System.Reflection;
 using ShelfieBackend.Repositories.Interfaces;
@@ -126,66 +125,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
-
-// while dev
-if (app.Environment.IsDevelopment())
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        // Создаем администратора, если его нет
-        if (!dbContext.Users.Any(u => u.Role == UserRole.Admin))
-        {
-            var adminUser = new ApplicationUser
-            {
-                Name = "Admin",
-                Email = "admin@example.com",
-                Role = UserRole.Admin,
-                Phone = "1234567890",
-                DateOfBirth = new DateOnly(2001, 1, 1),
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("AdminPassword123!")
-            };
-
-            dbContext.Users.Add(adminUser);
-            dbContext.SaveChanges();
-        }
-
-        // Добавляем предопределенные категории, если их еще нет
-        if (!dbContext.Categories.Any(c => c.Name == "Продукты"))
-        {
-            dbContext.Categories.Add(new Category
-            {
-                Name = "Продукты",
-                Type = "Product",
-                UserId = null
-            });
-        }
-
-        if (!dbContext.Categories.Any(c => c.Name == "Медикаменты"))
-        {
-            dbContext.Categories.Add(new Category
-            {
-                Name = "Медикаменты",
-                Type = "Medication",
-                UserId = null
-            });
-        }
-
-        if (!dbContext.Categories.Any(c => c.Name == "Книги"))
-        {
-            dbContext.Categories.Add(new Category
-            {
-                Name = "Книги",
-                Type = "Book",
-                UserId = null
-            });
-        }
-
-        dbContext.SaveChanges();
-    }
-}
-
 
 app.Run();
 

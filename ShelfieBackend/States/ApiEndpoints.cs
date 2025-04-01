@@ -10,7 +10,6 @@
         public const string DeleteUser = $"{Base}/deleteUser/";
         public const string UpdateUser = $"{Base}/updateUser";
 
-
         // Эндпоинты для продуктов
         public const string ProductBase = "api/products";
         public const string GetProducts = $"{ProductBase}/getAll";

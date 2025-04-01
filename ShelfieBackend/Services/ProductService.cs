@@ -1,10 +1,8 @@
 ﻿using ShelfieBackend.DTOs;
 using ShelfieBackend.States;
 using static ShelfieBackend.Responses.CustomResponses;
-using System.Net.Http.Json;
 using System.Text.Json;
 using ShelfieBackend.Models;
-using System.Security.Claims;
 
 namespace ShelfieBackend.Services
 {

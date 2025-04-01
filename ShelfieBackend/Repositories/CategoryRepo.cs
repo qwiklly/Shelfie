@@ -32,7 +32,6 @@ namespace ShelfieBackend.Repositories
 
                 categoryName = categoryName.Trim();
 
-                // Ищем категорию по названию и UserId
                 var category = await _appDbContext.Categories
                     .FirstOrDefaultAsync(c => c.Name == categoryName && c.UserId == userId, cancellationToken);
                 if (category != null)

@@ -108,10 +108,8 @@ namespace ShelfieBackend.Repositories
 
                 using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
 
-                // Обновляем значения
                 foreach (var value in existingValues)
                 {
-                    // Используем CategoryFieldId для сопоставления
                     if (request.FieldValues.TryGetValue(value.FieldOrder, out var newValue))
                     {
                         value.Value = newValue;
@@ -128,7 +126,6 @@ namespace ShelfieBackend.Repositories
                     UserId = userId.Value
                 }, cancellationToken);
 
-                // Сохраняем изменения
                 await _appDbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
@@ -207,7 +204,6 @@ namespace ShelfieBackend.Repositories
                 _appDbContext.CategoryFieldValues.RemoveRange(valuesToDelete);
                 await _appDbContext.SaveChangesAsync(cancellationToken);
 
-
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
                     ItemType = "Custom",
@@ -217,7 +213,6 @@ namespace ShelfieBackend.Repositories
                     ChangeType = "Deleted",
                     UserId = userId.Value
                 }, cancellationToken);
-
 
                 await transaction.CommitAsync(cancellationToken);
                 return new BaseResponse(true, "Запись удалена");
