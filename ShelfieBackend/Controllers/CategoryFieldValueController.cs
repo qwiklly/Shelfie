@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.Models;
 using ShelfieBackend.Repositories.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers
 {
@@ -10,6 +11,10 @@ namespace ShelfieBackend.Controllers
     {
 
         [HttpPost("{categoryId}/save-values")]
+        [SwaggerOperation(
+            Summary = "Save field values",
+            Description = "Saves values for a category's fields."
+        )]
         public async Task<IActionResult> SaveFieldValues(int categoryId, [FromBody] FieldValuesRequest request)
         {
             var cancellationToken = HttpContext.RequestAborted;
@@ -18,6 +23,10 @@ namespace ShelfieBackend.Controllers
         }
 
         [HttpPut("{categoryId}/update-values")]
+        [SwaggerOperation(
+            Summary = "Update field values",
+            Description = "Updates existing field values for a category."
+        )]
         public async Task<IActionResult> UpdateFieldValues(int categoryId, [FromBody] FieldValuesRequest request)
         {
             var cancellationToken = HttpContext.RequestAborted;
@@ -26,6 +35,10 @@ namespace ShelfieBackend.Controllers
         }
 
         [HttpGet("{categoryId}/values")]
+        [SwaggerOperation(
+            Summary = "Get field values",
+            Description = "Retrieves all values associated with a category's fields."
+        )]
         public async Task<IActionResult> GetFieldValues(int categoryId)
         {
             var cancellationToken = HttpContext.RequestAborted;
@@ -34,6 +47,10 @@ namespace ShelfieBackend.Controllers
         }
 
         [HttpDelete("{categoryId}/{recordId}")]
+        [SwaggerOperation(
+            Summary = "Delete field values",
+            Description = "Deletes a specific field value record by ID."
+        )]
         public async Task<IActionResult> DeleteFieldValues(int categoryId, int recordId)
         {
             var cancellationToken = HttpContext.RequestAborted;

@@ -13,8 +13,8 @@ namespace ShelfieBackend.Controllers
 
         [Authorize]
         [HttpPost("createCategory")]
-        [SwaggerOperation(Summary = "add new Category", Description = "adding new Category.")]
-        public async Task<IActionResult> CreateCategoryAsync([FromBody] addCategoryDTO category)
+        [SwaggerOperation(Summary = "Add new Category", Description = "adding new Category.")]
+        public async Task<IActionResult> CreateCategoryAsync([FromBody] AddCategoryDTO category)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -24,8 +24,8 @@ namespace ShelfieBackend.Controllers
 
         [Authorize]
         [HttpGet("getAllCategories")]
-        [SwaggerOperation(Summary = "add new Category", Description = "adding new Category.")]
-        public async Task<ActionResult<GetCategoriesDTO>> GetAllCategoriesAsync()
+        [SwaggerOperation(Summary = "Get all Categories", Description = "getting all categories.")]
+        public async Task<IActionResult> GetAllCategoriesAsync()
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -35,8 +35,8 @@ namespace ShelfieBackend.Controllers
 
         [Authorize]
         [HttpGet("getOneCategory/{categoryId}")]
-        [SwaggerOperation(Summary = "add new Category", Description = "adding new Category.")]
-        public async Task<ActionResult<GetCategoriesDTO>> GetOneCategoryAsync(int categoryId)
+        [SwaggerOperation(Summary = "Get one category", Description = "getting one Category.")]
+        public async Task<IActionResult> GetOneCategoryAsync(int categoryId)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -44,7 +44,9 @@ namespace ShelfieBackend.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpDelete("{categoryId}")]
+        [SwaggerOperation(Summary = "Delete the category", Description = "deleting the Category.")]
         public async Task<IActionResult> DeleteCategory(int categoryId)
         {
             var cancellationToken = HttpContext.RequestAborted;

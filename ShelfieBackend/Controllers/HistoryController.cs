@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using ShelfieBackend.DTOs;
 using ShelfieBackend.Repositories.Interfaces;
-using ShelfieBackend.Repositories;
 
 namespace ShelfieBackend.Controllers
 {
@@ -14,15 +12,18 @@ namespace ShelfieBackend.Controllers
 
         [Authorize]
         [HttpGet("getAllHistory")]
-        [SwaggerOperation(Summary = "Get all history", Description = "Retrieves all product history.")]
-        public async Task<ActionResult<List<HistoryRecordDTO>>> GetAllHistoryAsync()
+        [SwaggerOperation(Summary = "Get all history", Description = "Retrieves all items history.")]
+        public async Task<IActionResult> GetAllHistoryAsync()
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
             var result = await _historyRepo.GetUserHistoryAsync(currentUser, cancellationToken);
             return Ok(result);
         }
+
+        [Authorize]
         [HttpDelete("clear")]
+        [SwaggerOperation(Summary = "Clear all history", Description = "Clear all items history.")]
         public async Task<IActionResult> ClearHistory()
         {
             var cancellationToken = HttpContext.RequestAborted;

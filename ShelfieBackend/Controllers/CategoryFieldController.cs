@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.Repositories.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers
 {
@@ -9,6 +10,10 @@ namespace ShelfieBackend.Controllers
     {
 
         [HttpGet("getCategoryFields")]
+        [SwaggerOperation(
+            Summary = "Get category fields",
+            Description = "Retrieves all fields associated with a specific category."
+        )]
         public async Task<IActionResult> GetCategoryFields(int categoryId)
         {
             var cancellationToken = HttpContext.RequestAborted;
@@ -17,6 +22,10 @@ namespace ShelfieBackend.Controllers
         }
 
         [HttpPost("addOrChangeFields")]
+        [SwaggerOperation(
+            Summary = "Add or update category fields",
+            Description = "Adds new fields or updates existing fields for a category."
+        )]
         public async Task<IActionResult> SaveCategoryFields(int categoryId, [FromBody] List<string> fieldNames)
         {
             var cancellationToken = HttpContext.RequestAborted;
