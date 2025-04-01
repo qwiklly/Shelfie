@@ -201,5 +201,35 @@ namespace ShelfieBackend.Repositories
                 return new BaseResponse(false, "Error while updating a product");
             }
         }
+
+        public async Task<List<GetProductDTO>> GetExpiredProductsAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
+        {
+            try
+            {
+                int? userId = _userService.GetUserId(currentUser);
+                if (userId == null)
+                    return new List<GetProductDTO>();
+
+                DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                return await _appDbContext.Products
+                    .Where(p => p.UserId == userId.Value && p.ExpirationDate != null && p.ExpirationDate < today)
+                    .Select(p => new GetProductDTO
+                    {
+                        Name = p.Name,
+                        Creator = p.Creator,
+                        CategoryId = p.CategoryId,
+                        ExpirationDate = p.ExpirationDate,
+                        Quantity = p.Quantity,
+                        CreatedAt = p.CreatedAt,
+                    })
+                    .ToListAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while getting expired products");
+                throw new Exception("Error while getting expired products");
+            }
+        }
     }
 }

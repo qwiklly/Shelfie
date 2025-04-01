@@ -12,5 +12,6 @@ namespace ShelfieBackend.Repositories.Interfaces
         Task<Product?> GetProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<BaseResponse> DeleteProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<BaseResponse> UpdateProductAsync(string currentName, UpdateProductDTO model, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
+        Task<List<GetProductDTO>> GetExpiredProductsAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken);
     }
 }

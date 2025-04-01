@@ -15,7 +15,7 @@ namespace ShelfieBackend.Controllers
         [Authorize]
         [HttpPost("add")]
         [SwaggerOperation(Summary = "Add a new product", Description = "Adds a new product to the inventory.")]
-        public async Task<ActionResult<BaseResponse>> AddProductAsync([FromBody] AddProductDTO model)
+        public async Task<IActionResult> AddProductAsync([FromBody] AddProductDTO model)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -25,7 +25,7 @@ namespace ShelfieBackend.Controllers
         [Authorize]
         [HttpGet("getAll")]
         [SwaggerOperation(Summary = "Get all products", Description = "Retrieves all products.")]
-        public async Task<ActionResult<BaseResponse>> GetProductsAsync()
+        public async Task<IActionResult> GetProductsAsync()
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -36,7 +36,7 @@ namespace ShelfieBackend.Controllers
         [Authorize]
         [HttpGet("get/{name}")]
         [SwaggerOperation(Summary = "Get product by name", Description = "Retrieves a product by its name.")]
-        public async Task<ActionResult<BaseResponse>> GetProductAsync(string name)
+        public async Task<IActionResult> GetProductAsync(string name)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -47,7 +47,7 @@ namespace ShelfieBackend.Controllers
         [Authorize]
         [HttpPut("update/{currentName}")]
         [SwaggerOperation(Summary = "Update a product", Description = "Updates a product's details.")]
-        public async Task<ActionResult<BaseResponse>> UpdateProductAsync(string currentName, [FromBody] UpdateProductDTO model)
+        public async Task<IActionResult> UpdateProductAsync(string currentName, [FromBody] UpdateProductDTO model)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
@@ -58,11 +58,22 @@ namespace ShelfieBackend.Controllers
         [Authorize]
         [HttpDelete("delete/{name}")]
         [SwaggerOperation(Summary = "Delete a product", Description = "Deletes a product by its name.")]
-        public async Task<ActionResult<BaseResponse>> DeleteProductAsync(string name)
+        public async Task<IActionResult> DeleteProductAsync(string name)
         {
             var currentUser = HttpContext.User;
             var cancellationToken = HttpContext.RequestAborted;
             var result = await _productRepo.DeleteProductAsync(name, currentUser, cancellationToken);
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("getExpiredProducts")]
+        [SwaggerOperation(Summary = "Get all expired products", Description = "Retrieves all expired products.")]
+        public async Task<IActionResult> GetExpiredProducts()
+        {
+            var currentUser = HttpContext.User;
+            var cancellationToken = HttpContext.RequestAborted;
+            var result = await _productRepo.GetExpiredProductsAsync(currentUser, cancellationToken);
             return Ok(result);
         }
     }
