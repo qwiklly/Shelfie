@@ -5,6 +5,8 @@ VisualStudioVersion = 17.13.35806.99
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShelfieBackend", "ShelfieBackend\ShelfieBackend.csproj", "{17D8804E-5371-4F9C-B318-4EEDC79795CA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiApp1", "MauiApp1\MauiApp1.csproj", "{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,12 @@ Global
 		{17D8804E-5371-4F9C-B318-4EEDC79795CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17D8804E-5371-4F9C-B318-4EEDC79795CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17D8804E-5371-4F9C-B318-4EEDC79795CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBB709D5-80F0-EE7D-A2D1-7D84BC5D452F}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
