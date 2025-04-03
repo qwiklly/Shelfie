@@ -9,7 +9,6 @@ namespace ShelfieBackend.Controllers
     [ApiController]
     public class HistoryController(IHistoryRepo _historyRepo) : ControllerBase
     {
-
         [Authorize]
         [HttpGet("getAllHistory")]
         [SwaggerOperation(Summary = "Get all history", Description = "Retrieves all items history.")]
