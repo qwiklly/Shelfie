@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.DTOs;
 using ShelfieBackend.Repositories.Interfaces;
-using static ShelfieBackend.Responses.CustomResponses;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.DTOs;
-using static ShelfieBackend.Responses.CustomResponses;
 using Swashbuckle.AspNetCore.Annotations;
 using ShelfieBackend.Repositories.Interfaces;
 
