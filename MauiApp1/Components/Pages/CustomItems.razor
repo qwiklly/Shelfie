@@ -1,0 +1,300 @@
+﻿@page "/category/{CategoryId:int}/fill"
+@layout MobileLayout
+
+<!-- Шапка страницы -->
+<div class="header">
+    <button class="back-button" @onclick="NavigateBack">←</button>
+    <h2 class="page-title">@categoryName</h2>
+</div>
+
+<!-- Поле поиска -->
+<div class="search-container">
+    <input type="text" @bind="searchTerm" placeholder=@Localizer["Search"] />
+    <button @onclick="SearchItems" class="search-btn">@Localizer["Find"]</button>
+</div>
+
+<div class="products-container">
+    @if (displayedFieldValues == null)
+    {
+        <p><em>@Localizer["Loading"]</em></p>
+    }
+    else if (!displayedFieldValues.Any())
+    {
+        <p>@Localizer["NoData"]</p>
+    }
+    else
+    {
+        @foreach (var record in displayedFieldValues)
+        {
+            var sortedFields = record.FieldValues.ToList();
+            int leftCount = (sortedFields.Count + 1) / 2; 
+            int rightCount = sortedFields.Count - leftCount;
+
+                    <div class="product-card" @onclick="() => ShowEditModal(record)">
+                        <div class="field-column">
+                    @foreach (var field in sortedFields.Take(leftCount))
+                    {
+                                    <div class="field-value">@field.Value</div>
+                    }
+                        </div>
+                        <div class="field-column">
+                    @foreach (var field in sortedFields.Skip(leftCount))
+                    {
+                                    <div class="field-value">@field.Value</div>
+                    }
+                        </div>
+                    </div>
+        }
+    }
+
+    <!-- Карточка для добавления новых данных -->
+    <div class="product-card add-card1" @onclick="ShowAddModal">
+        <div class="plus-icon">+</div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления товара -->
+@if (showAddModal)
+{
+        <div class="modal-overlay">
+            <div class="modal-content">
+            <h3>@Localizer["AddItem"]</h3>
+                <EditForm Model="newProduct" OnValidSubmit="AddRecord">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                @if (customFields != null && customFields.Any())
+                {
+                    @foreach (var field in customFields)
+                    {
+                        var key = field.FieldOrder;
+                                    <div class="mb-3">
+                                        <label>@field.Name</label>
+                                        <InputText Value="@newProduct.FieldValues[key]"
+                                        ValueChanged="@(value => newProduct.FieldValues[key] = value)"
+                                        ValueExpression="@(() => newProduct.FieldValues[key])"
+                                       placeholder=@Localizer["EnterValue"] />
+                                    </div>
+                    }
+                }
+                @if (commonError)
+                {
+                            <p class="error-message" style="text-align: center;">Ошибка добавления, проверьте данные</p>
+                }
+                    <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseAddModal">@Localizer["Cancel"]</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+}
+
+<!-- Модальное окно редактирования товара -->
+@if (showEditModal)
+{
+        <div class="modal-overlay">
+            <div class="modal-content">
+            <h3>@Localizer["EditItem"]</h3>
+                <EditForm Model="editProduct" OnValidSubmit="EditRecord">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                @if (customFields != null && customFields.Any())
+                {
+                    @foreach (var field in customFields)
+                    {
+                        var key = field.FieldOrder;
+                                    <div class="mb-3">
+                                        <label>@field.Name</label>
+                                        <InputText Value="@editProduct.FieldValues[key]"
+                                        ValueChanged="@(value => editProduct.FieldValues[key] = value)"
+                                        ValueExpression="@(() => editProduct.FieldValues[key])"
+                                       placeholder=@Localizer["EnterValue"] />
+                                    </div>
+                    }
+                }
+                @if (commonError)
+                {
+                            <p class="error-message" style="text-align: center;">Ошибка редактирования, проверьте данные</p>
+                }
+                    <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseEditModal">@Localizer["Cancel"]</button>
+                    <button type="button" class="btn-delete" @onclick="() => DeleteProduct()">@Localizer["DeleteButton"]</button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+}
+
+<div class="history-btn-container">
+    <button class="btn-history" @onclick="NavigateToHistory">@Localizer["History"]</button>
+</div>
+<div class="history-btn-container">
+    <button class="btn-history" @onclick="NavigateToCategoryField">@Localizer["ChangeFields"]</button>
+</div>
+
+@code {
+    private bool isSaving = false;
+
+    [Parameter] public int CategoryId { get; set; }
+
+    private List<FieldDefinition> customFields = new();
+    private List<FieldValuesRequest> fieldValues = new();
+    private List<FieldValuesRequest> displayedFieldValues = new();
+
+    private FieldValuesRequest newProduct = new();
+    private CategoryModel _categoryModel = new();
+    private FieldValuesRequest editProduct = new();
+
+    private string searchTerm = string.Empty;
+    private bool commonError = false;
+    private bool showAddModal = false;
+    private bool showEditModal = false;
+    private string categoryName = "Новая категория";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFieldValues();
+        categoryName = await CategoryService.GetCurrentNameOfCategory(CategoryId);
+    }
+
+    private async Task LoadFieldValues()
+    {
+        fieldValues = await FieldValueService.GetFieldValuesForCategoryAsync(CategoryId);
+
+        foreach (var record in fieldValues)
+        {
+            record.FieldValues = record.FieldValues
+                .OrderBy(f => f.Key)
+                .ToDictionary(f => f.Key, f => f.Value);
+        }
+
+        var fieldNames = await FieldService.GetFieldsForCategoryAsync(CategoryId);
+        customFields = fieldNames.Select((name, index) => new FieldDefinition { FieldOrder = index + 1, Name = name }).ToList();
+        displayedFieldValues = fieldValues;
+    }  
+
+    // Метод для открытия модального окна добавления товара
+    private void ShowAddModal()
+    {
+        int newRecordId = fieldValues.Count + 1;
+        newProduct = new FieldValuesRequest
+            {
+                RecordId = newRecordId,
+                FieldValues = new Dictionary<int, string>()
+            };
+
+        // Инициализируем все поля пустыми значениями
+        foreach (var field in customFields)
+        {
+            if (!newProduct.FieldValues.ContainsKey(field.FieldOrder))
+            {
+                newProduct.FieldValues.Add(field.FieldOrder, string.Empty);
+            }
+        }
+        commonError = false;
+        showAddModal = true;
+    }
+
+    private async Task AddRecord()
+    {
+        if (isSaving) return;
+        isSaving = true;
+
+        try
+        {
+            await FieldValueService.SaveFieldValuesForCategoryAsync(CategoryId, newProduct);
+            CloseAddModal();
+            await LoadFieldValues();
+        }
+        catch
+        {
+            commonError = true;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+    }
+
+    private void ShowEditModal(FieldValuesRequest request)
+    {
+        editProduct = new FieldValuesRequest
+            {
+                RecordId = request.RecordId,
+                FieldValues = request.FieldValues.ToDictionary(entry => entry.Key, entry => entry.Value)
+            };
+        commonError = false;
+        showEditModal = true;
+    }
+
+    private async Task EditRecord()
+    {
+        await JS.InvokeVoidAsync("alert", $"Редактирование записи с RecordId: {editProduct.RecordId}");
+        try
+        {
+            await FieldValueService.UpdateFieldValuesForCategoryAsync(CategoryId, editProduct);
+            CloseEditModal();
+            await LoadFieldValues();
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("alert", $"Ошибка при редактировании: ");
+            commonError = true;
+        }
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+    }
+
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/categories");
+    }
+
+    private void NavigateToHistory()
+    {
+        NavManager.NavigateTo("/product-history");
+    }
+    private void NavigateToCategoryField()
+    {
+        NavManager.NavigateTo($"/category/{CategoryId}");
+    }
+
+    private void SearchItems()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            displayedFieldValues = fieldValues;
+        }
+
+        displayedFieldValues = fieldValues
+        .Where(record => record.FieldValues.Values.Any(v => v.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+        .ToList();
+    }
+
+    private async Task DeleteProduct()
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Удалить товар?");
+        if (confirmed)
+        {
+            bool success = await FieldValueService.DeleteFieldValuesAsync(CategoryId, editProduct.RecordId);
+            if (success)
+            {
+                CloseEditModal();
+                await LoadFieldValues();
+            }
+            else
+            {
+                commonError = true;
+            }
+        }
+    }
+}

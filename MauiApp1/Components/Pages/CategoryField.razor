@@ -1,0 +1,53 @@
+﻿@page "/category/{categoryId:int}"
+@layout MobileLayout
+
+
+    <div class="page-background">
+    <button style="padding-top:30px;" class="back-button" @onclick="NavigateBack">
+        ←
+    </button>
+    <h1 class="title">@Localizer["SettingCategoryFields"]</h1>
+
+        <div class="white-panel">
+
+            @for (int i = 0; i < editableFields.Count; i++)
+            {
+                int index = i;
+                <div>
+                <label>@Localizer["Field"] @(index + 1):</label>
+                    <input @bind="editableFields[index]" />
+                </div>
+            }
+
+        <button class="center-button" style="padding-botom:50px;" @onclick="SaveFields">@Localizer["Save"]</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int CategoryId { get; set; }
+
+    private List<string> editableFields = new(Enumerable.Repeat(string.Empty, 8));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var fieldNames = await FieldService.GetFieldsForCategoryAsync(CategoryId) ?? new List<string>();
+
+        for (int i = 0; i < fieldNames.Count && i < editableFields.Count; i++)
+        {
+            editableFields[i] = fieldNames[i];
+        }
+    }
+
+    private async Task SaveFields()
+    {
+        var activeFields = editableFields.Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
+        await FieldService.SaveCategoryFieldsAsync(CategoryId, activeFields);
+
+        NavManager.NavigateTo($"/category/{CategoryId}/fill");
+    }
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/categories");
+    }
+}
+

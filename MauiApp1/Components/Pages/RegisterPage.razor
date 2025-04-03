@@ -1,0 +1,104 @@
+﻿@page "/register"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm EditContext="editContext" OnValidSubmit="Register">
+    <DataAnnotationsValidator />
+
+    <div class="page-background">
+        <h1 class="title">@Localizer["Create"]</h1>
+
+        <div class="white-panel">
+            <br/>
+            <label>@Localizer["Name"]</label>
+            <InputText @bind-Value="registerModel.RegisterName" class="@(string.IsNullOrEmpty(registerModel.RegisterName) ? "invalid" : "")" placeholder=@Localizer["Alex"] />
+            <ValidationMessage For="() => registerModel.RegisterName" class="error-message" />
+
+            <label>@Localizer["Email"]</label>
+            <InputText @bind-Value="registerModel.RegisterEmail" class="@(string.IsNullOrEmpty(registerModel.RegisterEmail) ? "invalid" : "")" placeholder="example@mail.ru" />
+            <ValidationMessage For="() => registerModel.RegisterEmail" class="error-message" />
+
+            <label>@Localizer["Phone"]</label>
+            <InputText @bind-Value="registerModel.RegisterPhone" class="@(string.IsNullOrEmpty(registerModel.RegisterPhone) ? "" : "valid")" placeholder="+123 456 789" />
+            <ValidationMessage For="() => registerModel.RegisterPhone" class="error-message" />
+
+            <label>@Localizer["Birthday"]</label>
+            <InputDate @bind-Value="registerModel.RegisterBirthDate" class="@(registerModel.RegisterBirthDate == default ? "invalid" : "")" />
+            <ValidationMessage For="() => registerModel.RegisterBirthDate" class="error-message" />
+
+            <label>@Localizer["AddPass"]</label>
+            <div class="password-container">
+                <InputText @bind-Value="registerModel.RegisterPassword" type="@passwordInputType" class="@(string.IsNullOrEmpty(registerModel.RegisterPassword) ? "invalid" : "")" placeholder=@Localizer["Password"] />
+                <i class="@eyeIconClass" @onclick="ToggleShowPassword"></i>
+            </div>
+            <ValidationMessage For="() => registerModel.RegisterPassword" class="error-message" />
+
+            <label>@Localizer["ConfirmPass"]</label>
+            <div class="password-container">
+                <InputText @bind-Value="registerModel.ConfirmRegisterPassword" type="@confirmPasswordInputType" class="@(string.IsNullOrEmpty(registerModel.ConfirmRegisterPassword) ? "invalid" : "")" placeholder=@Localizer["Password"] />
+                <i class="@confirmEyeIconClass" @onclick="ToggleShowConfirmPassword"></i>
+            </div>
+            <ValidationMessage For="() => registerModel.ConfirmRegisterPassword" class="error-message" />
+
+            <p class="privacy-text">
+                @Localizer["FirstPart"] <span class="link">@Localizer["SecondPart"]</span> @Localizer["ThirdPart"] <span class="link">@Localizer["FourthPart"]</span>.
+            </p>
+
+            <button class="center-button" type="submit">@Localizer["Join"]</button>
+            <p class="toggle-text">
+                @Localizer["HaveAcc"] <span class="link" @onclick="NavigateToLogin">@Localizer["Login!"]</span>
+            </p>
+            <p class="error-message" style="text-align: center; display: @(registerError ? "block" : "none");">Ошибка регистрации, проверьте правильность данных</p>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private EditContext? editContext; 
+    private bool showPassword = false;
+    private bool showConfirmPassword = false;
+    private bool registerError = false;
+
+    private string passwordInputType => showPassword ? "text" : "password";
+    private string confirmPasswordInputType => showConfirmPassword ? "text" : "password";
+
+    private string eyeIconClass => showPassword ? "fa fa-eye-slash" : "fa fa-eye";
+    private string confirmEyeIconClass => showConfirmPassword ? "fa fa-eye-slash" : "fa fa-eye";
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(registerModel);
+    }
+
+    private void ToggleShowPassword() => showPassword = !showPassword;
+    private void ToggleShowConfirmPassword() => showConfirmPassword = !showConfirmPassword;
+
+    private async Task Register()
+    {
+        bool success = await AuthService.RegisterAsync(
+            registerModel.RegisterEmail,
+            registerModel.RegisterPassword,
+            registerModel.ConfirmRegisterPassword,
+            registerModel.RegisterName,
+            0,
+            registerModel.RegisterPhone,
+            DateOnly.FromDateTime(registerModel.RegisterBirthDate)
+        );
+
+        if (success)
+        {
+            NavManager.NavigateTo("/authPage", forceLoad: true);
+        }
+        else
+        {
+            registerError = true;
+        }
+    }
+
+    private void NavigateToLogin()
+    {
+        NavManager.NavigateTo("/login", forceLoad: true);
+    }
+}
+

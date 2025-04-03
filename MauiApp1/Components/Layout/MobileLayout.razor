@@ -1,0 +1,45 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <!-- Основной контент (страница) -->
+    <div class="content">
+        @Body
+    </div>
+
+    <!-- Нижняя панель навигации -->
+    <div class="bottom-nav">
+        <a href="/home" class="nav-icon"><i class="fas fa-home"></i></a>
+        <a href="/product-history" class="nav-icon"><i class="fas fa-chart-bar"></i></a>
+        <a href="/camera" class="nav-icon"><i class="fas fa-camera"></i></a>
+        <a href="/categories" class="nav-icon"><i class="fas fa-book"></i></a>
+        <!-- Иконка профиля -->
+        <a @onclick="ToggleSideMenu" class="nav-icon"><i class="fas fa-user"></i></a>
+    </div>
+
+    <!-- Боковое меню справа -->
+    <div class="right-side-menu @(showSideMenu ? "open" : "")" @onclick="CloseMenuIfClickedOutside">
+        <div class="menu-content" @onclick:stopPropagation="true">
+            <button class="close-btn" @onclick="ToggleSideMenu">X</button>
+            <ul>
+                <li><NavLink href="/profilePage">@Localizer["Profile"]</NavLink></li>
+                <li><NavLink href="/settings">@Localizer["Settings"]</NavLink></li>
+                <li><NavLink href="/logout">@Localizer["Logout"]</NavLink></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool showSideMenu;
+
+    private void ToggleSideMenu()
+    {
+        showSideMenu = !showSideMenu;
+    }
+
+    private void CloseMenuIfClickedOutside()
+    {
+        if (showSideMenu)
+            showSideMenu = false;
+    }
+}

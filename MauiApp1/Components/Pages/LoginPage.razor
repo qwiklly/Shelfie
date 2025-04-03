@@ -1,0 +1,66 @@
+﻿@page "/login"
+
+<div class="page-background">
+    <h1 class="title">@Localizer["Hello"]</h1>
+
+    <div class="white-panel">
+        <div class="otstup">
+            <label>@Localizer["Email"]</label>
+            <InputText @bind-Value="loginEmail" class="@(string.IsNullOrEmpty(loginEmail) ? "invalid" : "")"  placeholder="shelfie@email.ru" />
+
+            <label>@Localizer["Password"]</label>
+            <div class="password-container">
+                <InputText @bind-Value="loginPassword" type="@passwordInputType" class="@(string.IsNullOrEmpty(loginPassword) ? "invalid" : "")" placeholder=@Localizer["Password"] />
+                <i class="@eyeIconClass" @onclick="ToggleShowPassword"></i>
+            </div>
+
+            <p class="forget-pass" @onclick="ResetPassword"><b>@Localizer["ForgetPass"]</b></p>
+
+            <button class="center-button" @onclick="Login">@Localizer["Login"]</button>
+            <button class="center-button light-button" @onclick="NavigateToRegister">@Localizer["Register"]</button>
+
+            <p class="toggle-text">@Localizer["NoAccount"] <span class="link" @onclick="NavigateToRegister">@Localizer["Registrate!"] </span></p>
+
+            <p class="error-message" style="text-align: center; display: @(loginError ? "block" : "none");">Ошибка авторизации, проверьте логин или пароль</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool showRegisterForm = false;
+
+    private string loginEmail = "";
+    private string loginPassword = "";
+    private bool showPassword = false;
+    private bool loginError = false;
+
+    private string passwordInputType => showPassword ? "text" : "password";
+    private string eyeIconClass => showPassword ? "fa fa-eye-slash" : "fa fa-eye";
+
+    private void ToggleShowPassword() => showPassword = !showPassword;
+
+    private async Task Login()
+    {
+        bool success = await AuthService.LoginAsync(loginEmail, loginPassword);
+        if (success)
+        {
+            NavManager.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            loginError = true;
+        }
+    }
+    private void NavigateToRegister()
+    {
+        NavManager.NavigateTo("/register", forceLoad: true);
+    }
+    private void ResetPassword()
+    {
+        NavManager.NavigateTo("/", forceLoad: true);
+    }
+    private void ToggleForm()
+    {
+        showRegisterForm = !showRegisterForm;
+    }
+}

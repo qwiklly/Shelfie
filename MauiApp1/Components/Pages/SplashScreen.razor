@@ -1,0 +1,37 @@
+﻿@page "/"
+
+<div class="splash-screen first-screen">
+    <div class="splash-content">
+        <div class="logo splash"></div> 
+        <h1 class="app-title">Shelfie</h1>
+        <p class="quote">@Quote</p>
+        <div class="loading-spinner"></div>
+    </div>
+</div>
+
+@code {
+    private string? Quote { get; set; }
+    public List<string> Quotes { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Quotes = QuoteService.GetQuotes(Localizer);
+
+        if (Quotes.Count > 0)
+        {
+            var random = new Random();
+            Quote = Quotes[random.Next(Quotes.Count)];
+        }
+        else
+        {
+            Quote = Localizer["NoQuotesAvailable"]; 
+        }
+
+        await Task.Delay(1000);
+
+        var token = await AuthService.GetTokenAsync();
+        var isAuthenticated = !string.IsNullOrEmpty(token);
+
+        NavManager.NavigateTo(isAuthenticated ? "/home" : "/authPage");
+    }
+}

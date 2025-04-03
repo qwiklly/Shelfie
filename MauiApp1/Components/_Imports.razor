@@ -1,0 +1,29 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using MauiApp1
+@using MauiApp1.Components
+@using MauiApp1.Services
+@using MauiApp1.Components.Layout
+@using MauiApp1.Models
+
+@inject NavigationManager NavManager
+@inject IJSRuntime JS
+@inject AuthService AuthService
+@inject ProductService ProductService
+@inject MedicationService MedicationService
+@inject CategoryService CategoryService
+@inject FieldService FieldService
+@inject FieldValueService FieldValueService
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+
+@using Microsoft.Extensions.Localization
+@using MauiApp1.Resources.Languages
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+@inject IStringLocalizer<MyStrings> Localizer

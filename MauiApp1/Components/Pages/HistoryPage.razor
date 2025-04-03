@@ -1,0 +1,66 @@
+﻿@page "/product-history"
+@layout MobileLayout
+
+<div class="header">
+    <button class="back-button" @onclick="NavigateBack">
+        ←
+    </button>
+    <h2 class="page-title">@Localizer["HistoryOperation"]</h2>
+</div>
+
+
+@if (historyItems == null)
+{
+    <p><em>@Localizer["Loading"]</em></p>
+}
+
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Localizer["Type"]</th>
+                <th>@Localizer["Category"]</th>
+                <th>@Localizer["Value"]</th>
+                <th>@Localizer["Date"]</th>
+                <th>@Localizer["QuantityHistory"]</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in historyItems)
+            {
+                <tr>
+                    <td>@item.ChangeType</td>
+                    <td>@item.ItemType</td>
+                    <td>@item.ItemName</td>
+                    <td>@item.ChangeDate.ToString("g")</td>
+                    <td>@item.QuantityChange</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="center-button1" @onclick="DeleteHistory">@Localizer["ClearHistory"]</button>
+}
+
+@code {
+    private List<HistoryRecordModel> historyItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+    }
+
+    private async Task LoadHistory()
+    {
+        historyItems = await ProductService.GetProductHistoryAsync();
+    }
+    private async Task DeleteHistory()
+    {
+        await ProductService.DeleteHistoryAsync();
+        await LoadHistory();
+    }
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/home");
+    }
+}

@@ -1,0 +1,198 @@
+﻿@page "/home"
+@layout MobileLayout
+
+<!-- Поле поиска -->
+<div class="search-container">
+    <input type="text" placeholder=@Localizer["Search"] />
+    <button class="search-btn">@Localizer["Find"]</button>
+</div>
+
+<div class="categories-container">
+    <div class="categories-title-wrapper">
+        <span class="categories-title">@Localizer["ItemCategories"]</span>
+    </div>
+
+    <div class="category-list">
+
+        <div class="plus-button" @onclick="NavigateToCategories">
+            <span class="plus-icon">+</span>
+        </div>
+
+        <div class="category-item" @onclick="NavigateToGroceries">
+            <span class="category-name">@Localizer["Groceries"]</span>
+            <div class="icon icon-food-svg"></div>
+
+        </div>
+
+        <div class="category-item" @onclick="NavigateToMedicaments">
+            <span class="category-name">@Localizer["Medications"]</span>
+            <div class="icon icon-medicine-svg"></div>
+        </div>
+
+    </div>
+</div>
+
+<div class="white-panel">
+
+
+    <!-- Блок статистики -->
+    <div class="statistics-container">
+        <h3 class="center-text">@Localizer["Statistic"]</h3>
+
+        <ul>
+            <li class="progress-item">
+                <span>@Localizer["Groceries"] @ProductsCount @Localizer["Item"]</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: @(GetProgressWidth(ProductsCount))"></div>
+                </div>
+            </li>
+        </ul>
+
+        <ul>
+            <li class="progress-item">
+                <span>@Localizer["Medications"] @MedicamentsCount @Localizer["Item"]</span>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: @(GetProgressWidth(MedicamentsCount))"></div>
+                </div>
+            </li>
+        </ul>
+
+        @if (Categories != null && Categories.Count > 0)
+        {
+            <ul class="progress-list">
+                @foreach (var cat in Categories)
+                {
+                    <li class="progress-item">
+                        <span>@cat.Name: @CategoryCounts.GetValueOrDefault(cat.Id, 0) @Localizer["Item"]</span>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar"
+                            style="width: @(GetProgressWidth(CategoryCounts.GetValueOrDefault(cat.Id, 0)));
+                                        background-color: @(GetColorForCategory(cat.Id))">
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        <button @onclick="UpdateStatistics" class="center-button">@Localizer["Refresh"]</button>
+    </div>
+
+    <!-- Недавние операции -->
+    <div class="recent-operations">
+        <h3 class="center-text">@Localizer["RecentOperations"]</h3>
+        @if (LastOperations == null || LastOperations.Count == 0)
+        {
+            <p>@Localizer["NoOperations"]</p>
+        }
+        else
+        {
+            <div class="operations-list">
+                @foreach (var item in LastOperations)
+                {
+                    <div class="operation-item">
+                        <div class="operation-category">@item.ItemType</div>
+                        <div class="operation-name">@item.ItemName</div>
+                        <div class="operation-date">@item.ChangeDate.ToString("g")</div>
+                        <div class="operation-quantity">@Localizer["Changes"] @item.QuantityChange</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private int ProductsCount = 0; 
+    private int MedicamentsCount = 0; 
+    public List<CategoryModel> Categories { get; set; } = new();
+    public Dictionary<int, int> CategoryCounts { get; set; } = new();
+    public List<HistoryRecordModel> LastOperations { get; set; } = new();
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStatisticsFromStorage();
+
+        await LoadHistoryFromServer();
+    }
+
+    private async Task UpdateStatistics()
+    {
+        await LoadStatisticsFromServer();
+        await SaveStatisticsToStorage();
+        StateHasChanged();
+    }
+
+    private async Task LoadStatisticsFromServer()
+    {
+        var products = await ProductService.GetProductsAsync();
+        ProductsCount = products.Count;
+
+        var medicaments = await MedicationService.GetMedicineAsync();
+        MedicamentsCount = medicaments.Count;
+
+        var allCats = await CategoryService.GetCategoriesAsync();
+        Categories = allCats.Take(6).ToList();
+
+        CategoryCounts.Clear();
+        foreach (var cat in Categories)
+        {
+            var fieldValues = await FieldValueService.GetFieldValuesForCategoryAsync(cat.Id);
+            CategoryCounts[cat.Id] = fieldValues.Sum(v => v.RecordId);
+        }
+        await SaveStatisticsToStorage();
+
+        StateHasChanged();
+    }
+
+    private async Task LoadHistoryFromServer()
+    {
+        var history = await ProductService.GetProductHistoryAsync();
+        LastOperations = history.OrderByDescending(h => h.ChangeDate).Take(3).ToList();
+    }
+
+    private async Task LoadStatisticsFromStorage()
+    {
+        ProductsCount = await LocalStorage.GetItemAsync<int>("ProductsCount");
+        MedicamentsCount = await LocalStorage.GetItemAsync<int>("MedicamentsCount");
+        Categories = await LocalStorage.GetItemAsync<List<CategoryModel>>("Categories") ?? new();
+        CategoryCounts = await LocalStorage.GetItemAsync<Dictionary<int, int>>("CategoryCounts") ?? new();
+        StateHasChanged();
+    }
+
+    private async Task SaveStatisticsToStorage()
+    {
+        await LocalStorage.SetItemAsync("ProductsCount", ProductsCount);
+        await LocalStorage.SetItemAsync("MedicamentsCount", MedicamentsCount);
+        await LocalStorage.SetItemAsync("Categories", Categories);
+        await LocalStorage.SetItemAsync("CategoryCounts", CategoryCounts);
+    }
+
+    private string GetProgressWidth(int count)
+    {
+        if (count == 0) return "5px";
+        int maxCount = CategoryCounts.Values.DefaultIfEmpty(1).Max();
+        var percent = (int)((count / (double)maxCount) * 100);
+        return percent + "%";
+    }
+
+    private string GetColorForCategory(int categoryId)
+    {
+        var colors = new List<string> { "#4CAF50", "#2196F3", "#FFC107", "#FF5722", "#9C27B0", "#E91E63" };
+        return colors[categoryId % colors.Count];
+    }
+
+    private void NavigateToGroceries()
+    {
+        NavManager.NavigateTo("/category/1");
+    }
+    private void NavigateToMedicaments()
+    {
+        NavManager.NavigateTo("/category/2");
+    }
+    private void NavigateToCategories()
+    {
+        NavManager.NavigateTo("/categories");
+    }
+}

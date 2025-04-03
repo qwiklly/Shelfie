@@ -1,0 +1,95 @@
+﻿@page "/settings"
+@layout MobileLayout
+
+<h1 class="page-title-settings">@Localizer["HelloWorld"]</h1>
+
+
+
+<div class="language-selector">
+    <select class="styled-select" @bind="SelectedLanguage">
+        @foreach (var culture in cultures)
+        {
+            <option value="@culture.Name">@culture.DisplayName</option>
+        }
+    </select>
+</div>
+@code {
+    CultureInfo[] cultures = new[]
+    {
+        new CultureInfo("en-US"),
+        new CultureInfo("ru-RU")
+    };
+
+    private string _selectedLanguage;
+
+    string SelectedLanguage
+    {
+        get => _selectedLanguage;
+        set
+        {
+            if (_selectedLanguage != value)
+            {
+                _selectedLanguage = value;
+                ChangeLanguage();
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // Загружаем сохранённый язык перед рендерингом
+        _selectedLanguage = Preferences.Get("language", "ru-RU");
+    }
+
+    private void ChangeLanguage()
+    {
+        Preferences.Set("language", _selectedLanguage);
+
+        // Устанавливаем новую культуру
+        var culture = new CultureInfo(_selectedLanguage);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+
+        // Перезагружаем страницу, чтобы применить изменения
+        NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+    }
+}
+
+
+<style>
+
+    .page-title-settings {
+        text-align: center; /* Выравнивание по центру */
+        padding-top: 16%; /* Отступ от верха примерно 16% экрана */
+        font-size: 24px; /* Можно подстроить */
+        font-weight: bold;
+    }
+
+    .language-selector {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
+        padding: 0 15px; /* Отступы слева и справа */
+    }
+
+    .styled-select {
+        width: 100%;
+        max-width: 320px; /* Сделал больше, чтобы текст помещался */
+        padding: 12px 16px; /* Отступы внутри */
+        font-size: 18px; /* Чуть больше шрифт */
+        border: 2px solid #007bff;
+        border-radius: 10px;
+        background-color: #fff;
+        color: #333;
+        appearance: none;
+        cursor: pointer;
+        transition: 0.3s;
+        text-align: center; /* Текст по центру */
+    }
+
+        .styled-select:focus {
+            outline: none;
+            border-color: #0056b3;
+            box-shadow: 0 0 6px rgba(0, 91, 187, 0.5);
+        }
+</style>

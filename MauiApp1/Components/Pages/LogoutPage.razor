@@ -1,0 +1,48 @@
+﻿@page "/logout"
+@layout MobileLayout
+
+<div class="page-background">
+    <h1 class="title">@Localizer["LogoutPageTitle"]</h1>
+
+    <div class="white-panel">
+        <div style="padding-top:20%;">
+            <label style="text-align: center; font-size:20px; font-weight:bold;">@Localizer["LogoutLabel"]</label>
+            <button class="center-button" style="margin-top: 30px;" @onclick="ConfirmLogout">@Localizer["LogoutButton"]</button>
+
+            <label style="text-align: center; font-size:20px; font-weight:bold; padding-top:20px;">@Localizer["DeleteLabel"]</label>
+            <button class="center-button1" style="margin-top: 30px;" @onclick="ConfirmDelete">@Localizer["DeleteButton"]</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task ConfirmLogout()
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Вы уверены, что хотите выйти?");
+        if (confirm)
+        {
+            await Logout();
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        bool confirm = await JS.InvokeAsync<bool>("confirm", "Вы уверены, что хотите удалить аккаунт? Это действие необратимо!");
+        if (confirm)
+        {
+            await Delete();
+        }
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        NavManager.NavigateTo("/login", forceLoad: true);
+    }
+
+    private async Task Delete()
+    {
+        await AuthService.DeleteAccountAsync();
+        NavManager.NavigateTo("/login", forceLoad: true);
+    }
+}

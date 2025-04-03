@@ -1,0 +1,346 @@
+﻿@page "/category/2"
+@layout MobileLayout
+
+
+<!-- Шапка страницы -->
+<div class="header">
+    <button class="back-button" @onclick="NavigateBack">
+        ←
+    </button>
+    <h2 class="page-title">@Localizer["Medication"]</h2>
+    <div class="notification-icon" @onclick="NavigateToExpiredMedicaments"></div>
+</div>
+
+<!-- Поле поиска -->
+<div class="search-container">
+    <input type="text" @bind="searchTerm" placeholder=@Localizer["Search"] />
+    <button @onclick="SearchMedicaments" class="search-btn">@Localizer["Find"]</button>
+</div>
+
+<!-- Список продуктов в виде карточек -->
+<div class="products-container">
+    @if (displayedMedicaments == null)
+    {
+        <p><em>@Localizer["Loading"]</em></p>
+    }
+    else if (!displayedMedicaments.Any())
+    {
+        <p>@Localizer["NoMedications"]</p>
+    }
+    else
+    {
+        @foreach (var medicament in displayedMedicaments)
+        {
+            <div class="product-card" @onclick="() => OpenEditModal(medicament)">
+                <div class="product-info">
+                    <div class="product-name">@medicament.Name</div>
+                    <div class="product-creator">@medicament.Creator</div>
+                    <div class="product-dates">
+                        <span>@Localizer["Created"] @medicament.CreatedAt.ToString("yyyy-MM-dd")</span><br />
+                        <span>@Localizer["ExpiresOn"] @medicament.ExpirationDate.ToString("yyyy-MM-dd")</span>
+                    </div>
+                </div>
+                <div class="weight-quantity">
+                    <div class="product-quantity">@Localizer["Dosage"] @medicament.Quantity</div>
+                    <div class="product-weight">@Localizer["VolumeAndQuantity"] @medicament.Weight @medicament.WeightUnit</div>
+                </div>
+            </div>
+        }
+    }
+
+    <!-- Карточка добавления нового продукта -->
+    <div class="product-card add-card1" @onclick="OpenAddModal">
+        <div class="plus-icon">+</div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления продукта -->
+@if (showAddModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["AddMedicine"]</h3>
+            <EditForm Model="newMedicament" OnValidSubmit="AddMedicament">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>@Localizer["Title"]</label>
+                    <InputText @bind-Value="newMedicament.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ManufacturerAndDescription"]</label>
+                    <InputText @bind-Value="newMedicament.Creator" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ExpirationDate"]</label>
+                    <InputDate @bind-Value="newMedicament.ExpirationDate" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["Dosage"]</label>
+                    <InputNumber @bind-Value="newMedicament.Quantity" />
+                </div>
+
+                <div class="mb-3">
+                    <label>@Localizer["VolumeAndQuantity"]</label>
+                    <div>
+                        <div class="weight-input-wrapper">
+                            <InputNumber @bind-Value="newMedicament.Weight" class="weight-input" />
+                            <select @bind="newMedicament.WeightUnit" class="weight-unit">
+                                <option value="г">@Localizer["g"]</option>
+                                <option value="мл">@Localizer["ml"]</option>
+                                <option value="шт">@Localizer["pcs"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="error-message" style="text-align: center; display: @(commonError ? "block" : "none");">Ошибка добавления, проверьте данные</p>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseAddModal">@Localizer["Cancel"]</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно редактирования продукта -->
+@if (editingMedicament != null && showEditModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["EditMedicine"]</h3>
+            <EditForm Model="editingMedicament" OnValidSubmit="UpdateMedicament">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>@Localizer["Title"]</label>
+                    <InputText @bind-Value="editingMedicament.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ManufacturerAndDescription"]</label>
+                    <InputText @bind-Value="editingMedicament.Creator" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ExpirationDate"]</label>
+                    <InputDate @bind-Value="editingMedicament.ExpirationDate" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["Dosage"]</label>
+                    <InputNumber @bind-Value="editingMedicament.Quantity" />
+                </div>
+
+                <div class="mb-3">
+                    <label>@Localizer["VolumeAndQuantity"]</label>
+                    <div>
+                        <div class="weight-input-wrapper">
+                            <InputNumber @bind-Value="editingMedicament.Weight" class="weight-input" />
+                            <select @bind="editingMedicament.WeightUnit" class="weight-unit">
+                                <option value="г">@Localizer["g"]</option>
+                                <option value="мл">@Localizer["ml"]</option>
+                                <option value="шт">@Localizer["pcs"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="error-message" style="text-align: center; display: @(commonError ? "block" : "none");">Ошибка редактирования, проверьте данные</p>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseEditModal">@Localizer["Cancel"]</button>
+                    <button type="button" class="btn-delete" @onclick="() => DeleteMedicament(editingMedicament)">@Localizer["DeleteButton"]</button>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Кнопка перехода к истории (при необходимости) -->
+<div class="history-btn-container">
+    <button class="btn-history" @onclick="NavigateToHistory">@Localizer["History"]</button>
+</div>
+
+@code {
+    private List<MedicineModel> medicaments = new();        
+    private List<MedicineModel> displayedMedicaments = new(); 
+    private AddProductRequest newMedicament = new();
+    private MedicineModel? editingMedicament;
+
+    private bool commonError = false;
+    private bool showAddModal = false;
+    private bool showEditModal = false;
+    private bool isSaving = false;
+
+    private string? originalMedicamentName;
+    private string searchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMedicaments();
+    }
+
+    private async Task LoadMedicaments()
+    {
+        medicaments = await MedicationService.GetMedicineAsync();
+        displayedMedicaments = medicaments;
+    }
+
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/categories");
+    }
+
+    private void NavigateToHistory()
+    {
+        NavManager.NavigateTo("/product-history");
+    }
+
+    // Поиск продуктов
+    private void SearchMedicaments()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            displayedMedicaments = medicaments;
+        }
+        else
+        {
+            displayedMedicaments = medicaments
+                .Where(p => p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                         || p.Creator.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    // Открыть модальное окно для добавления
+    private void OpenAddModal()
+    {
+        showAddModal = true;
+        newMedicament = new()
+            {
+                ExpirationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                WeightUnit = "г",
+                Quantity = 1,
+                Weight = 1
+            };
+    }
+
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+    }
+
+    // Добавление продукта
+    private async Task AddMedicament()
+    {
+        if (newMedicament.Quantity == 0) newMedicament.Quantity = 1;
+        if (newMedicament.Weight == 0) newMedicament.Weight = 1;
+
+        if (isSaving) return; 
+        isSaving = true;
+        try
+        {
+            await MedicationService.AddMedicineAsync(
+                newMedicament.Name,
+                newMedicament.Creator,
+                newMedicament.ExpirationDate,
+                newMedicament.Quantity,
+                newMedicament.Weight,
+                newMedicament.WeightUnit
+            );
+
+            CloseAddModal();
+            await LoadMedicaments();
+        }
+        catch
+        {
+            commonError = true;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    // Открыть модальное окно редактирования
+    private void OpenEditModal(MedicineModel medicament)
+    {
+        originalMedicamentName = medicament.Name;
+        editingMedicament = new MedicineModel
+            {
+                Id = medicament.Id,
+                Name = medicament.Name,
+                Creator = medicament.Creator,
+                CategoryId = medicament.CategoryId,
+                ExpirationDate = medicament.ExpirationDate,
+                Quantity = medicament.Quantity,
+                Weight = medicament.Weight,
+                WeightUnit = medicament.WeightUnit
+            };
+        showEditModal = true;
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+        editingMedicament = null;
+        originalMedicamentName = null;
+    }
+
+    // Обновление продукта
+    private async Task UpdateMedicament()
+    {
+        if (string.IsNullOrWhiteSpace(originalMedicamentName) || editingMedicament == null)
+        {
+            commonError = true;
+            return;
+        }
+
+        bool success = await MedicationService.UpdateMedicineAsync(
+            originalMedicamentName,
+            editingMedicament.Name,
+            editingMedicament.Creator,
+            editingMedicament.ExpirationDate,
+            editingMedicament.Quantity,
+            editingMedicament.Weight,
+            editingMedicament.WeightUnit
+        );
+
+        if (success)
+        {
+            CloseEditModal();
+            await LoadMedicaments();
+        }
+        else
+        {
+            commonError = true;
+        }
+    }
+
+    // Удаление продукта
+    private async Task DeleteMedicament(MedicineModel medicament)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Удалить {medicament.Name}?");
+        if (confirmed)
+        {
+            bool success = await MedicationService.DeleteMedicineAsync(medicament.Name);
+            if (success)
+            {
+                CloseEditModal();
+                await LoadMedicaments();
+            }
+            else
+            {
+                commonError = true;
+            }
+        }
+    }
+    private void NavigateToExpiredMedicaments()
+    {
+        NavManager.NavigateTo("/expiredMedicaments");
+    }
+}

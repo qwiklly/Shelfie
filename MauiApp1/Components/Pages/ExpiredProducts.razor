@@ -1,0 +1,51 @@
+﻿@page "/expiredProducts"
+@layout MobileLayout
+
+<div class="page-background">
+    <div class="header">
+        <button class="back-button" @onclick="NavigateBack">
+            ←
+        </button>
+        <h2 class="title">@Localizer["ExpiredProducts"]</h2>
+    </div>
+
+    <div class="white-panel">
+        <div class="recent-operations">
+
+            @if (ExpiredProduct == null || ExpiredProduct.Count == 0)
+            {
+                <p class="center-text">@Localizer["NoExpiredProducts"]</p>
+            }
+            else
+            {
+                <div class="operations-list">
+                    @foreach (var item in ExpiredProduct)
+                    {
+                        <div class="operation-item">
+                            <div class="operation-name">@item.Name</div>
+                            <div class="operation-date">@item.ExpirationDate.ToString("yyyy-MM-dd")</div>
+                            <div class="operation-quantity">@Localizer["Quantity"] @item.Quantity</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ProductModel> ExpiredProduct = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExpiredProducts();
+    }
+    public async Task LoadExpiredProducts()
+    {
+        ExpiredProduct = await ProductService.GetExpiredProducts();
+    }
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/category/1");
+    }
+}

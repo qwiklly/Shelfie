@@ -1,0 +1,1017 @@
+﻿
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f1fff3;
+}
+
+a, .btn-link {
+    color: #006bb7;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.content {
+}
+
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.status-bar-safe-area {
+    display: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+    .status-bar-safe-area {
+        display: flex;
+        position: sticky;
+        top: 0;
+        height: env(safe-area-inset-top);
+        background-color: #f7f7f7;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .flex-column, .navbar-brand {
+        padding-left: env(safe-area-inset-left);
+    }
+}
+
+input {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Общий стиль экрана */
+.splash-screen {
+    width: 100%;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .splash-screen.first-screen {
+        background: url('../images/launch_screen.png') no-repeat center center;
+    }
+
+/* Контейнер с логотипом и текстом */
+.splash-content {
+    text-align: center;
+    color: white;
+    background: rgba(0, 0, 0, 0.0);
+    padding: 20px;
+    align-items: center;
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+}
+
+/*Логотип*/
+.logo {
+    width: 120px;
+    height: 120px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: block;
+    z-index: 10;
+    margin: 0 auto;
+}
+
+    .logo.splash {
+        background-image: url('../images/white_logo.png');
+    }
+
+    .logo.auth {
+        background-image: url('../images/green_logo.png');
+    }
+
+/* Название приложения */
+.app-title {
+    font-size: 36px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Цитата */
+.quote {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.otstup {
+    margin-top: 25%;
+}
+
+/* Анимация загрузки */
+.loading-spinner {
+    margin: 20px auto;
+    width: 40px;
+    height: 40px;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-top: 5px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+/* Анимация вращения */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Общий стиль экрана */
+.auth-screen {
+    width: 100%;
+    height: 100vh;
+    background: #f1fff3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Контейнер с логотипом и текстом */
+.auth-content {
+    text-align: center;
+    color: #2cd687;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+
+.error-message {
+    color: red;
+    font-size: 12px;
+}
+
+/* Кнопки */
+.auth-button {
+    width: 200px;
+    padding: 12px;
+    font-size: 18px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px 0;
+    display: block;
+}
+
+/* Зеленая кнопка "Войти" */
+.login-button {
+    background-color: #2cd687;
+    color: white;
+}
+
+/* Кнопка "Регистрация" */
+.register-button {
+    background-color: #dff7e2;
+    color: #333;
+}
+
+/* Цитата внизу */
+.quote1 {
+    font-style: italic;
+    font-size: 14px;
+    opacity: 0.7;
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+}
+
+/* Контейнер для всего экрана регистрации */
+.page-background {
+    background-size: cover;
+    width: 100%;
+    min-height: 80vh;
+    background-color: #2cd687;
+    overflow: hidden;
+}
+
+.title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    padding: 10%;
+    color: #333;
+}
+
+/* Контейнер формы регистрации */
+.white-panel {
+    position: absolute;
+    min-height: 90vh;
+    left: 50%;
+    max-width: 500px;
+    transform: translateX(-50%);
+    width: 100%;
+    border-radius: 65px 65px 0 0;
+    padding: 20px;
+    z-index: 2;
+    background-color: #f1fff3;
+}
+
+    .white-panel label {
+        display: block;
+        font-size: 14px;
+        padding-left: 10px;
+        color: #333;
+    }
+    /* Поля ввода */
+    .white-panel input {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 5px;
+        font-size: 14px;
+        border-radius: 20px;
+        background-color: #dff7e2;
+        padding-left: 30px;
+    }
+.center-button1 {
+    display: block;
+    width: 200px;
+    margin: 10px auto;
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .center-button:hover {
+        background-color: #26b050;
+    }
+
+.center-button {
+    display: block;
+    width: 200px;
+    margin: 10px auto;
+    padding: 10px;
+    background-color: #2cd687;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    text-align: center;
+}
+
+    .center-button:hover {
+        background-color: #26b050;
+    }
+
+/* Текст «Для продолжения...» */
+.privacy-text {
+    font-size: 1px;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+    
+}
+
+/* Ссылки */
+.link {
+    color: #2cd687;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Текст переключения форм */
+.toggle-text {
+    margin-top: 5px;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Контейнер для поля пароля с иконкой */
+.password-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+    .password-container input {
+        width: 100%;
+        padding-right: 40px;
+    }
+
+    /* Стили для иконки глаза */
+    .password-container i {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #888;
+        font-size: 18px;
+    }
+.light-button {
+    background-color: #dff7e2;
+    color: black;
+    margin-bottom: 30%;
+}
+
+    .light-button:hover {
+        background-color: #c7e8d2;
+    }
+
+.forget-pass {
+    margin-bottom: 20%;
+    padding-left: 20px;
+    font-weight:bold;
+}
+
+
+.categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
+    gap: 10px;
+    justify-content: center; 
+    justify-items: start; 
+    padding: 10px;
+    margin-top: 5%;
+    margin-bottom: 45px;
+}
+
+/* Обёртка карточки с подписью */
+.category-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+    /* Стиль подписи под карточкой */
+    .category-card-wrapper span {
+        font-size: 14px;
+        color: #333;
+        margin-top: 5px;
+        word-wrap: break-word;
+        white-space: normal;
+        text-align: center;
+        max-width: 80px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-weight: 600;
+    }
+
+/* Каждая карточка */
+.category-card {
+    width: 80px;
+    height: 80px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Иконка занимает всю карточку */
+    .category-card div {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+    }
+
+
+/* Стили иконок */
+.icon-food {
+    background: url("../images/groceries_logo.png") no-repeat center center;
+    background-size: cover;
+}
+
+.icon-medicine {
+    background: url("../images/medicine_logo.png") no-repeat center center;
+    background-size: cover;
+}
+
+.icon-books {
+    background: url("../images/book_icon.png") no-repeat center center;
+    background-size: cover;
+}
+
+.icon-plus {
+    background: url("../images/plus_logo.png") no-repeat center center;
+    background-size: cover;
+}
+
+.icon-custom {
+    background: url("../images/book_logo.png") no-repeat center center;
+    background-size: cover;
+}
+
+/* Карточка добавления (плюс) */
+.add-card {
+    background-color: #fff;
+    border: 2px;
+}
+
+/* Модальное окно */
+.modal-overlay {
+    z-index: 99999999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+}
+
+    .modal-content input {
+        width: 100%;
+        padding: 8px;
+        margin: 10px 0;
+        box-sizing: border-box;
+    }
+
+.buttons {
+    display: flex;
+    justify-content: space-between;
+}
+
+    .buttons button {
+        padding: 8px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+.category_container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    border-radius: 65px 65px 0 0;
+    padding: 20px;
+    z-index: 2;
+}
+
+/* Крестик удаления */
+.delete-button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .delete-button:hover {
+        background: darkred;
+    }
+
+
+
+/* Шапка с кнопкой «назад» и заголовком */
+.header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.back-button {
+    color:white;
+    position: absolute;
+    left: 10px;
+    background: none;
+    border: none;
+    font-size: 40px;
+    font-weight:bold;
+    cursor: pointer;
+}
+
+.page-title {
+    padding-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.notification-icon {
+    margin-top:10px;
+    position: absolute;
+    right: 20px;
+    width: 26px;
+    height: 26px;
+    background-image: url('../images/bell_icon.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+/* Поле поиска */
+.search-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+    .search-container input {
+        height: 32px;
+        border-radius: 10px;
+        padding: 5px 10px;
+    }
+
+.search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+/* Контейнер для списка продуктов */
+.products-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+/* Карточка продукта */
+.product-card {
+    position: relative;
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.product-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.product-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.product-creator {
+    font-size: 14px;
+    color: #666;
+}
+
+.product-dates {
+    font-size: 12px;
+    color: #999;
+}
+.weight-quantity {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    text-align: right;
+}
+
+.product-quantity {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+}
+
+.product-weight {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    white-space: nowrap;
+}
+
+/* Карточка для добавления (пустая с плюсиком) */
+.add-card1 {
+    background-color: #f0f0f0;
+    justify-content: center;
+    align-items: center;
+    height: 60px;
+}
+
+.plus-icon {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Модальное окно */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 400px;
+}
+
+    .modal-content h3 {
+        margin-top: 0;
+    }
+
+.mb-3 {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-save,
+.btn-cancel,
+.btn-delete,
+.search-btn {
+    padding: 8px 12px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn-save {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.btn-cancel {
+    background-color: #ccc;
+    color: #333;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    color: #fff;
+}
+
+/* Кнопка "История" */
+.history-btn-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.btn-history {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    background-color: #2196f3;
+    color: #fff;
+    cursor: pointer;
+}
+
+.weight-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.weight-input {
+    flex: 1; 
+}
+
+.weight-unit {
+    height: 100%; 
+    padding: 5px;
+    font-size: 16px;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    width: 250px;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.1);
+    background: #fff;
+}
+.records-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+}
+
+/* Колонки с данными */
+.field-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.field-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    word-break: break-word;
+    white-space: normal;
+    overflow-wrap: break-word;
+    max-width: 100%; 
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    border-radius: 20px 20px 0 0 ;
+    overflow: hidden;
+}
+
+    .table th, .table td {
+        padding: 6px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        word-wrap: break-word;
+    }
+
+    .table th {
+        background-color: #f1fff3;
+        font-weight: 600;
+        
+    }
+
+/* Контейнер всей секции */
+.categories-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+}
+
+/* Заголовок с белым фоном и закругленными краями */
+.categories-title-wrapper {
+    background: white;
+    padding: 1px 20px;
+    border-radius: 30px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+}
+
+.categories-title {
+    font-size: 10px;
+    font-weight: bold;
+    color: #000;
+}
+
+/* Контейнер для категорий */
+.category-list {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Общий стиль для карточек */
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 140px;
+    height: 80px;
+    background: white;
+    border-radius: 40px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    padding: 10px;
+}
+
+    .category-item:hover {
+        transform: scale(1.05);
+    }
+
+/* Название категории сверху */
+.category-name {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Иконка снизу, растянута на всю ширину */
+.icon {
+    flex-grow: 1;
+    width: 50%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Иконки */
+.icon-food-svg {
+    background-image: url('../images/food.svg');
+}
+
+.icon-medicine-svg {
+    background-image: url('../images/medicine.svg');
+}
+
+/* Кнопка "+" */
+.plus-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 80px;
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+    .plus-button:hover {
+        transform: scale(1.1);
+    }
+
+.plus-icon {
+    font-size: 32px;
+    font-weight: bold;
+    color: #28a745;
+}
+
+
+/* Статистика */
+.statistics-container {
+    background-color: #ffffff;
+    padding: 16px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+}
+
+/* Недавние операции */
+.recent-operations {
+    background-color: #ffffff;
+    padding: 16px;
+    border-radius: 30px;
+    margin-bottom: 60px;
+}
+
+.operations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.operation-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #f9f9f9;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.operation-category {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #4caf50;
+}
+
+.operation-name {
+    margin-bottom: 4px;
+}
+
+.operation-date {
+    font-size: 0.9em;
+    color: #999;
+}
+
+.operation-quantity {
+    font-size: 0.9em;
+    color: #333;
+    margin-top: 4px;
+}
+.center-text {
+    text-align:center;
+}
+
+.progress-item {
+    margin-bottom: 10px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 10px;
+    width: 0%;
+    background-color: #4CAF50;
+    transition: width 0.5s ease-in-out;
+}
+

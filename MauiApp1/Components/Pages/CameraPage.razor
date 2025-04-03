@@ -1,0 +1,56 @@
+﻿@page "/camera"
+@using Microsoft.Maui.Media
+@using System.IO
+@using Microsoft.Maui.Storage
+
+<h3>Камера</h3>
+
+@if (!string.IsNullOrEmpty(photoPath))
+{
+    <img src="@photoPath" alt="Captured photo" style="max-width:100%;" />
+}
+else
+{
+    <p>Открываем камеру...</p>
+}
+
+@code {
+    private string photoPath;
+    private bool cameraOpened;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !cameraOpened)
+        {
+            cameraOpened = true;
+            await OpenCameraAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OpenCameraAsync()
+    {
+        try
+        {
+            var photo = await MediaPicker.Default.CapturePhotoAsync(new MediaPickerOptions
+                {
+                    Title = "Сделайте фото"
+                });
+            if (photo != null)
+            {
+                var newFile = Path.Combine(FileSystem.CacheDirectory, photo.FileName);
+                using (var stream = await photo.OpenReadAsync())
+                using (var newStream = File.OpenWrite(newFile))
+                {
+                    await stream.CopyToAsync(newStream);
+                }
+                photoPath = newFile;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при открытии камеры: {ex.Message}");
+            NavManager.NavigateTo("/home");
+        }
+    }
+}

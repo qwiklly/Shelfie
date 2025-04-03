@@ -1,0 +1,31 @@
+﻿@page "/authPage"
+
+<div class="auth-screen">
+    <div class="auth-content">
+        <div class="logo auth"></div>
+        <h1 class="app-title">Shelfie</h1>
+        <button @onclick="Login" class="auth-button login-button">@Localizer["Login"]</button>
+        <button @onclick="Register" class="auth-button register-button">@Localizer["Register"]</button>
+        <p class="forgot-password" @onclick="Forget">@Localizer["ForgetPass"]</p>
+        <p class="quote1">@Quote</p>
+    </div>
+</div>
+
+@code {
+    private string? Quote { get; set; }
+    public List<string> Quotes { get; set; } = new();
+
+    private void Login() => NavManager.NavigateTo("/login", forceLoad: true);
+    private void Register() => NavManager.NavigateTo("/register", forceLoad: true);
+    private void Forget() => NavManager.NavigateTo("/", forceLoad: true);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Quotes = QuoteService.GetQuotes(Localizer);
+
+        var random = new Random();
+        Quote = Quotes[random.Next(Quotes.Count)];
+
+        await Task.CompletedTask;
+    }
+}

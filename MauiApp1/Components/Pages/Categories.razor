@@ -1,0 +1,179 @@
+﻿@page "/categories"
+@layout MobileLayout
+
+<div class="page-background">
+    <h1 class="title">@Localizer["Categories"]</h1>
+    <div class="white-panel">
+        <div class="category_container">
+            <div class="categories-grid">
+                <!-- Предопределённые категории -->
+                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(1)">
+                    <div class="category-card">
+                        <div class="icon-food"></div>
+                    </div>
+                    <span>@Localizer["Products"]</span>
+                </div>
+                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(2)">
+                    <div class="category-card">
+                        <div class="icon-medicine"></div>
+                    </div>
+                    <span>@Localizer["Medication"]</span>
+                </div>
+                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(3)">
+                    <div class="category-card">
+                        <div class="icon-books"></div>
+                    </div>
+                    <span>@Localizer["Books"]</span>
+                </div>
+
+                <!-- Пользовательские категории -->
+                @if (Categories1 != null)
+                {
+                    @foreach (var category in Categories1)
+                    {
+                        <div class="category-card-wrapper">
+                            <div class="category-card"
+                                 @onpointerdown="(e) => StartPress(category.Id)"
+                                 @onpointerup="CancelPress"
+                                 @onpointerleave="CancelPress"
+                                 @onclick="() => NavigateToCategory(category.Id)">
+                                <div class="icon-custom"></div>
+                            </div>
+                            <span>@category.Name</span>
+                        </div>
+                    }
+                }
+
+                <div class="category-card-wrapper" @onclick="OpenAddCategoryModal">
+                    <div class="category-card add-card">
+                        <div class="icon-plus"></div>
+                    </div>
+                    <span>@Localizer["Add"]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления категории -->
+@if (ShowAddCategoryModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["AddNewCategory"]</h3>
+            <input type="text" @bind-value="NewCategoryName" @bind-value:event="oninput" placeholder=@Localizer["NameOfCategory"] />
+            <div class="buttons">
+                <button @onclick="AddCategory">@Localizer["Save"]</button>
+                <button @onclick="CancelAddCategory">@Localizer["Cancel"]</button>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно подтверждения удаления категории -->
+@if (ShowDeleteCategoryModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["DeleteLabelCategory"]</h3>
+            <p>@Localizer["ConfirmDeleteCategory"]</p>
+            <div class="buttons">
+                <button @onclick="ConfirmDeleteCategory">@Localizer["DeleteButton"]</button>
+                <button @onclick="() => ShowDeleteCategoryModal = false">@Localizer["Cancel"]</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<CategoryModel> Categories1 = new();
+    private bool ShowAddCategoryModal = false;
+    private bool ShowDeleteCategoryModal = false;
+    private string NewCategoryName = string.Empty;
+    private int _pressedCategoryId;
+    private System.Timers.Timer _pressTimer = new();
+
+    private List<string> editableFields = new(Enumerable.Repeat(string.Empty, 8));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCategories();
+    }
+
+    private async Task LoadCategories()
+    {
+        Categories1 = await CategoryService.GetCategoriesAsync();
+        StateHasChanged();
+    }
+
+    private void OpenAddCategoryModal()
+    {
+        ShowAddCategoryModal = true;
+    }
+
+    private void CancelAddCategory()
+    {
+        ShowAddCategoryModal = false;
+        NewCategoryName = string.Empty;
+    }
+
+    private async Task AddCategory()
+    {
+        if (string.IsNullOrWhiteSpace(NewCategoryName))
+            return;
+
+        var success = await CategoryService.AddCategoryAsync(NewCategoryName);
+        if (success)
+        {
+            await LoadCategories();
+        }
+        ShowAddCategoryModal = false;
+        NewCategoryName = string.Empty;
+    }
+
+    private async Task NavigateToCategory(int categoryId)
+    {
+        var fieldNames = await FieldService.GetFieldsForCategoryAsync(categoryId);
+
+        if (fieldNames != null && fieldNames.Any(f => !string.IsNullOrWhiteSpace(f)))
+        {
+            NavManager.NavigateTo($"/category/{categoryId}/fill");
+        }
+        else
+        {
+            NavManager.NavigateTo($"/category/{categoryId}");
+        }
+    }
+
+    // Запуск таймера при долгом нажатии
+    private void StartPress(int categoryId)
+    {
+        _pressedCategoryId = categoryId;
+        _pressTimer = new System.Timers.Timer(800); 
+        _pressTimer.Elapsed += (sender, args) =>
+        {
+            _pressTimer.Stop();
+            ShowDeleteCategoryModal = true;
+            InvokeAsync(StateHasChanged);
+        };
+        _pressTimer.AutoReset = false;
+        _pressTimer.Start();
+    }
+
+    // Отмена, если отпустили раньше времени
+    private void CancelPress()
+    {
+        _pressTimer?.Stop();
+        _pressTimer?.Dispose();
+    }
+
+    private async Task ConfirmDeleteCategory()
+    {
+        ShowDeleteCategoryModal = false;
+        var success = await CategoryService.DeleteCategoryAsync(_pressedCategoryId);
+        if (success)
+        {
+            await LoadCategories();
+        }
+    }
+}

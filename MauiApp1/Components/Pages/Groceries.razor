@@ -1,0 +1,347 @@
+﻿@page "/category/1"
+@layout MobileLayout
+
+<!-- Шапка страницы -->
+<div class="header">
+    <button class="back-button" @onclick="NavigateBack">
+        ←
+    </button>
+    <h2 class="page-title">@Localizer["Products"]</h2>
+    <div class="notification-icon" @onclick="NavigateToExpiredProducts"></div>
+</div>
+
+<!-- Поле поиска -->
+<div class="search-container">
+    <input type="text" @bind="searchTerm" placeholder=@Localizer["Search"] />
+    <button @onclick="SearchProducts" class="search-btn">@Localizer["Find"]</button>
+</div>
+
+<!-- Список продуктов в виде карточек -->
+<div class="products-container">
+    @if (displayedProducts == null)
+    {
+        <p><em>@Localizer["Loading"]</em></p>
+    }
+    else if (!displayedProducts.Any())
+    {
+        <p>@Localizer["NoProducts"]</p>
+    }
+    else
+    {
+        @foreach (var product in displayedProducts)
+        {
+            <div class="product-card" @onclick="() => OpenEditModal(product)">
+                <div class="product-info">
+                    <div class="product-name">@product.Name</div>
+                    <div class="product-creator">@product.Creator</div>
+                    <div class="product-dates">
+                        <span>@Localizer["Created"] @product.CreatedAt.ToString("yyyy-MM-dd")</span><br />
+                        <span>@Localizer["ExpiresOn"] @product.ExpirationDate.ToString("yyyy-MM-dd")</span>
+                    </div>
+                </div>
+                <div class="weight-quantity">
+                    <div class="product-quantity">@Localizer["Quantity"] @product.Quantity</div>
+                    <div class="product-weight">@Localizer["WeightAndVolume"] @product.Weight @product.WeightUnit</div>
+                </div>
+            </div>
+        }  
+    }
+
+    <!-- Карточка добавления нового продукта -->
+    <div class="product-card add-card1" @onclick="OpenAddModal">
+        <div class="plus-icon">+</div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления продукта -->
+@if (showAddModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["AddProduct"]</h3>
+            <EditForm Model="newProduct" OnValidSubmit="AddProduct">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>@Localizer["Title"]</label>
+                    <InputText @bind-Value="newProduct.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["FirmAndManufacturer"]</label>
+                    <InputText @bind-Value="newProduct.Creator" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ExpirationDate"]</label>
+                    <InputDate @bind-Value="newProduct.ExpirationDate" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["Quantity"]</label>
+                    <InputNumber @bind-Value="newProduct.Quantity" />
+                </div>
+
+                <div class="mb-3">
+                    <label>@Localizer["WeightAndVolume"]</label>
+                    <div>
+                        <div class="weight-input-wrapper">
+                            <InputNumber @bind-Value="newProduct.Weight" class="weight-input" />
+                            <select @bind="newProduct.WeightUnit" class="weight-unit">
+                                <option value="г">@Localizer["g"]</option>
+                                <option value="кг">@Localizer["kg"]</option>
+                                <option value="л">@Localizer["l"]</option>
+                                <option value="мл">@Localizer["ml"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="error-message" style="text-align: center; display: @(commonError ? "block" : "none");">Ошибка добавления, проверьте данные</p>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseAddModal">@Localizer["Cancel"]</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Модальное окно редактирования продукта -->
+@if (editingProduct != null && showEditModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h3>@Localizer["EditProduct"]</h3>
+            <EditForm Model="editingProduct" OnValidSubmit="UpdateProduct">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label>@Localizer["Title"]</label>
+                    <InputText @bind-Value="editingProduct.Name" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["FirmAndManufacturer"]</label>
+                    <InputText @bind-Value="editingProduct.Creator" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["ExpirationDate"]</label>
+                    <InputDate @bind-Value="editingProduct.ExpirationDate" />
+                </div>
+                <div class="mb-3">
+                    <label>@Localizer["Quantity"]</label>
+                    <InputNumber @bind-Value="editingProduct.Quantity" />
+                </div>
+
+                <div class="mb-3">
+                    <label>@Localizer["WeightAndVolume"]</label>
+                    <div>
+                        <div class="weight-input-wrapper">
+                            <InputNumber @bind-Value="editingProduct.Weight" class="weight-input" />
+                            <select @bind="editingProduct.WeightUnit" class="weight-unit">
+                                <option value="г">@Localizer["g"]</option>
+                                <option value="кг">@Localizer["kg"]</option>
+                                <option value="л">@Localizer["l"]</option>
+                                <option value="мл">@Localizer["ml"]</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="error-message" style="text-align: center; display: @(commonError ? "block" : "none");">Ошибка редактирования, проверьте данные</p>
+
+                <div class="buttons">
+                    <button type="submit" class="btn-save">@Localizer["Save"]</button>
+                    <button type="button" class="btn-cancel" @onclick="CloseEditModal">@Localizer["Cancel"]</button>
+                    <button type="button" class="btn-delete" @onclick="() => DeleteProduct(editingProduct)">@Localizer["DeleteButton"]</button>
+                </div>
+
+            </EditForm>
+        </div>
+    </div>
+}
+
+<!-- Кнопка перехода к истории (при необходимости) -->
+<div class="history-btn-container">
+    <button class="btn-history" @onclick="NavigateToHistory">@Localizer["History"]</button>
+</div>
+
+@code {
+    private List<ProductModel> products = new();         
+    private List<ProductModel> displayedProducts = new(); 
+    private AddProductRequest newProduct = new();
+    private ProductModel? editingProduct;
+
+    private bool commonError = false;
+    private bool showAddModal = false;
+    private bool showEditModal = false;
+    private bool isSaving = false;
+
+    private string? originalProductName;
+    private string searchTerm = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        products = await ProductService.GetProductsAsync();
+        displayedProducts = products;
+    }
+
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/categories");
+    }
+
+    private void NavigateToHistory()
+    {
+        NavManager.NavigateTo("/product-history");
+    }
+
+    // Поиск продуктов
+    private void SearchProducts()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            displayedProducts = products;
+        }
+        else
+        {
+            displayedProducts = products
+                .Where(p => p.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                         || p.Creator.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    // Открыть модальное окно для добавления
+    private void OpenAddModal()
+    {
+        showAddModal = true;
+        newProduct = new()
+            {
+                ExpirationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                WeightUnit = "г",
+                Quantity = 1,
+                Weight = 1
+            };
+    }
+
+    private void CloseAddModal()
+    {
+        showAddModal = false;
+    }
+
+    // Добавление продукта
+    private async Task AddProduct()
+    {
+        if (newProduct.Quantity == 0) newProduct.Quantity = 1;
+        if (newProduct.Weight == 0) newProduct.Weight = 1;
+
+        if (isSaving) return; 
+        isSaving = true;
+        try
+        {
+            await ProductService.AddProductAsync(
+                newProduct.Name,
+                newProduct.Creator,
+                newProduct.ExpirationDate,
+                newProduct.Quantity,
+                newProduct.Weight,
+                newProduct.WeightUnit
+            );
+
+            CloseAddModal();
+            await LoadProducts();
+        }
+        catch 
+        {
+            commonError = true;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    // Открыть модальное окно редактирования
+    private void OpenEditModal(ProductModel product)
+    {
+        originalProductName = product.Name;
+        editingProduct = new ProductModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Creator = product.Creator,
+                CategoryId = product.CategoryId,
+                ExpirationDate = product.ExpirationDate,
+                Quantity = product.Quantity,
+                Weight = product.Weight,
+                WeightUnit = product.WeightUnit
+            };
+        showEditModal = true;
+    }
+
+    private void CloseEditModal()
+    {
+        showEditModal = false;
+        editingProduct = null;
+        originalProductName = null;
+    }
+
+    // Обновление продукта
+    private async Task UpdateProduct()
+    {
+        if (string.IsNullOrWhiteSpace(originalProductName) || editingProduct == null)
+        {
+            commonError = true;
+            return;
+        }
+
+        bool success = await ProductService.UpdateProductAsync(
+            originalProductName,
+            editingProduct.Name,
+            editingProduct.Creator,
+            editingProduct.ExpirationDate,
+            editingProduct.Quantity,
+            editingProduct.Weight,
+            editingProduct.WeightUnit
+        );
+
+        if (success)
+        {
+            CloseEditModal();
+            await LoadProducts();
+        }
+        else
+        {
+            commonError = true;
+        }
+    }
+
+    // Удаление продукта
+    private async Task DeleteProduct(ProductModel product)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", $"Удалить {product.Name}?");
+        if (confirmed)
+        {
+            bool success = await ProductService.DeleteProductAsync(product.Name);
+            if (success)
+            {
+                CloseEditModal();
+                await LoadProducts();
+            }
+            else
+            {
+                commonError = true;
+            }
+        }
+    }
+    private void NavigateToExpiredProducts()
+    {
+        NavManager.NavigateTo("/expiredProducts");
+    }
+}

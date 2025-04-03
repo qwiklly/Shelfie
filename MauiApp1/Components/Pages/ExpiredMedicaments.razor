@@ -1,0 +1,50 @@
+﻿@page "/expiredMedicaments"
+@layout MobileLayout
+
+<div class="page-background">
+    <div class="header">
+        <button class="back-button" @onclick="NavigateBack">
+            ←
+        </button>
+        <h2 class="title">@Localizer["ExpiredMedicine"]</h2>
+    </div>
+
+    <div class="white-panel">
+        <div class="recent-operations">
+            @if (ExpiredMedicament == null || ExpiredMedicament.Count == 0)
+            {
+                <p class="center-text">@Localizer["NoExpiredMedicine"]</p>
+            }
+            else
+            {
+                <div class="operations-list">
+                    @foreach (var item in ExpiredMedicament)
+                    {
+                        <div class="operation-item">
+                            <div class="operation-name">@item.Name</div>
+                            <div class="operation-date">@item.ExpirationDate.ToString("yyyy-MM-dd")</div>
+                            <div class="operation-quantity">@Localizer["Quantity"] @item.Quantity</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<MedicineModel> ExpiredMedicament = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadExpiredMedicines();
+    }
+    public async Task LoadExpiredMedicines()
+    {
+        ExpiredMedicament = await MedicationService.GetExpiredMedicineAsync();
+    }
+    private void NavigateBack()
+    {
+        NavManager.NavigateTo("/category/2");
+    }
+}
