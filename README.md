@@ -1,7 +1,7 @@
 # 📦 Shelfie – Smart Inventory App
 
 Shelfie is a smart inventory app built with .NET MAUI and ASP.NET Core.  
-It helps you manage items by categories (like products, medicines, and custom types), track expiration dates, and store data on a server.
+It helps you manage items by categories (like products, medicines, and custom types), track expiration dates and securely store data via backend and PostgreSQL.
 
 ![ShelfieCard](https://github.com/user-attachments/assets/774ceda1-9f56-4318-91a9-209e9e65cbdb)
 
@@ -19,9 +19,19 @@ It helps you manage items by categories (like products, medicines, and custom ty
 
 ---
 
+## 🛠️ Tech Stack
+
+- **Frontend**: .NET MAUI (Blazor)
+- **Backend**: ASP.NET Core 
+- **Database**: PostgreSQL, Entity Framework Core
+- **Auth**: JWT-based authentication
+- **Languages**: C#, JS, Razor, HTML/CSS
+
+---
+
 ## 📷 Screenshots
 
-# Custom Category View  
+### Custom Category View  
 ![Analysis](https://github.com/user-attachments/assets/ee190b47-fcae-4aa2-81d0-d3c338a30988)
 
 | Categories Page                  | Dashboard                        |
@@ -38,12 +48,8 @@ It helps you manage items by categories (like products, medicines, and custom ty
 
 ---
 
-## 🛠️ Tech Stack
+## 📄 License
 
-- **Frontend**: .NET MAUI (Blazor)
-- **Backend**: ASP.NET Core 
-- **Database**: PostgreSQL, Entity Framework Core
-- **Auth**: JWT-based authentication
-- **Languages**: C#, JS, Razor, HTML/CSS
+This project is licensed under the [MIT License](LICENSE).
 
 ---
