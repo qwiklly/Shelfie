@@ -29,15 +29,15 @@ It helps you manage items by categories (like products, medicines, and custom ty
 
 | Categories Page                  | Dashboard                        |
 |----------------------------------|----------------------------------|
-| ![Categories](https://github.com/user-attachments/assets/386c7078-9f42-4a7b-accb-57e240c4b037) | ![History](https://github.com/user-attachments/assets/cf613a7b-0adb-4e78-b288-d57fac75b530) |
+| <img src="https://github.com/user-attachments/assets/386c7078-9f42-4a7b-accb-57e240c4b037" width="250"/> | <img src="https://github.com/user-attachments/assets/cf613a7b-0adb-4e78-b288-d57fac75b530" width="250"/> |
 
 | Authorization                    | Registration                     |
 |----------------------------------|----------------------------------|
-| ![Register](https://github.com/user-attachments/assets/ec982a8b-797c-4c71-bea2-161ce1df3bc6) | ![Login](https://github.com/user-attachments/assets/f1c41b9a-d9f9-4191-bf15-8bb33721620b) |
+| <img src="https://github.com/user-attachments/assets/ec982a8b-797c-4c71-bea2-161ce1df3bc6" width="250"/> | <img src="https://github.com/user-attachments/assets/f1c41b9a-d9f9-4191-bf15-8bb33721620b" width="250"/> |
 
 | Account edit Page                | Logout Page                      |
 |----------------------------------|----------------------------------|
-| ![Edit](https://github.com/user-attachments/assets/d2df9fe0-a95f-4919-84a4-80a09b26299e) | ![Logout](https://github.com/user-attachments/assets/6b57578e-e36f-4424-8b51-cfe4dc2f5f4d) |
+| <img src="https://github.com/user-attachments/assets/d2df9fe0-a95f-4919-84a4-80a09b26299e" width="250"/> | <img src="https://github.com/user-attachments/assets/6b57578e-e36f-4424-8b51-cfe4dc2f5f4d" width="250"/> |
 
 ---
 
