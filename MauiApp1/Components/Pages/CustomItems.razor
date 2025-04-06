@@ -235,7 +235,6 @@
 
     private async Task EditRecord()
     {
-        await JS.InvokeVoidAsync("alert", $"Редактирование записи с RecordId: {editProduct.RecordId}");
         try
         {
             await FieldValueService.UpdateFieldValuesForCategoryAsync(CategoryId, editProduct);

@@ -256,7 +256,7 @@
     <value>Are you sure you want to delete this category?</value>
   </data>
   <data name="SettingCategoryFields" xml:space="preserve">
-    <value>Customize category fields</value>
+    <value>Customize your category fields</value>
   </data>
   <data name="Field" xml:space="preserve">
     <value>Field</value>
