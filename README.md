@@ -35,6 +35,7 @@ It helps you manage items by categories (like products, medicines, and custom ty
 ![Analysis](https://github.com/user-attachments/assets/ee190b47-fcae-4aa2-81d0-d3c338a30988)
 
 <div align="center">
+  
 | Categories Page                  | Dashboard                        |
 |----------------------------------|----------------------------------|
 | <img src="https://github.com/user-attachments/assets/386c7078-9f42-4a7b-accb-57e240c4b037" width="300"/> | <img src="https://github.com/user-attachments/assets/cf613a7b-0adb-4e78-b288-d57fac75b530" width="300"/> |
@@ -46,6 +47,7 @@ It helps you manage items by categories (like products, medicines, and custom ty
 | Account edit Page                | Logout Page                      |
 |----------------------------------|----------------------------------|
 | <img src="https://github.com/user-attachments/assets/d2df9fe0-a95f-4919-84a4-80a09b26299e" width="300"/> | <img src="https://github.com/user-attachments/assets/6b57578e-e36f-4424-8b51-cfe4dc2f5f4d" width="300"/> |
+
 </div>
 
 ### Swagger window 
