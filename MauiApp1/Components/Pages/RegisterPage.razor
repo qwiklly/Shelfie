@@ -77,7 +77,7 @@
     private async Task Register()
     {
         bool success = await AuthService.RegisterAsync(
-            registerModel.RegisterEmail,
+            registerModel.RegisterEmail.Trim(),
             registerModel.RegisterPassword,
             registerModel.ConfirmRegisterPassword,
             registerModel.RegisterName,

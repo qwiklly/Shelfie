@@ -41,7 +41,7 @@
 
     private async Task Login()
     {
-        bool success = await AuthService.LoginAsync(loginEmail, loginPassword);
+        bool success = await AuthService.LoginAsync(loginEmail.Trim(), loginPassword);
         if (success)
         {
             NavManager.NavigateTo("/", forceLoad: true);
