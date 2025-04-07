@@ -29,7 +29,7 @@
             </div>
             <ValidationMessage For="() => userModel.NewPassword" class="error-message" />
 
-            <button class="center-button" type="submit">Изменить</button>
+            <button class="center-button" type="submit">@Localizer["Change"]</button>
             <p class="success-message" style="text-align: center; display: @(updateSuccess ? "block" : "none");">Данные успешно обновлены</p>
             <p class="error-message" style="text-align: center; display: @(updateError ? "block" : "none");">Ошибка обновления данных</p>
         </div>

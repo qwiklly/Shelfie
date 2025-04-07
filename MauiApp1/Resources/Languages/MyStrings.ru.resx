@@ -426,4 +426,7 @@
   <data name="ClearHistory" xml:space="preserve">
     <value>Очистить историю</value>
   </data>
+  <data name="Change" xml:space="preserve">
+    <value>Изменить</value>
+  </data>
 </root>
