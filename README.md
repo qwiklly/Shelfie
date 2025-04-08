@@ -56,7 +56,7 @@ It helps you manage items by categories (such as products, medicines, and custom
 ---
 ## 📦 Download
 
-You can download the latest APK [here](https://github.com/qwiklly/Shelfie/releases/tag/v1.0.0-beta).
+You can download the latest APK [here](https://github.com/qwiklly/Shelfie/releases/tag/v1.0.1-beta).
 
 ---
 ## 📄 License
