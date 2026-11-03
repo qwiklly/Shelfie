@@ -5,6 +5,7 @@
 		<NoWarn>$(NoWarn);1591</NoWarn>
 		
 		<TargetFramework>net8.0</TargetFramework>
+		<UserSecretsId>ee36c017-26a5-4ade-9b9b-9971435c548a</UserSecretsId>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
