@@ -29,6 +29,29 @@ It helps you manage items by categories (such as products, medicines, and custom
 
 ---
 
+## 🚀 Running Locally
+
+You need the .NET 8 SDK with the MAUI workload, PostgreSQL and an Android emulator.
+
+1. Create a PostgreSQL user and database, then set your connection string and JWT key:
+
+```bash
+cd ShelfieBackend
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=shelfie_backend_db;Username=shelfie_user;Password=YOUR_PASSWORD;TrustServerCertificate=true;"
+dotnet user-secrets set "Jwt:Key" "A_RANDOM_KEY_OF_AT_LEAST_32_CHARACTERS"
+```
+
+2. Apply the migrations and start the backend:
+
+```bash
+dotnet ef database update
+dotnet run --launch-profile http
+```
+
+3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. It connects to the backend at `http://10.0.2.2:5111/api/`.
+
+---
+
 ## 📷 Screenshots
 
 ### Custom Category View  
