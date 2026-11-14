@@ -163,11 +163,6 @@
     {
         var language = e.Value?.ToString() ?? AppSettings.DefaultLanguage;
         Settings.Language = language;
-        var culture = new CultureInfo(language);
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-        CultureInfo.CurrentCulture = culture;
-        CultureInfo.CurrentUICulture = culture;
         Nav.NavigateTo("/settings", forceLoad: true);
     }
 

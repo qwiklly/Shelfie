@@ -283,7 +283,8 @@ body:has(input:focus:not([type=checkbox]), textarea:focus, select:focus) .app-co
 
 /* ---------- onboarding & hints ---------- */
 .intro { min-height: 100vh; display: flex; flex-direction: column; padding: 24px 24px 40px; max-width: 480px; margin: 0 auto; }
-.intro-skip { align-self: flex-end; }
+.intro-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.intro-lang { padding-bottom: 0; margin-bottom: 0; }
 .intro-slide { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; }
 .intro-slide h1 { font-size: 26px; }
 .intro-slide p { color: var(--muted); font-size: 17px; line-height: 1.45; max-width: 340px; }

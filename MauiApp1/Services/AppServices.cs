@@ -27,7 +27,16 @@ namespace MauiApp1.Services
         public string Language
         {
             get => Preferences.Get("language", DefaultLanguage);
-            set => Preferences.Set("language", value);
+            set
+            {
+                Preferences.Set("language", value);
+                // Apply right away; the caller reloads the page so every string is looked up again.
+                var culture = new System.Globalization.CultureInfo(value);
+                System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
+                System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = culture;
+                System.Globalization.CultureInfo.CurrentCulture = culture;
+                System.Globalization.CultureInfo.CurrentUICulture = culture;
+            }
         }
 
         public bool NotificationsEnabled

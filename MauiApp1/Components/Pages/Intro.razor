@@ -3,7 +3,15 @@
 
 @* Shown once on the first launch. *@
 <div class="intro">
-    <button class="btn-link intro-skip" @onclick="Finish">@L["Skip"]</button>
+    <div class="intro-top">
+        <div class="chips intro-lang">
+            @foreach (var (code, name) in Languages)
+            {
+                <button class="chip @(Settings.Language == code ? "active" : "")" @onclick="() => ChooseLanguage(code)">@name</button>
+            }
+        </div>
+        <button class="btn-link" @onclick="Finish">@L["Skip"]</button>
+    </div>
 
     <div class="intro-slide">
         <span class="intro-icon"><Icon Name="@Slides[index].Icon" Size="64" /></span>
@@ -31,6 +39,8 @@
         ("bell", "IntroRemindTitle", "IntroRemindText"),
     ];
 
+    private static readonly (string Code, string Name)[] Languages = [("en-US", "English"), ("ru-RU", "Русский")];
+
     private int index;
     private bool IsLast => index == Slides.Length - 1;
 
@@ -40,6 +50,14 @@
             Finish();
         else
             index++;
+    }
+
+    private void ChooseLanguage(string code)
+    {
+        if (Settings.Language == code)
+            return;
+        Settings.Language = code;
+        Nav.NavigateTo("/intro", forceLoad: true);
     }
 
     private void Finish()
