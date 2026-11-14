@@ -8,6 +8,14 @@
     <a class="icon-btn" href="/category/@Id/settings" title="@L["CategorySettings"]"><Icon Name="settings" /></a>
 </header>
 
+@if (category is { Kind: CategoryKind.Custom, Fields.Count: 0 })
+{
+    <div class="hint-banner">
+        <span>@L["NoFieldsHint"]</span>
+        <a class="btn-link small" href="/category/@Id/settings">@L["SetUpFields"]</a>
+    </div>
+}
+
 <div class="search-box">
     <Icon Name="search" Size="18" />
     <input placeholder="@L["Search"]" @bind="search" @bind:event="oninput" @bind:after="LoadAsync" />
@@ -31,7 +39,18 @@ else if (items.Count == 0)
 {
     <div class="empty-state">
         <Icon Name="@Icon.ForKind(category?.Kind ?? CategoryKind.Custom)" Size="48" />
-        <p>@(string.IsNullOrWhiteSpace(search) && status == null && location == null ? L["NoItemsYet"] : L["NothingFound"])</p>
+        @if (string.IsNullOrWhiteSpace(search) && status == null && location == null)
+        {
+            <p>@L["NoItemsYet"]</p>
+            <div class="hint-actions">
+                <a class="btn-primary" href="/item/new/@Id"><Icon Name="plus" Size="16" /> @L["AddNewItem"]</a>
+                <a class="btn-secondary" href="/scan"><Icon Name="scan" Size="16" /> @L["Scan"]</a>
+            </div>
+        }
+        else
+        {
+            <p>@L["NothingFound"]</p>
+        }
     </div>
 }
 else

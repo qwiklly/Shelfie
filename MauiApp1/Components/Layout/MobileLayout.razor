@@ -1,4 +1,4 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @implements IDisposable
 @inject SyncCoordinator Sync
 
@@ -44,7 +44,7 @@
         get
         {
             var path = Nav.ToBaseRelativePath(Nav.Uri).Split('?')[0];
-            return path is not ("" or "welcome" or "register");
+            return path is not ("" or "intro" or "welcome" or "register");
         }
     }
 

@@ -12,6 +12,18 @@
 }
 else
 {
+    @if (stats.TotalItems == 0)
+    {
+        <section class="card hint-card">
+            <div class="card-title"><Icon Name="plus" Size="18" /> @L["HomeEmptyTitle"]</div>
+            <p class="muted">@L["HomeEmptyText"]</p>
+            <div class="two-cols">
+                <a class="btn-primary" href="/item/new/@BuiltInCategories.Products">@L["AddFirstItem"]</a>
+                <a class="btn-secondary" href="/scan"><Icon Name="scan" Size="16" /> @L["Scan"]</a>
+            </div>
+        </section>
+    }
+
     <section class="tiles">
         <a class="tile" href="/categories"><b>@stats.TotalItems</b><span>@L["ItemsTotal"]</span></a>
         <a class="tile warn" href="/expiring"><b>@stats.SoonCount</b><span>@L["ExpiringSoon"]</span></a>

@@ -280,3 +280,20 @@ body:has(input:focus:not([type=checkbox]), textarea:focus, select:focus) .app-co
 /* Static splash in index.html, shown while the web view starts (same look as the native splash). */
 .boot-splash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--green); }
 .boot-splash img { width: 140px; }
+
+/* ---------- onboarding & hints ---------- */
+.intro { min-height: 100vh; display: flex; flex-direction: column; padding: 24px 24px 40px; max-width: 480px; margin: 0 auto; }
+.intro-skip { align-self: flex-end; }
+.intro-slide { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; }
+.intro-slide h1 { font-size: 26px; }
+.intro-slide p { color: var(--muted); font-size: 17px; line-height: 1.45; max-width: 340px; }
+.intro-icon { width: 128px; height: 128px; border-radius: 50%; background: var(--green-soft); color: var(--green-dark); display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
+.intro-dots { display: flex; justify-content: center; gap: 8px; margin: 24px 0 8px; }
+.intro-dots span { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: width .2s; }
+.intro-dots span.active { width: 24px; background: var(--green); }
+
+.hint-card { border: 1px dashed var(--green); }
+.hint-card .two-cols { margin-top: 12px; }
+.hint-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+.hint-banner { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--warn-soft); color: #7a5200; border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.hint-banner .btn-link { padding: 0; }

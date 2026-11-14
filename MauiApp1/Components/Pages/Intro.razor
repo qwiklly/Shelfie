@@ -1,0 +1,53 @@
+@page "/intro"
+@inject SyncCoordinator Sync
+
+@* Shown once on the first launch. *@
+<div class="intro">
+    <button class="btn-link intro-skip" @onclick="Finish">@L["Skip"]</button>
+
+    <div class="intro-slide">
+        <span class="intro-icon"><Icon Name="@Slides[index].Icon" Size="64" /></span>
+        <h1>@L[Slides[index].Title]</h1>
+        <p>@L[Slides[index].Text]</p>
+    </div>
+
+    <div class="intro-dots">
+        @for (int i = 0; i < Slides.Length; i++)
+        {
+            <span class="@(i == index ? "active" : "")"></span>
+        }
+    </div>
+
+    <button class="btn-primary wide big" @onclick="Next">@(IsLast ? L["Start"] : L["Next"])</button>
+</div>
+
+@code {
+    public const string DoneKey = "intro_done";
+
+    private static readonly (string Icon, string Title, string Text)[] Slides =
+    [
+        ("box", "IntroLocalTitle", "IntroLocalText"),
+        ("scan", "IntroScanTitle", "IntroScanText"),
+        ("bell", "IntroRemindTitle", "IntroRemindText"),
+    ];
+
+    private int index;
+    private bool IsLast => index == Slides.Length - 1;
+
+    private void Next()
+    {
+        if (IsLast)
+            Finish();
+        else
+            index++;
+    }
+
+    private void Finish()
+    {
+        Preferences.Set(DoneKey, true);
+        // Starting here (not before the intro) means the notification permission is asked
+        // right after the slide that explains why.
+        Sync.Start();
+        Nav.NavigateTo("/home", replace: true);
+    }
+}

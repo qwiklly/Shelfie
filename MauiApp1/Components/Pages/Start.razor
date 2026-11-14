@@ -22,6 +22,12 @@
 
         // The app is local-first: it opens straight into the data on this device.
         // An account (and a server) is optional and set up from Settings.
+        if (!Preferences.Get(Intro.DoneKey, false))
+        {
+            Nav.NavigateTo("/intro", replace: true);
+            return;
+        }
+
         Sync.Start();
         Nav.NavigateTo("/home", replace: true);
     }

@@ -76,6 +76,10 @@ else
                 <button class="btn-link small" @onclick="() => item.ExpirationDate = null">@L["Clear"]</button>
             }
         </div>
+        @if (item.ExpirationDate == null)
+        {
+            <small class="hint">@L["ExpiryHint"]</small>
+        }
 
         <label>@L["Location"]</label>
         <input list="locations" @bind="item.Location" placeholder="@L["LocationHint"]" />

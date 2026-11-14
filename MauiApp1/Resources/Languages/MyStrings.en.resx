@@ -166,4 +166,20 @@
   <data name="ServerNeededHint" xml:space="preserve"><value>Enter the server address and tap &quot;Check&quot; first.</value></data>
   <data name="SignedOut" xml:space="preserve"><value>Signed out</value></data>
   <data name="AccountDeleted" xml:space="preserve"><value>Account deleted</value></data>
+  <data name="Skip" xml:space="preserve"><value>Skip</value></data>
+  <data name="Start" xml:space="preserve"><value>Get started</value></data>
+  <data name="Next" xml:space="preserve"><value>Next</value></data>
+  <data name="IntroLocalTitle" xml:space="preserve"><value>Everything in one place</value></data>
+  <data name="IntroLocalText" xml:space="preserve"><value>Food, medicines and anything else live right on your phone — no sign-up, no internet needed.</value></data>
+  <data name="IntroScanTitle" xml:space="preserve"><value>Add things in seconds</value></data>
+  <data name="IntroScanText" xml:space="preserve"><value>Scan a barcode and the name and size fill in by themselves.</value></data>
+  <data name="IntroRemindTitle" xml:space="preserve"><value>Nothing goes to waste</value></data>
+  <data name="IntroRemindText" xml:space="preserve"><value>We remind you before things expire, and whatever runs out lands on your shopping list.</value></data>
+  <data name="HomeEmptyTitle" xml:space="preserve"><value>Start with your first item</value></data>
+  <data name="HomeEmptyText" xml:space="preserve"><value>Add an item by hand or scan a barcode — Shelfie keeps track of dates and statistics for you.</value></data>
+  <data name="AddFirstItem" xml:space="preserve"><value>Add food</value></data>
+  <data name="NoFieldsHint" xml:space="preserve"><value>This category has no fields of its own yet — for example &quot;Size&quot; or &quot;Colour&quot;.</value></data>
+  <data name="SetUpFields" xml:space="preserve"><value>Set up fields</value></data>
+  <data name="ShoppingEmptyHint" xml:space="preserve"><value>When something runs out (the &quot;−&quot; button), it shows up here by itself. You can also add things by hand.</value></data>
+  <data name="ExpiryHint" xml:space="preserve"><value>Set a date and Shelfie will remind you in time.</value></data>
 </root>
