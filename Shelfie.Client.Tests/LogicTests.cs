@@ -146,6 +146,40 @@ public class ApiErrorTests
         Assert.Equal("Ошибка сервера (502)", await Read(HttpStatusCode.BadGateway, "<html>bad gateway</html>"));
 
     [Fact]
+    public async Task Server_that_never_answers_times_out_as_offline()
+    {
+        // Regression (seen on the emulator): a sync to a host that accepts but never answers hung in "Syncing…".
+        var api = new ShelfieApi(new HttpClient(new HangingHandler()), () => "http://example.test", new InMemoryTokenStore())
+        {
+            RequestTimeout = TimeSpan.FromMilliseconds(200)
+        };
+
+        var started = DateTime.UtcNow;
+        var result = await api.LoginAsync("a@b.c", "x", TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsOffline);
+        Assert.True(DateTime.UtcNow - started < TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_is_not_reported_as_offline()
+    {
+        var api = new ShelfieApi(new HttpClient(new HangingHandler()), () => "http://example.test", new InMemoryTokenStore());
+        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(100));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => api.LoginAsync("a@b.c", "x", cts.Token));
+    }
+
+    private sealed class HangingHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+            return new HttpResponseMessage();
+        }
+    }
+
+    [Fact]
     public async Task Offline_server_is_reported_not_thrown()
     {
         var api = new ShelfieApi(new HttpClient(), () => "http://127.0.0.1:1", new InMemoryTokenStore());

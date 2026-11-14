@@ -1,10 +1,14 @@
 ﻿<Router AppAssembly="@typeof(MauiProgram).Assembly">
     <Found Context="routeData">
-       <!-- Здесь указываем, какой Layout будет по умолчанию -->
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(EmptyLayout)" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MobileLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
     <NotFound>
-        <h1>Страница не найдена</h1>
+        <LayoutView Layout="@typeof(MobileLayout)">
+            <div class="empty-state">
+                <p>@L["NotFound"]</p>
+                <a class="btn-primary" href="/home">@L["Home"]</a>
+            </div>
+        </LayoutView>
     </NotFound>
 </Router>

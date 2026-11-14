@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  test:
+    name: Backend & client core tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Restore
+        run: |
+          dotnet restore ShelfieBackend.Tests/ShelfieBackend.Tests.csproj
+          dotnet restore Shelfie.Client.Tests/Shelfie.Client.Tests.csproj
+      - name: Backend tests (API + offline sync, SQLite in memory)
+        run: dotnet test --project ShelfieBackend.Tests --no-restore
+      - name: Client core tests
+        run: dotnet test --project Shelfie.Client.Tests --no-restore
+
+  docker:
+    name: Backend Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -f ShelfieBackend/Dockerfile -t shelfie-api .
+
+  android:
+    name: Android app build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Install MAUI workload
+        run: dotnet workload install maui-android
+      - name: Build
+        run: dotnet build MauiApp1/MauiApp1.csproj -f net10.0-android -c Release

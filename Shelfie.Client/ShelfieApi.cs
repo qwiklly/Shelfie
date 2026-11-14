@@ -132,10 +132,19 @@ public sealed class ShelfieApi
     public Task<ApiResult<SyncResponse>> SyncAsync(SyncRequest request, CancellationToken ct = default) =>
         SendAsync<SyncResponse>(HttpMethod.Post, "sync", request, auth: true, ct);
 
-    private async Task<ApiResult<T>> SendAsync<T>(HttpMethod method, string path, object? body, bool auth, CancellationToken ct)
+    /// <summary>
+    /// Upper bound for one request. A server that accepts the connection but never answers (sleeping laptop,
+    /// captive Wi-Fi, emulator NAT) must not leave the app "syncing" forever.
+    /// </summary>
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(20);
+
+    private async Task<ApiResult<T>> SendAsync<T>(HttpMethod method, string path, object? body, bool auth, CancellationToken callerCt)
     {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(callerCt);
+        timeout.CancelAfter(RequestTimeout);
         try
         {
+            var ct = timeout.Token;
             using var request = new HttpRequestMessage(method, Url(path));
             if (body != null)
                 request.Content = JsonContent.Create(body, options: ShelfieJson.Options);
@@ -163,9 +172,10 @@ public sealed class ShelfieApi
             // A login failure still carries a LoginResponse body with the reason.
             return new ApiResult<T>(false, default, error, Status: response.StatusCode);
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or UriFormatException)
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException or UriFormatException)
         {
-            if (ct.IsCancellationRequested)
+            // Cancelled by the caller → propagate; cancelled by our timeout → the server is unreachable.
+            if (callerCt.IsCancellationRequested)
                 throw;
             return new ApiResult<T>(false, default, "Сервер недоступен", IsOffline: true);
         }

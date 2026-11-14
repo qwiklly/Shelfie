@@ -1,0 +1,144 @@
+@page "/category/{Id:guid}"
+@implements IDisposable
+@inject PhotoService Photos
+
+<header class="page-header">
+    <a class="icon-btn" href="/categories"><Icon Name="back" /></a>
+    <h1>@(category?.Name ?? "…")</h1>
+    <a class="icon-btn" href="/category/@Id/settings" title="@L["CategorySettings"]"><Icon Name="settings" /></a>
+</header>
+
+<div class="search-box">
+    <Icon Name="search" Size="18" />
+    <input placeholder="@L["Search"]" @bind="search" @bind:event="oninput" @bind:after="LoadAsync" />
+</div>
+
+<div class="chips">
+    <button class="chip @(status == null ? "active" : "")" @onclick="() => SetStatus(null)">@L["All"]</button>
+    <button class="chip @(status == ExpiryStatus.Soon ? "active" : "")" @onclick="() => SetStatus(ExpiryStatus.Soon)">@L["ExpiringSoon"]</button>
+    <button class="chip @(status == ExpiryStatus.Expired ? "active" : "")" @onclick="() => SetStatus(ExpiryStatus.Expired)">@L["Expired"]</button>
+    @foreach (var place in usedLocations)
+    {
+        <button class="chip @(location == place ? "active" : "")" @onclick="() => SetLocation(place)">@place</button>
+    }
+</div>
+
+@if (items == null)
+{
+    <p class="muted center">@L["Loading"]</p>
+}
+else if (items.Count == 0)
+{
+    <div class="empty-state">
+        <Icon Name="@Icon.ForKind(category?.Kind ?? CategoryKind.Custom)" Size="48" />
+        <p>@(string.IsNullOrWhiteSpace(search) && status == null && location == null ? L["NoItemsYet"] : L["NothingFound"])</p>
+    </div>
+}
+else
+{
+    <div class="item-list">
+        @foreach (var item in items)
+        {
+            <div class="item-card @(item.Quantity == 0 ? "empty" : "")">
+                <a class="item-main" href="/item/@item.Id">
+                    @if (photoUrls.TryGetValue(item.Id, out var url))
+                    {
+                        <img class="thumb" src="@url" alt="" />
+                    }
+                    <div class="item-text">
+                        <div class="item-name">@item.Name</div>
+                        <div class="item-sub">
+                            @if (!string.IsNullOrEmpty(item.Brand)) { <span>@item.Brand</span> }
+                            @if (!string.IsNullOrEmpty(item.Location)) { <span>· @item.Location</span> }
+                            @if (item.Weight is double w && w > 0) { <span>· @w @item.WeightUnit</span> }
+                        </div>
+                        @if (category != null && category.Fields.Count > 0)
+                        {
+                            <div class="item-fields">
+                                @foreach (var field in category.Fields.Take(3))
+                                {
+                                    var value = item.Fields.GetValueOrDefault(field.Key);
+                                    if (!string.IsNullOrEmpty(value))
+                                    {
+                                        <span>@field.Name: @FieldValues.Display(field.Type, value)</span>
+                                    }
+                                }
+                            </div>
+                        }
+                        <ExpiryBadge Date="item.ExpirationDate" />
+                    </div>
+                </a>
+                <div class="qty-control">
+                    <button class="round" @onclick="() => Adjust(item, -1)" disabled="@(item.Quantity == 0)"><Icon Name="minus" Size="16" /></button>
+                    <b>@item.Quantity</b>
+                    <button class="round" @onclick="() => Adjust(item, 1)"><Icon Name="plus" Size="16" /></button>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<a class="fab" href="/item/new/@Id"><Icon Name="plus" Size="28" /></a>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private CategoryDto? category;
+    private List<ItemDto>? items;
+    private List<string> usedLocations = new();
+    private Dictionary<Guid, string> photoUrls = new();
+    private string search = "";
+    private string? location;
+    private ExpiryStatus? status;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Inventory.Changed -= OnChanged;
+        Inventory.Changed += OnChanged;
+        category = await Inventory.GetCategoryAsync(Id);
+        if (category == null)
+        {
+            Nav.NavigateTo("/categories");
+            return;
+        }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        items = await Inventory.GetItemsAsync(new ItemFilter(Id, search, location, status), Settings.SoonDays);
+
+        var all = await Inventory.GetItemsAsync(new ItemFilter(Id));
+        usedLocations = all.Select(i => i.Location).Where(l => !string.IsNullOrEmpty(l)).Distinct().Cast<string>().ToList();
+
+        foreach (var item in items.Where(i => !photoUrls.ContainsKey(i.Id)))
+        {
+            var url = await Photos.GetDataUrlAsync(await Inventory.GetPhotoPathAsync(item.Id));
+            if (url != null)
+                photoUrls[item.Id] = url;
+        }
+    }
+
+    private async Task SetStatus(ExpiryStatus? value)
+    {
+        status = value;
+        await LoadAsync();
+    }
+
+    private async Task SetLocation(string value)
+    {
+        location = location == value ? null : value;
+        await LoadAsync();
+    }
+
+    private async Task Adjust(ItemDto item, int delta)
+    {
+        var updated = await Inventory.AdjustQuantityAsync(item.Id, delta, Settings.AutoShoppingList);
+        if (updated?.Quantity == 0 && Settings.AutoShoppingList)
+            Toasts.Show(string.Format(L["AddedToShopping"], item.Name));
+    }
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
+
+    public void Dispose() => Inventory.Changed -= OnChanged;
+}

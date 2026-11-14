@@ -1,0 +1,92 @@
+@page "/profile"
+@inject AccountManager Account
+@inject ShelfieApi Api
+
+<header class="page-header">
+    <a class="icon-btn" href="/settings"><Icon Name="back" /></a>
+    <h1>@L["Editing"]</h1>
+</header>
+
+@if (loading)
+{
+    <p class="muted center">@L["Loading"]</p>
+}
+else if (profile == null)
+{
+    <div class="empty-state">
+        <Icon Name="offline" Size="48" />
+        <p>@(error ?? L["NeedsServer"])</p>
+    </div>
+}
+else
+{
+    <div class="card form">
+        <label>@L["Email"]</label>
+        <input value="@profile.Email" readonly />
+
+        <label>@L["Name"]</label>
+        <input @bind="profile.Name" />
+
+        <label>@L["Phone"]</label>
+        <input @bind="profile.Phone" placeholder="+79991234567" />
+
+        <label>@L["NewPass"]</label>
+        <input type="password" @bind="newPassword" placeholder="@L["EnterNewPass"]" />
+        <small class="hint">@L["PasswordRule"]</small>
+
+        @if (error != null)
+        {
+            <p class="error-text">@error</p>
+        }
+
+        <button class="btn-primary wide" disabled="@busy" @onclick="Save">@L["Save"]</button>
+    </div>
+}
+
+@code {
+    private UserProfile? profile;
+    private string? newPassword;
+    private string? error;
+    private bool loading = true;
+    private bool busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var email = await Account.GetSignedInEmailAsync();
+        if (email == null)
+        {
+            Nav.NavigateTo("/welcome");
+            return;
+        }
+
+        // The profile lives on the server, so this screen needs a connection.
+        var result = await Api.GetProfileAsync(email);
+        profile = result.Value;
+        if (!result.Success)
+            error = result.IsOffline ? L["NeedsServer"] : result.Error;
+        loading = false;
+    }
+
+    private async Task Save()
+    {
+        busy = true;
+        error = null;
+        try
+        {
+            var result = await Api.UpdateProfileAsync(profile!.Email, profile.Name, profile.Phone ?? "", newPassword);
+            if (result.Success)
+            {
+                newPassword = null;
+                Toasts.Show(L["Saved"]);
+            }
+            else
+            {
+                error = result.IsOffline ? L["NeedsServer"] : result.Error;
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

@@ -1,0 +1,196 @@
+@page "/settings"
+@implements IDisposable
+@inject AccountManager Account
+@inject SyncCoordinator Sync
+@inject NotificationScheduler Notifications
+@inject ShelfieApi Api
+
+<header class="page-header">
+    <h1>@L["Settings"]</h1>
+</header>
+
+<section class="card">
+    <div class="card-title"><Icon Name="user" Size="18" /> @L["Account"]</div>
+    @if (email != null)
+    {
+        <p>@email</p>
+        <div class="two-cols">
+            <a class="btn-secondary" href="/profile">@L["Profile"]</a>
+            <button class="btn-secondary" @onclick="SignOut">@L["Logout"]</button>
+        </div>
+        <button class="btn-link danger small" @onclick="DeleteAccount">@L["DeleteAccount"]</button>
+    }
+    else
+    {
+        <p class="muted">@L["GuestModeInfo"]</p>
+        <a class="btn-primary wide" href="/welcome">@L["SignInToSync"]</a>
+    }
+</section>
+
+<section class="card">
+    <div class="card-title"><Icon Name="sync" Size="18" /> @L["Sync"]</div>
+    <p>
+        <b>@StateText</b>
+        @if (status.PendingChanges > 0) { <span class="muted"> · @string.Format(L["PendingChanges"], status.PendingChanges)</span> }
+    </p>
+    @if (status.LastSyncUtc is DateTime last)
+    {
+        <p class="muted small">@L["LastSync"]: @last.ToLocalTime().ToString("g")</p>
+    }
+    @if (!string.IsNullOrEmpty(status.Message))
+    {
+        <p class="muted small">@status.Message</p>
+    }
+    @if (email != null)
+    {
+        <button class="btn-secondary wide" @onclick="SyncNow" disabled="@(status.State == SyncState.Syncing)">@L["SyncNow"]</button>
+    }
+
+    <label>@L["ServerAddress"]</label>
+    <div class="inline">
+        <input class="grow" @bind="serverUrl" />
+        <button class="btn-secondary" @onclick="SaveServer">@L["Check"]</button>
+    </div>
+</section>
+
+<section class="card">
+    <div class="card-title"><Icon Name="bell" Size="18" /> @L["Notifications"]</div>
+    <label class="switch-row">
+        <input type="checkbox" checked="@Settings.NotificationsEnabled" @onchange="ToggleNotifications" />
+        <span>@L["NotifyExpiring"]</span>
+    </label>
+    <label>@L["DaysBefore"]</label>
+    <input type="number" min="0" max="30" value="@Settings.SoonDays" @onchange="SetSoonDays" />
+    <label class="switch-row">
+        <input type="checkbox" checked="@Settings.AutoShoppingList" @onchange="e => Settings.AutoShoppingList = e.Value is true" />
+        <span>@L["AutoShopping"]</span>
+    </label>
+</section>
+
+<section class="card">
+    <div class="card-title">@L["Language"]</div>
+    <select value="@Settings.Language" @onchange="ChangeLanguage">
+        <option value="ru-RU">Русский</option>
+        <option value="en-US">English</option>
+    </select>
+</section>
+
+<section class="card">
+    <div class="card-title"><Icon Name="share" Size="18" /> @L["Data"]</div>
+    <button class="btn-secondary wide" @onclick="ExportCsv">@L["ExportCsv"]</button>
+    <a class="btn-link wide" href="/history">@L["History"]</a>
+</section>
+
+<p class="muted small center">Shelfie @AppInfo.Current.VersionString</p>
+
+@code {
+    private string? email;
+    private string serverUrl = "";
+    private SyncStatus status = new(SyncState.NotSignedIn, null, 0);
+
+    private string StateText => status.State switch
+    {
+        SyncState.Synced => L["StateSynced"],
+        SyncState.Syncing => L["SyncInProgress"],
+        SyncState.Offline => L["StateOffline"],
+        SyncState.Error => L["SyncError"],
+        _ => L["StateLocalOnly"]
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        email = await Account.GetSignedInEmailAsync();
+        serverUrl = Settings.ServerUrl;
+        Sync.StatusChanged += OnStatus;
+        status = Sync.Status;
+        await Sync.SyncNowAsync();
+    }
+
+    private void OnStatus(object? sender, SyncStatus s)
+    {
+        status = s;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SyncNow() => await Sync.SyncNowAsync();
+
+    private async Task SaveServer()
+    {
+        Settings.ServerUrl = serverUrl;
+        serverUrl = Settings.ServerUrl;
+        bool reachable = await Api.IsReachableAsync();
+        Toasts.Show(reachable ? L["ServerReachable"] : L["ServerUnreachable"], isError: !reachable);
+        if (reachable)
+            await Sync.SyncNowAsync();
+    }
+
+    private async Task ToggleNotifications(ChangeEventArgs e)
+    {
+        bool enable = e.Value is true;
+        if (enable && !await Notifications.RequestPermissionAsync())
+        {
+            Toasts.Show(L["NotificationsDenied"], isError: true);
+            enable = false;
+        }
+        Settings.NotificationsEnabled = enable;
+        await Notifications.RescheduleAsync();
+    }
+
+    private async Task SetSoonDays(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var days))
+        {
+            Settings.SoonDays = days;
+            await Notifications.RescheduleAsync();
+        }
+    }
+
+    private void ChangeLanguage(ChangeEventArgs e)
+    {
+        var language = e.Value?.ToString() ?? "ru-RU";
+        Settings.Language = language;
+        var culture = new CultureInfo(language);
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+        Nav.NavigateTo("/settings", forceLoad: true);
+    }
+
+    private async Task ExportCsv()
+    {
+        var path = Path.Combine(FileSystem.CacheDirectory, $"shelfie-{DateTime.Now:yyyy-MM-dd}.csv");
+        // BOM so that Excel detects UTF-8.
+        await File.WriteAllTextAsync(path, await Inventory.ExportCsvAsync(), new System.Text.UTF8Encoding(true));
+        await Share.Default.RequestAsync(new ShareFileRequest { Title = L["ExportCsv"], File = new ShareFile(path, "text/csv") });
+    }
+
+    private async Task SignOut()
+    {
+        var check = await Account.PrepareSignOutAsync();
+        if (check.PendingChanges > 0 &&
+            !await JS.InvokeAsync<bool>("confirm", string.Format(L["LogoutLosesChanges"], check.PendingChanges)))
+            return;
+
+        await Account.SignOutAsync();
+        Settings.GuestMode = false;
+        Nav.NavigateTo("/welcome", replace: true);
+    }
+
+    private async Task DeleteAccount()
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", L["ConfirmDeleteAccount"].Value))
+            return;
+
+        var result = await Account.DeleteAccountAsync();
+        if (!result.Success)
+        {
+            Toasts.Show(result.IsOffline ? L["NeedsServer"] : result.Error ?? L["SyncError"], isError: true);
+            return;
+        }
+        Settings.GuestMode = false;
+        Nav.NavigateTo("/welcome", replace: true);
+    }
+
+    public void Dispose() => Sync.StatusChanged -= OnStatus;
+}

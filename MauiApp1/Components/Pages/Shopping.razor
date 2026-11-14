@@ -1,0 +1,92 @@
+@page "/shopping"
+@implements IDisposable
+
+<header class="page-header">
+    <h1>@L["Shopping"]</h1>
+    @if (list.Count > 0)
+    {
+        <button class="icon-btn" @onclick="ShareList" title="@L["Share"]"><Icon Name="share" /></button>
+    }
+</header>
+
+<div class="card">
+    <div class="inline">
+        <input class="grow" placeholder="@L["WhatToBuy"]" @bind="newName" @bind:event="oninput" @onkeyup="OnKey" />
+        <input class="qty-input" type="number" min="1" @bind="newQuantity" />
+        <button class="btn-primary" @onclick="Add"><Icon Name="plus" Size="18" /></button>
+    </div>
+</div>
+
+@if (list.Count == 0)
+{
+    <div class="empty-state">
+        <Icon Name="cart" Size="48" />
+        <p>@L["ShoppingEmpty"]</p>
+    </div>
+}
+else
+{
+    <div class="card">
+        @foreach (var entry in list)
+        {
+            <div class="shopping-row @(entry.IsChecked ? "checked" : "")">
+                <label class="grow switch-row">
+                    <input type="checkbox" checked="@entry.IsChecked" @onchange="e => Inventory.SetShoppingCheckedAsync(entry.Id, e.Value is true)" />
+                    <span>@entry.Name</span>
+                </label>
+                <span class="muted">× @entry.Quantity</span>
+                <button class="icon-btn danger" @onclick="() => Inventory.DeleteShoppingItemAsync(entry.Id)"><Icon Name="trash" Size="16" /></button>
+            </div>
+        }
+    </div>
+
+    @if (list.Any(e => e.IsChecked))
+    {
+        <button class="btn-primary wide" @onclick="Complete"><Icon Name="check" Size="18" /> @L["BoughtChecked"]</button>
+        <p class="muted small center">@L["BoughtHint"]</p>
+    }
+}
+
+@code {
+    private List<ShoppingItemDto> list = new();
+    private string newName = "";
+    private int newQuantity = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Inventory.Changed += OnChanged;
+        list = await Inventory.GetShoppingListAsync();
+    }
+
+    private async Task Add()
+    {
+        var result = await Inventory.AddToShoppingListAsync(newName, newQuantity);
+        if (result.Success)
+        {
+            newName = "";
+            newQuantity = 1;
+        }
+    }
+
+    private async Task OnKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await Add();
+    }
+
+    private async Task Complete()
+    {
+        var count = await Inventory.CompleteCheckedAsync();
+        Toasts.Show(string.Format(L["BoughtDone"], count));
+    }
+
+    private async Task ShareList()
+    {
+        var text = string.Join("\n", list.Where(e => !e.IsChecked).Select(e => $"• {e.Name}" + (e.Quantity > 1 ? $" × {e.Quantity}" : "")));
+        await Share.Default.RequestAsync(new ShareTextRequest { Title = L["Shopping"], Text = text });
+    }
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { list = await Inventory.GetShoppingListAsync(); StateHasChanged(); });
+
+    public void Dispose() => Inventory.Changed -= OnChanged;
+}

@@ -1,0 +1,326 @@
+@page "/item/{Id:guid}"
+@page "/item/new/{CategoryId:guid}"
+@inject PhotoService Photos
+@inject ScannerService Scanner
+@inject ProductLookup Lookup
+
+<header class="page-header">
+    <a class="icon-btn" href="@BackUrl"><Icon Name="back" /></a>
+    <h1>@(isNew ? L["NewItem"] : L["EditItem"])</h1>
+</header>
+
+@if (item == null)
+{
+    <p class="muted center">@L["Loading"]</p>
+}
+else
+{
+    <div class="card form">
+        <div class="photo-row">
+            @if (photoUrl != null)
+            {
+                <img class="photo" src="@photoUrl" alt="" />
+            }
+            <div class="photo-actions">
+                @if (Photos.CanCapture)
+                {
+                    <button class="btn-secondary small" @onclick="() => TakePhoto(true)"><Icon Name="camera" Size="16" /> @L["TakePhoto"]</button>
+                }
+                <button class="btn-secondary small" @onclick="() => TakePhoto(false)"><Icon Name="image" Size="16" /> @L["PickPhoto"]</button>
+                @if (photoPath != null)
+                {
+                    <button class="btn-link small" @onclick="RemovePhoto">@L["RemovePhoto"]</button>
+                }
+            </div>
+        </div>
+
+        <label>@L["Category"]</label>
+        <select @bind="item.CategoryId" @bind:after="CategoryChanged">
+            @foreach (var c in categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+
+        <label>@L["Title"] *</label>
+        <input @bind="item.Name" />
+
+        <label>@L["FirmAndManufacturer"]</label>
+        <input @bind="item.Brand" />
+
+        <div class="two-cols">
+            <div>
+                <label>@L["Quantity"]</label>
+                <input type="number" min="0" @bind="item.Quantity" />
+            </div>
+            <div>
+                <label>@L["WeightAndVolume"]</label>
+                <div class="inline">
+                    <input type="number" min="0" step="any" @bind="item.Weight" />
+                    <select @bind="item.WeightUnit">
+                        <option value="">—</option>
+                        @foreach (var unit in Widgets.Units)
+                        {
+                            <option value="@unit">@unit</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <label>@L["ExpirationDate"]</label>
+        <div class="inline">
+            <input type="date" @bind="item.ExpirationDate" />
+            @if (item.ExpirationDate != null)
+            {
+                <button class="btn-link small" @onclick="() => item.ExpirationDate = null">@L["Clear"]</button>
+            }
+        </div>
+
+        <label>@L["Location"]</label>
+        <input list="locations" @bind="item.Location" placeholder="@L["LocationHint"]" />
+        <datalist id="locations">
+            @foreach (var place in locations)
+            {
+                <option value="@place"></option>
+            }
+        </datalist>
+
+        <label>@L["Barcode"]</label>
+        <div class="inline">
+            <input inputmode="numeric" @bind="item.Barcode" />
+            @if (Scanner.IsSupported)
+            {
+                <button class="icon-btn" @onclick="ScanBarcode" title="@L["Scan"]"><Icon Name="scan" /></button>
+            }
+            <button class="icon-btn" @onclick="LookupBarcode" title="@L["FindByBarcode"]" disabled="@lookingUp"><Icon Name="search" /></button>
+        </div>
+
+        @if (category != null)
+        {
+            @foreach (var field in category.Fields)
+            {
+                var key = field.Key;
+                <label>@field.Name@(field.Required ? " *" : "")</label>
+                @switch (field.Type)
+                {
+                    case FieldType.Number:
+                        <input type="number" step="any" value="@Get(key)" @onchange="e => Set(key, e.Value?.ToString())" />
+                        break;
+                    case FieldType.Date:
+                        <input type="date" value="@Get(key)" @onchange="e => Set(key, e.Value?.ToString())" />
+                        break;
+                    case FieldType.Boolean:
+                        <label class="switch-row">
+                            <input type="checkbox" checked="@(Get(key) == "true")" @onchange='e => Set(key, (e.Value is true) ? "true" : "false")' />
+                            <span>@field.Name</span>
+                        </label>
+                        break;
+                    default:
+                        <input value="@Get(key)" @onchange="e => Set(key, e.Value?.ToString())" />
+                        break;
+                }
+            }
+        }
+
+        <label>@L["Notes"]</label>
+        <textarea rows="3" @bind="item.Notes"></textarea>
+
+        @if (errors.Count > 0)
+        {
+            <div class="error-text">
+                @foreach (var e in errors) { <div>@e</div> }
+            </div>
+        }
+
+        <button class="btn-primary wide" @onclick="Save">@L["Save"]</button>
+
+        @if (!isNew)
+        {
+            <div class="two-cols">
+                <button class="btn-secondary" @onclick="AddToShopping"><Icon Name="cart" Size="16" /> @L["ToShoppingList"]</button>
+                <button class="btn-danger" @onclick="() => showDelete = true"><Icon Name="trash" Size="16" /> @L["DeleteButton"]</button>
+            </div>
+        }
+    </div>
+}
+
+@if (showDelete)
+{
+    <div class="modal-overlay" @onclick="() => showDelete = false">
+        <div class="modal-card" @onclick:stopPropagation="true">
+            <h3>@string.Format(L["DeleteWhat"], item?.Name)</h3>
+            <p class="muted">@L["DeleteReasonHint"]</p>
+            <button class="btn-primary wide" @onclick="() => Delete(ChangeTypes.Consumed)">@L["ReasonConsumed"]</button>
+            <button class="btn-danger wide" @onclick="() => Delete(ChangeTypes.Wasted)">@L["ReasonWasted"]</button>
+            <button class="btn-secondary wide" @onclick="() => Delete(ChangeTypes.Removed)">@L["ReasonRemoved"]</button>
+            <button class="btn-link wide" @onclick="() => showDelete = false">@L["Cancel"]</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+    [Parameter] public Guid CategoryId { get; set; }
+
+    // Prefill from the scanner page.
+    [SupplyParameterFromQuery] public string? Barcode { get; set; }
+    [SupplyParameterFromQuery(Name = "name")] public string? PrefillName { get; set; }
+    [SupplyParameterFromQuery(Name = "brand")] public string? PrefillBrand { get; set; }
+    [SupplyParameterFromQuery(Name = "weight")] public string? PrefillWeight { get; set; }
+    [SupplyParameterFromQuery(Name = "unit")] public string? PrefillUnit { get; set; }
+
+    private ItemDto? item;
+    private CategoryDto? category;
+    private List<CategoryDto> categories = new();
+    private List<string> locations = new();
+    private List<string> errors = new();
+    private bool isNew;
+    private bool showDelete;
+    private bool lookingUp;
+    private string? photoPath;
+    private string? newPhotoPath;
+    private string? photoUrl;
+
+    private string BackUrl => item != null ? $"/category/{item.CategoryId}" : "/categories";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        categories = await Inventory.GetCategoriesAsync();
+        locations = await Inventory.GetLocationsAsync();
+
+        if (Id != Guid.Empty)
+        {
+            item = await Inventory.GetItemAsync(Id);
+            if (item == null)
+            {
+                Nav.NavigateTo("/categories");
+                return;
+            }
+            photoPath = await Inventory.GetPhotoPathAsync(Id);
+            photoUrl = await Photos.GetDataUrlAsync(photoPath);
+        }
+        else
+        {
+            isNew = true;
+            item = new ItemDto
+            {
+                Id = Guid.NewGuid(), // known up front so a photo can be attached before saving
+                CategoryId = categories.Any(c => c.Id == CategoryId) ? CategoryId : BuiltInCategories.Products,
+                Quantity = 1,
+                Barcode = Barcode,
+                Name = PrefillName ?? "",
+                Brand = PrefillBrand,
+                Weight = double.TryParse(PrefillWeight, System.Globalization.NumberStyles.Float, CultureInfo.InvariantCulture, out var w) ? w : null,
+                WeightUnit = PrefillUnit
+            };
+        }
+
+        category = categories.FirstOrDefault(c => c.Id == item.CategoryId);
+    }
+
+    private void CategoryChanged() => category = categories.FirstOrDefault(c => c.Id == item!.CategoryId);
+
+    private string Get(string key) => item!.Fields.GetValueOrDefault(key) ?? "";
+
+    private void Set(string key, string? value) => item!.Fields[key] = value ?? "";
+
+    private async Task Save()
+    {
+        var result = await Inventory.SaveItemAsync(item!);
+        if (!result.Success)
+        {
+            errors = result.Errors.ToList();
+            return;
+        }
+
+        if (newPhotoPath != null || (photoPath == null && !isNew))
+            await Inventory.SetPhotoAsync(item!.Id, newPhotoPath ?? photoPath);
+
+        Toasts.Show(L["Saved"]);
+        Nav.NavigateTo($"/category/{item!.CategoryId}");
+    }
+
+    private async Task TakePhoto(bool fromCamera)
+    {
+        try
+        {
+            var path = await Photos.TakeAsync(item!.Id, fromCamera);
+            if (path == null)
+                return;
+
+            if (newPhotoPath != null)
+                Photos.Delete(newPhotoPath);
+            newPhotoPath = path;
+            photoPath = path;
+            photoUrl = await Photos.GetDataUrlAsync(path);
+        }
+        catch (Exception)
+        {
+            Toasts.Show(L["PhotoFailed"], isError: true);
+        }
+    }
+
+    private void RemovePhoto()
+    {
+        Photos.Delete(newPhotoPath ?? photoPath);
+        photoPath = null;
+        newPhotoPath = null;
+        photoUrl = null;
+    }
+
+    private async Task ScanBarcode()
+    {
+        var code = await Scanner.ScanAsync(L["ScanTitle"], L["Cancel"]);
+        if (code == null)
+            return;
+        item!.Barcode = code;
+        await LookupBarcode();
+    }
+
+    private async Task LookupBarcode()
+    {
+        if (!ProductLookup.IsValidBarcode(item!.Barcode))
+        {
+            Toasts.Show(L["BadBarcode"], isError: true);
+            return;
+        }
+
+        lookingUp = true;
+        try
+        {
+            var info = await Lookup.LookupAsync(item.Barcode!);
+            if (info == null)
+            {
+                Toasts.Show(L["ProductNotFound"]);
+                return;
+            }
+
+            // Only fill what the user has not typed yet.
+            if (string.IsNullOrWhiteSpace(item.Name)) item.Name = info.Name;
+            if (string.IsNullOrWhiteSpace(item.Brand)) item.Brand = info.Brand;
+            if (item.Weight is null or 0) { item.Weight = info.Weight; item.WeightUnit = info.WeightUnit; }
+            Toasts.Show(L["ProductFound"]);
+        }
+        finally
+        {
+            lookingUp = false;
+        }
+    }
+
+    private async Task AddToShopping()
+    {
+        await Inventory.AddToShoppingListAsync(item!.Name, 1, item.Id, item.CategoryId);
+        Toasts.Show(string.Format(L["AddedToShopping"], item.Name));
+    }
+
+    private async Task Delete(string reason)
+    {
+        showDelete = false;
+        if (await Inventory.DeleteItemAsync(item!.Id, reason))
+        {
+            Photos.Delete(photoPath);
+            Nav.NavigateTo($"/category/{item.CategoryId}");
+        }
+    }
+}

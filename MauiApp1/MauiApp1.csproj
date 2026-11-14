@@ -25,11 +25,11 @@
         <ApplicationTitle>Shelfie</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.mauiapp1</ApplicationId>
+        <ApplicationId>com.qwiklly.shelfie</ApplicationId>
 
         <!-- Versions -->
-        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
+        <ApplicationVersion>2</ApplicationVersion>
 
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
@@ -71,28 +71,17 @@
     </ItemGroup>
 
     <ItemGroup>
-		<PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
 		<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.15"></PackageReference>
 		<PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.15" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.15" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+        <PackageReference Include="Plugin.LocalNotification" Version="14.1.2" />
+        <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.10.4" />
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Resources\Languages\MyStrings.ru.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>MyStrings.ru.resx</DependentUpon>
-      </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Update="Resources\Languages\MyStrings.ru.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>MyStrings.ru.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+      <ProjectReference Include="..\Shelfie.Client\Shelfie.Client.csproj" />
     </ItemGroup>
 
 </Project>

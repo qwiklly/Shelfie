@@ -1,7 +1,8 @@
 # 📦 Shelfie – Smart Inventory App
 
-Shelfie is a smart inventory app built with .NET MAUI and ASP.NET Core.  
-It helps you manage items by categories (such as products, medicines, and custom types), track expiration dates, and securely store data using a backend and PostgreSQL.
+Shelfie is a smart home inventory app built with .NET MAUI and ASP.NET Core.  
+It keeps track of food, medicines, books and any custom categories, warns before things expire and builds your shopping list.
+**It works fully offline**: everything is stored on the phone and synchronised with the server whenever it is reachable.
 
 ![ShelfieCard](https://github.com/user-attachments/assets/774ceda1-9f56-4318-91a9-209e9e65cbdb)
 
@@ -9,13 +10,16 @@ It helps you manage items by categories (such as products, medicines, and custom
 
 ## ✨ Features
 
-- 📊 Dashboard with category statistics and recent operations
-- 📁 Product & medicine management (add/edit/delete, track expiry)
-- 🧩 Custom categories with flexible fields (define fields once and reuse them when adding items).
-- 🛡️ Secure profile system (login, register, update, logout)
-- 🌐 Localization (English / Russian)
-- 📡 Backend synchronization 
-- 📱 Mobile-first design using .NET MAUI (Blazor)
+- 📴 **Offline-first** — local SQLite database on the device; use it without an account (guest mode) and sign in later to upload everything
+- 🔄 **Sync between devices** — changes are queued while offline and synchronised when the server is back (last write wins)
+- ⏰ **Expiry tracking** — "expiring soon" and "expired" lists plus local notifications N days before
+- 📷 **Barcode scanner** — finds your own items offline, otherwise fills name/brand/weight from Open Food Facts
+- 🛒 **Shopping list** — quick −/+ on every item; when something runs out it goes to the list, "bought" restocks it
+- 📍 **Storage locations & photos** — fridge, freezer, first-aid kit…; photos stay on the device
+- 🧩 **Categories with typed fields** — Products, Medications, Books built in; custom categories with text / number / date / yes-no fields; rename or reorder fields without losing values
+- 📊 **Dashboard & statistics** — used vs. thrown away over 30 days, history of all operations
+- 📤 **CSV export** — from the app (works offline) or `GET /api/items/export`
+- 🌐 Russian / English
 
 ---
 
@@ -65,9 +69,29 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
+## 🏗️ Project structure
+
+| Project | What it is |
+|---|---|
+| `Shelfie.Shared` | Contracts and rules shared by server and app (DTOs, built-in categories, validation, CSV export) |
+| `ShelfieBackend` | ASP.NET Core API + PostgreSQL (REST by id, `/api/sync`, admin pages) |
+| `Shelfie.Client` | Offline core of the app: local SQLite inventory, sync engine, account handling, barcode lookup — plain .NET, fully unit-tested |
+| `MauiApp1` | The .NET MAUI Blazor app (UI, camera, notifications) |
+| `*.Tests` | xUnit v3 tests |
+
+## 🐳 Running the server with Docker
+
+```bash
+cp .env.example .env   # then edit the password and JWT key
+docker compose up -d
+```
+
+The API listens on port `5111`, migrations are applied on start. On a real phone set **Settings → Server address** to `http://<your PC's IP>:5111`.
+
 ## 🚀 Running Locally
 
 You need the .NET 10 SDK with the MAUI workload, PostgreSQL and an Android emulator.
+The app itself works without the server — the server is only needed for accounts and sync.
 
 1. Create a PostgreSQL user and database, then set your connection string and JWT key:
 
@@ -86,12 +110,15 @@ dotnet run --launch-profile http
 
 The backend refuses to start without a `Jwt:Key` of at least 32 characters.
 
-3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. It connects to the backend at `http://10.0.2.2:5111/api/` (on Windows: `http://localhost:5111/api/`).
+3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. By default it uses `http://10.0.2.2:5111` (the host machine as seen from the emulator); change it in **Settings → Server address**.
+
+> ⚠️ Upgrading an existing database: the `UnifiedInventory` migration moves products, medications, custom categories and history into the new tables and drops the old ones. Back up the database first (`pg_dump`). It also disables the password of the `admin@example.com` account created by the first migration, because that password is published in this repository.
 
 ## 🧪 Tests
 
-The backend is covered by unit and integration tests (`ShelfieBackend.Tests`, xUnit v3). Integration tests run the real API in memory on SQLite, so no PostgreSQL is needed:
-
 ```bash
 dotnet test --project ShelfieBackend.Tests
+dotnet test --project Shelfie.Client.Tests
 ```
+
+`ShelfieBackend.Tests` runs the real API in memory on SQLite (no PostgreSQL needed), including end-to-end offline sync between two simulated devices. `Shelfie.Client.Tests` covers the offline inventory, notifications planning, barcode parsing and shared rules. CI runs both on every push (`.github/workflows/ci.yml`).

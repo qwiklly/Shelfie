@@ -1,196 +1,108 @@
-﻿@page "/home"
-@layout MobileLayout
+@page "/home"
+@implements IDisposable
 
-<!-- Поле поиска -->
-<div style="padding-top:20px;" class="search-container">
-    <input type="text" placeholder=@Localizer["Search"] />
-    <button class="search-btn">@Localizer["Find"]</button>
-</div>
+<header class="page-header">
+    <h1>Shelfie</h1>
+    <a class="icon-btn" href="/history" title="@L["History"]"><Icon Name="history" /></a>
+</header>
 
-<div class="categories-container">
-    <div class="categories-title-wrapper">
-        <span class="categories-title">@Localizer["ItemCategories"]</span>
-    </div>
+@if (stats == null)
+{
+    <p class="muted center">@L["Loading"]</p>
+}
+else
+{
+    <section class="tiles">
+        <a class="tile" href="/categories"><b>@stats.TotalItems</b><span>@L["ItemsTotal"]</span></a>
+        <a class="tile warn" href="/expiring"><b>@stats.SoonCount</b><span>@L["ExpiringSoon"]</span></a>
+        <a class="tile danger" href="/expiring?tab=expired"><b>@stats.ExpiredCount</b><span>@L["Expired"]</span></a>
+        <a class="tile" href="/shopping"><b>@stats.ShoppingCount</b><span>@L["ToBuy"]</span></a>
+    </section>
 
-    <div class="category-list">
+    @if (stats.Expiring.Count > 0)
+    {
+        <section class="card">
+            <div class="card-title"><Icon Name="bell" Size="18" /> @L["NeedsAttention"] <a class="more" href="/expiring">@L["All"]</a></div>
+            @foreach (var item in stats.Expiring.Take(5))
+            {
+                <a class="row-link" href="/item/@item.Id">
+                    <span class="grow">@item.Name</span>
+                    <ExpiryBadge Date="item.ExpirationDate" />
+                </a>
+            }
+        </section>
+    }
 
-        <div class="plus-button" @onclick="NavigateToCategories">
-            <span class="plus-icon">+</span>
-        </div>
-
-        <div class="category-item" @onclick="NavigateToGroceries">
-            <span class="category-name">@Localizer["Groceries"]</span>
-            <div class="icon icon-food-svg"></div>
-
-        </div>
-
-        <div class="category-item" @onclick="NavigateToMedicaments">
-            <span class="category-name">@Localizer["Medications"]</span>
-            <div class="icon icon-medicine-svg"></div>
-        </div>
-
-    </div>
-</div>
-
-<div class="white-panel">
-    <!-- Блок статистики -->
-    <div class="statistics-container">
-        <h3 class="center-text">@Localizer["Statistic"]</h3>
-
-        <ul>
-            <li class="progress-item">
-                <span>@Localizer["Groceries"] @ProductsCount @Localizer["Item"]</span>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: @(GetProgressWidth(ProductsCount))"></div>
-                </div>
-            </li>
-        </ul>
-
-        <ul>
-            <li class="progress-item">
-                <span>@Localizer["Medications"] @MedicamentsCount @Localizer["Item"]</span>
-                <div class="progress-bar-container">
-                    <div class="progress-bar" style="width: @(GetProgressWidth(MedicamentsCount))"></div>
-                </div>
-            </li>
-        </ul>
-
-        @if (Categories != null && Categories.Count > 0)
+    <section class="card">
+        <div class="card-title"><Icon Name="grid" Size="18" /> @L["Categories"]</div>
+        @foreach (var category in categories)
         {
-            <ul class="progress-list">
-                @foreach (var cat in Categories)
-                {
-                    <li class="progress-item">
-                        <span>@cat.Name: @CategoryCounts.GetValueOrDefault(cat.Id, 0) @Localizer["Item"]</span>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar"
-                            style="width: @(GetProgressWidth(CategoryCounts.GetValueOrDefault(cat.Id, 0)));
-                                        background-color: @(GetColorForCategory(cat.Id))">
-                            </div>
-                        </div>
-                    </li>
-                }
-            </ul>
+            var count = stats.ItemsPerCategory.GetValueOrDefault(category.Id);
+            <a class="category-bar" href="/category/@category.Id">
+                <Icon Name="@Icon.ForKind(category.Kind)" Size="18" />
+                <span class="grow">@category.Name</span>
+                <span class="bar"><span style="width:@(BarWidth(count))%"></span></span>
+                <b>@count</b>
+            </a>
         }
-        <button @onclick="UpdateStatistics" class="center-button">@Localizer["Refresh"]</button>
-    </div>
+    </section>
 
-    <!-- Недавние операции -->
-    <div class="recent-operations">
-        <h3 class="center-text">@Localizer["RecentOperations"]</h3>
-        @if (LastOperations == null || LastOperations.Count == 0)
+    <section class="card">
+        <div class="card-title"><Icon Name="clock" Size="18" /> @L["Last30Days"]</div>
+        @if (stats.UsedShare is double share)
         {
-            <p>@Localizer["NoOperations"]</p>
+            <div class="usage-bar">
+                <span class="used" style="width:@((int)(share * 100))%"></span>
+            </div>
+            <div class="usage-legend">
+                <span><i class="dot used"></i>@L["Consumed"]: @stats.Consumed</span>
+                <span><i class="dot wasted"></i>@L["Wasted"]: @stats.Wasted</span>
+            </div>
         }
         else
         {
-            <div class="operations-list">
-                @foreach (var item in LastOperations)
-                {
-                    <div class="operation-item">
-                        <div class="operation-category">@item.ItemType</div>
-                        <div class="operation-name">@item.ItemName</div>
-                        <div class="operation-date">@item.ChangeDate.ToString("g")</div>
-                        <div class="operation-quantity">@Localizer["Changes"] @item.QuantityChange</div>
-                    </div>
-                }
-            </div>
+            <p class="muted">@L["NoStatsYet"]</p>
         }
-    </div>
-</div>
+        <p class="muted small">@string.Format(L["AddedCount"], stats.Added)</p>
+    </section>
+
+    @if (history.Count > 0)
+    {
+        <section class="card">
+            <div class="card-title"><Icon Name="history" Size="18" /> @L["RecentOperations"] <a class="more" href="/history">@L["All"]</a></div>
+            @foreach (var entry in history)
+            {
+                <HistoryRow Entry="entry" />
+            }
+        </section>
+    }
+}
 
 @code {
-    private int ProductsCount = 0; 
-    private int MedicamentsCount = 0; 
-    public List<CategoryModel> Categories { get; set; } = new();
-    public Dictionary<int, int> CategoryCounts { get; set; } = new();
-    public List<HistoryRecordModel> LastOperations { get; set; } = new();
-
-
+    private DashboardStats? stats;
+    private List<CategoryDto> categories = new();
+    private List<HistoryEntryDto> history = new();
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadStatisticsFromStorage();
-
-        await LoadHistoryFromServer();
+        Inventory.Changed += OnChanged;
+        await LoadAsync();
     }
 
-    private async Task UpdateStatistics()
+    private async Task LoadAsync()
     {
-        await LoadStatisticsFromServer();
-        await SaveStatisticsToStorage();
-        StateHasChanged();
+        categories = await Inventory.GetCategoriesAsync();
+        stats = await Inventory.GetDashboardAsync(Settings.SoonDays);
+        history = await Inventory.GetHistoryAsync(3);
     }
 
-    private async Task LoadStatisticsFromServer()
+    private int BarWidth(int count)
     {
-        var products = await ProductService.GetProductsAsync();
-        ProductsCount = products.Count;
-
-        var medicaments = await MedicationService.GetMedicineAsync();
-        MedicamentsCount = medicaments.Count;
-
-        var allCats = await CategoryService.GetCategoriesAsync();
-        Categories = allCats.Take(6).ToList();
-
-        CategoryCounts.Clear();
-        foreach (var cat in Categories)
-        {
-            var fieldValues = await FieldValueService.GetFieldValuesForCategoryAsync(cat.Id);
-            CategoryCounts[cat.Id] = fieldValues.Count; // was Sum(RecordId), i.e. 1+2+3... instead of the number of items
-        }
-        await SaveStatisticsToStorage();
-
-        StateHasChanged();
+        int max = Math.Max(1, stats!.ItemsPerCategory.Values.DefaultIfEmpty(0).Max());
+        return count == 0 ? 2 : Math.Max(4, count * 100 / max);
     }
 
-    private async Task LoadHistoryFromServer()
-    {
-        var history = await ProductService.GetProductHistoryAsync();
-        LastOperations = history.OrderByDescending(h => h.ChangeDate).Take(3).ToList();
-    }
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
 
-    private async Task LoadStatisticsFromStorage()
-    {
-        ProductsCount = await LocalStorage.GetItemAsync<int>("ProductsCount");
-        MedicamentsCount = await LocalStorage.GetItemAsync<int>("MedicamentsCount");
-        Categories = await LocalStorage.GetItemAsync<List<CategoryModel>>("Categories") ?? new();
-        CategoryCounts = await LocalStorage.GetItemAsync<Dictionary<int, int>>("CategoryCounts") ?? new();
-        StateHasChanged();
-    }
-
-    private async Task SaveStatisticsToStorage()
-    {
-        await LocalStorage.SetItemAsync("ProductsCount", ProductsCount);
-        await LocalStorage.SetItemAsync("MedicamentsCount", MedicamentsCount);
-        await LocalStorage.SetItemAsync("Categories", Categories);
-        await LocalStorage.SetItemAsync("CategoryCounts", CategoryCounts);
-    }
-
-    private string GetProgressWidth(int count)
-    {
-        if (count == 0) return "5px";
-        int maxCount = CategoryCounts.Values.DefaultIfEmpty(1).Max();
-        var percent = (int)((count / (double)maxCount) * 100);
-        return percent + "%";
-    }
-
-    private string GetColorForCategory(int categoryId)
-    {
-        var colors = new List<string> { "#4CAF50", "#2196F3", "#FFC107", "#FF5722", "#9C27B0", "#E91E63" };
-        return colors[categoryId % colors.Count];
-    }
-
-    private void NavigateToGroceries()
-    {
-        NavManager.NavigateTo("/category/1");
-    }
-    private void NavigateToMedicaments()
-    {
-        NavManager.NavigateTo("/category/2");
-    }
-    private void NavigateToCategories()
-    {
-        NavManager.NavigateTo("/categories");
-    }
+    public void Dispose() => Inventory.Changed -= OnChanged;
 }

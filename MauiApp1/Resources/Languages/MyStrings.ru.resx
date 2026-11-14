@@ -1,432 +1,166 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!-- 
-    Microsoft ResX Schema 
-    
-    Version 2.0
-    
-    The primary goals of this format is to allow a simple XML format 
-    that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
-    associated with the data types.
-    
-    Example:
-    
-    ... ado.net/XML headers & schema ...
-    <resheader name="resmimetype">text/microsoft-resx</resheader>
-    <resheader name="version">2.0</resheader>
-    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
-    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
-    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
-    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
-        <value>[base64 mime encoded serialized .NET Framework object]</value>
-    </data>
-    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
-        <comment>This is a comment</comment>
-    </data>
-                
-    There are any number of "resheader" rows that contain simple 
-    name/value pairs.
-    
-    Each data row contains a name, and value. The row also contains a 
-    type or mimetype. Type corresponds to a .NET class that support 
-    text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
-    mimetype set.
-    
-    The mimetype is used for serialized objects, and tells the 
-    ResXResourceReader how to depersist the object. This is currently not 
-    extensible. For a given mimetype the value must be set accordingly:
-    
-    Note - application/x-microsoft.net.object.binary.base64 is the format 
-    that the ResXResourceWriter will generate, however the reader can 
-    read any of the formats listed below.
-    
-    mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
-            : and then encoded with base64 encoding.
-    
-    mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with 
-            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
-            : and then encoded with base64 encoding.
-
-    mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array 
-            : using a System.ComponentModel.TypeConverter
-            : and then encoded with base64 encoding.
-    -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
-    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
-    <xsd:element name="root" msdata:IsDataSet="true">
-      <xsd:complexType>
-        <xsd:choice maxOccurs="unbounded">
-          <xsd:element name="metadata">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" />
-              </xsd:sequence>
-              <xsd:attribute name="name" use="required" type="xsd:string" />
-              <xsd:attribute name="type" type="xsd:string" />
-              <xsd:attribute name="mimetype" type="xsd:string" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="assembly">
-            <xsd:complexType>
-              <xsd:attribute name="alias" type="xsd:string" />
-              <xsd:attribute name="name" type="xsd:string" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="data">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
-              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
-              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
-              <xsd:attribute ref="xml:space" />
-            </xsd:complexType>
-          </xsd:element>
-          <xsd:element name="resheader">
-            <xsd:complexType>
-              <xsd:sequence>
-                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
-              </xsd:sequence>
-              <xsd:attribute name="name" type="xsd:string" use="required" />
-            </xsd:complexType>
-          </xsd:element>
-        </xsd:choice>
-      </xsd:complexType>
-    </xsd:element>
-  </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </resheader>
-  <data name="AddPass" xml:space="preserve">
-    <value>Введите пароль</value>
-  </data>
-  <data name="Birthday" xml:space="preserve">
-    <value>Дата рождения</value>
-  </data>
-  <data name="ConfirmPass" xml:space="preserve">
-    <value>Подтвердите пароль</value>
-  </data>
-  <data name="ConfirmDelete" xml:space="preserve">
-    <value> Вы уверены, что хотите удалить аккаунт? Это действие необратимо!</value>
-  </data>
-  <data name="ConfirmLogout" xml:space="preserve">
-    <value> Вы уверены, что хотите выйти?</value>
-  </data>
-  <data name="Create" xml:space="preserve">
-    <value>Создать Аккаунт</value>
-  </data>
-  <data name="DeleteButton" xml:space="preserve">
-    <value>Удалить</value>
-  </data>
-  <data name="DeleteLabel" xml:space="preserve">
-    <value>Удалить аккаунт</value>
-  </data>
-  <data name="Email" xml:space="preserve">
-    <value>Эл. почта</value>
-  </data>
-  <data name="ForgetPass" xml:space="preserve">
-    <value>Забыли пароль?</value>
-  </data>
-  <data name="Hello" xml:space="preserve">
-    <value>Здравствуйте!</value>
-  </data>
-  <data name="HelloWorld" xml:space="preserve">
-    <value>Сменить язык</value>
-  </data>
-  <data name="Login" xml:space="preserve">
-    <value>Войти</value>
-  </data>
-  <data name="LogoutButton" xml:space="preserve">
-    <value>Выйти</value>
-  </data>
-  <data name="LogoutLabel" xml:space="preserve">
-    <value>Выход из аккаунта</value>
-  </data>
-  <data name="LogoutPageTitle" xml:space="preserve">
-    <value>Страница выхода</value>
-  </data>
-  <data name="Name" xml:space="preserve">
-    <value>Имя</value>
-  </data>
-  <data name="NoAccount" xml:space="preserve">
-    <value>Нет аккаунта?</value>
-  </data>
-  <data name="Password" xml:space="preserve">
-    <value>Пароль</value>
-  </data>
-  <data name="Phone" xml:space="preserve">
-    <value>Телефон</value>
-  </data>
-  <data name="Quote1" xml:space="preserve">
-    <value>Контроль запасов — путь к осознанному потреблению</value>
-  </data>
-  <data name="Quote2" xml:space="preserve">
-    <value>Лучшее время начать — сейчас!</value>
-  </data>
-  <data name="Quote3" xml:space="preserve">
-    <value>Маленькие шаги ведут к большим переменам.</value>
-  </data>
-  <data name="Register" xml:space="preserve">
-    <value>Зарегистрироваться</value>
-  </data>
-  <data name="Registrate!" xml:space="preserve">
-    <value>Зарегистрируйтесь!</value>
-  </data>
-  <data name="Alex" xml:space="preserve">
-    <value>Александр</value>
-  </data>
-  <data name="FirstPart" xml:space="preserve">
-    <value>При продолжении Вы соглашаетесь с</value>
-  </data>
-  <data name="SecondPart" xml:space="preserve">
-    <value>Политикой пользования</value>
-  </data>
-  <data name="ThirdPart" xml:space="preserve">
-    <value>и</value>
-  </data>
-  <data name="FourthPart" xml:space="preserve">
-    <value>приватностью</value>
-  </data>
-  <data name="HaveAcc" xml:space="preserve">
-    <value>Уже есть аккаунт?</value>
-  </data>
-  <data name="Login!" xml:space="preserve">
-    <value>Войдите!</value>
-  </data>
-  <data name="Join" xml:space="preserve">
-    <value>Присоединиться</value>
-  </data>
-  <data name="Editing" xml:space="preserve">
-    <value>Редактирование профиля</value>
-  </data>
-  <data name="NewPass" xml:space="preserve">
-    <value>Новый пароль</value>
-  </data>
-  <data name="Categories" xml:space="preserve">
-    <value>Категории</value>
-  </data>
-  <data name="Products" xml:space="preserve">
-    <value>Продукты</value>
-  </data>
-  <data name="Books" xml:space="preserve">
-    <value>Книги</value>
-  </data>
-  <data name="Medication" xml:space="preserve">
-    <value>Лекарства</value>
-  </data>
-  <data name="Add" xml:space="preserve">
-    <value>Добавить</value>
-  </data>
-  <data name="AddNewCategory" xml:space="preserve">
-    <value>Добавить новую категорию</value>
-  </data>
-  <data name="Save" xml:space="preserve">
-    <value>Сохранить</value>
-  </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Отмена</value>
-  </data>
-  <data name="NameOfCategory" xml:space="preserve">
-    <value>Название категории</value>
-  </data>
-  <data name="DeleteLabelCategory" xml:space="preserve">
-    <value>Удалить категорию?</value>
-  </data>
-  <data name="ConfirmDeleteCategory" xml:space="preserve">
-    <value>Вы уверены, что хотите удалить эту категорию?</value>
-  </data>
-  <data name="SettingCategoryFields" xml:space="preserve">
-    <value>Настроить поля категории</value>
-  </data>
-  <data name="Field" xml:space="preserve">
-    <value>Поле</value>
-  </data>
-  <data name="Find" xml:space="preserve">
-    <value>Найти</value>
-  </data>
-  <data name="ItemCategories" xml:space="preserve">
-    <value>КАТЕГОРИИ ТОВАРОВ:</value>
-  </data>
-  <data name="Groceries" xml:space="preserve">
-    <value>ПРОДУКТЫ</value>
-  </data>
-  <data name="Medications" xml:space="preserve">
-    <value>ЛЕКАРСТВА</value>
-  </data>
-  <data name="Statistic" xml:space="preserve">
-    <value>Статистика</value>
-  </data>
-  <data name="Item" xml:space="preserve">
-    <value>товар(ов)</value>
-  </data>
-  <data name="RecentOperations" xml:space="preserve">
-    <value>Недавние операции</value>
-  </data>
-  <data name="Refresh" xml:space="preserve">
-    <value>Обновить</value>
-  </data>
-  <data name="NoOperations" xml:space="preserve">
-    <value>Операций пока нет</value>
-  </data>
-  <data name="Changes" xml:space="preserve">
-    <value>Изменение:</value>
-  </data>
-  <data name="Search" xml:space="preserve">
-    <value>Поиск...</value>
-  </data>
-  <data name="Profile" xml:space="preserve">
-    <value>Профиль</value>
-  </data>
-  <data name="Settings" xml:space="preserve">
-    <value>Настройки</value>
-  </data>
-  <data name="Logout" xml:space="preserve">
-    <value>Выход</value>
-  </data>
-  <data name="Loading" xml:space="preserve">
-    <value>Загрузка...</value>
-  </data>
-  <data name="NoData" xml:space="preserve">
-    <value>Нет данных.</value>
-  </data>
-  <data name="AddItem" xml:space="preserve">
-    <value>Добавить предмет</value>
-  </data>
-  <data name="EnterValue" xml:space="preserve">
-    <value>Введите значение</value>
-  </data>
-  <data name="EditItem" xml:space="preserve">
-    <value>Редактировать предмет</value>
-  </data>
-  <data name="ChangeFields" xml:space="preserve">
-    <value>Изменить поля</value>
-  </data>
-  <data name="History" xml:space="preserve">
-    <value>История</value>
-  </data>
-  <data name="NewCategory" xml:space="preserve">
-    <value>Новая категория</value>
-  </data>
-  <data name="EnterNewPass" xml:space="preserve">
-    <value>Введите новый пароль</value>
-  </data>
-  <data name="ExpiredMedicine" xml:space="preserve">
-    <value>Лекарства с истекшим сроком годности</value>
-  </data>
-  <data name="NoExpiredMedicine" xml:space="preserve">
-    <value>Испорченных лекарств пока нет</value>
-  </data>
-  <data name="Quantity" xml:space="preserve">
-    <value>Количество:</value>
-  </data>
-  <data name="ExpiredProducts" xml:space="preserve">
-    <value>Продукты с истекшим сроком годности</value>
-  </data>
-  <data name="NoExpiredProducts" xml:space="preserve">
-    <value>Испорченных продуктов пока нет</value>
-  </data>
-  <data name="NoProducts" xml:space="preserve">
-    <value>Нет продуктов.</value>
-  </data>
-  <data name="Created" xml:space="preserve">
-    <value>Создан:</value>
-  </data>
-  <data name="ExpiresOn" xml:space="preserve">
-    <value>Годен до:</value>
-  </data>
-  <data name="AddProduct" xml:space="preserve">
-    <value>Добавить продукт</value>
-  </data>
-  <data name="WeightAndVolume" xml:space="preserve">
-    <value>Масса/Объем:</value>
-  </data>
-  <data name="Title" xml:space="preserve">
-    <value>Название:</value>
-  </data>
-  <data name="FirmAndManufacturer" xml:space="preserve">
-    <value>Фирма/Производитель:</value>
-  </data>
-  <data name="ExpirationDate" xml:space="preserve">
-    <value>Дата истечения срока:</value>
-  </data>
-  <data name="EditProduct" xml:space="preserve">
-    <value>Редактировать продукт</value>
-  </data>
-  <data name="g" xml:space="preserve">
-    <value>г</value>
-  </data>
-  <data name="kg" xml:space="preserve">
-    <value>кг</value>
-  </data>
-  <data name="l" xml:space="preserve">
-    <value>л</value>
-  </data>
-  <data name="ml" xml:space="preserve">
-    <value>мл</value>
-  </data>
-  <data name="pcs" xml:space="preserve">
-    <value>шт</value>
-  </data>
-  <data name="NoMedications" xml:space="preserve">
-    <value>Нет лекарств.</value>
-  </data>
-  <data name="Dosage" xml:space="preserve">
-    <value>Дозировка:</value>
-  </data>
-  <data name="VolumeAndQuantity" xml:space="preserve">
-    <value>Объем/Количество:</value>
-  </data>
-  <data name="ManufacturerAndDescription" xml:space="preserve">
-    <value>Производитель/описание:</value>
-  </data>
-  <data name="AddMedicine" xml:space="preserve">
-    <value>Добавить лекарство</value>
-  </data>
-  <data name="EditMedicine" xml:space="preserve">
-    <value>Редактировать лекарство</value>
-  </data>
-  <data name="HistoryOperation" xml:space="preserve">
-    <value>История операций</value>
-  </data>
-  <data name="Type" xml:space="preserve">
-    <value>Тип операции</value>
-  </data>
-  <data name="Category" xml:space="preserve">
-    <value>Категория</value>
-  </data>
-  <data name="Value" xml:space="preserve">
-    <value>Значение</value>
-  </data>
-  <data name="Date" xml:space="preserve">
-    <value>Дата операции</value>
-  </data>
-  <data name="QuantityHistory" xml:space="preserve">
-    <value>Количество</value>
-  </data>
-  <data name="ClearHistory" xml:space="preserve">
-    <value>Очистить историю</value>
-  </data>
-  <data name="Change" xml:space="preserve">
-    <value>Изменить</value>
-  </data>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Account" xml:space="preserve"><value>Аккаунт</value></data>
+  <data name="Add" xml:space="preserve"><value>Добавить</value></data>
+  <data name="AddField" xml:space="preserve"><value>Добавить поле</value></data>
+  <data name="AddNewCategory" xml:space="preserve"><value>Новая категория</value></data>
+  <data name="AddNewItem" xml:space="preserve"><value>Добавить вещь</value></data>
+  <data name="AddedCount" xml:space="preserve"><value>Добавлено вещей: {0}</value></data>
+  <data name="AddedToShopping" xml:space="preserve"><value>«{0}» добавлено в список покупок</value></data>
+  <data name="Alex" xml:space="preserve"><value>Алекс</value></data>
+  <data name="All" xml:space="preserve"><value>Все</value></data>
+  <data name="AlreadyHave" xml:space="preserve"><value>Уже есть у вас</value></data>
+  <data name="AutoShopping" xml:space="preserve"><value>Добавлять в покупки, когда закончилось</value></data>
+  <data name="BadBarcode" xml:space="preserve"><value>Штрихкод должен состоять из 8–14 цифр</value></data>
+  <data name="Barcode" xml:space="preserve"><value>Штрихкод</value></data>
+  <data name="Birthday" xml:space="preserve"><value>Дата рождения</value></data>
+  <data name="BoughtChecked" xml:space="preserve"><value>Купил отмеченное</value></data>
+  <data name="BoughtDone" xml:space="preserve"><value>Куплено позиций: {0}</value></data>
+  <data name="BoughtHint" xml:space="preserve"><value>Количество связанных вещей увеличится</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Categories" xml:space="preserve"><value>Категории</value></data>
+  <data name="Category" xml:space="preserve"><value>Категория</value></data>
+  <data name="CategorySettings" xml:space="preserve"><value>Настройка категории</value></data>
+  <data name="ChangeAdded" xml:space="preserve"><value>Добавлено</value></data>
+  <data name="ChangeConsumed" xml:space="preserve"><value>Израсходовано</value></data>
+  <data name="ChangeRemoved" xml:space="preserve"><value>Удалено</value></data>
+  <data name="ChangeRestocked" xml:space="preserve"><value>Пополнено</value></data>
+  <data name="ChangeUpdated" xml:space="preserve"><value>Изменено</value></data>
+  <data name="ChangeWasted" xml:space="preserve"><value>Выброшено</value></data>
+  <data name="Check" xml:space="preserve"><value>Проверить</value></data>
+  <data name="Clear" xml:space="preserve"><value>Очистить</value></data>
+  <data name="ClearHistory" xml:space="preserve"><value>Очистить историю</value></data>
+  <data name="ConfirmClearHistory" xml:space="preserve"><value>Очистить всю историю?</value></data>
+  <data name="ConfirmDeleteAccount" xml:space="preserve"><value>Удалить аккаунт и все данные на сервере? Это необратимо.</value></data>
+  <data name="ConfirmDeleteCategory" xml:space="preserve"><value>Удалить категорию «{0}» вместе со всеми вещами?</value></data>
+  <data name="ConfirmPass" xml:space="preserve"><value>Повторите пароль</value></data>
+  <data name="Consumed" xml:space="preserve"><value>Использовано</value></data>
+  <data name="ContinueAsGuest" xml:space="preserve"><value>Продолжить без аккаунта</value></data>
+  <data name="Create" xml:space="preserve"><value>Создать</value></data>
+  <data name="Data" xml:space="preserve"><value>Данные</value></data>
+  <data name="DaysBefore" xml:space="preserve"><value>За сколько дней предупреждать</value></data>
+  <data name="DeleteAccount" xml:space="preserve"><value>Удалить аккаунт</value></data>
+  <data name="DeleteButton" xml:space="preserve"><value>Удалить</value></data>
+  <data name="DeleteCategory" xml:space="preserve"><value>Удалить категорию</value></data>
+  <data name="DeleteReasonHint" xml:space="preserve"><value>Это нужно для статистики «использовано / выброшено».</value></data>
+  <data name="DeleteWhat" xml:space="preserve"><value>Удалить «{0}»?</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Редактирование</value></data>
+  <data name="Editing" xml:space="preserve"><value>Профиль</value></data>
+  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="EnterNewPass" xml:space="preserve"><value>Оставьте пустым, чтобы не менять</value></data>
+  <data name="ExpirationDate" xml:space="preserve"><value>Годен до</value></data>
+  <data name="Expired" xml:space="preserve"><value>Просрочено</value></data>
+  <data name="ExpiredDaysAgo" xml:space="preserve"><value>просрочено {0} дн. назад</value></data>
+  <data name="ExpiresInDays" xml:space="preserve"><value>через {0} дн.</value></data>
+  <data name="ExpiresToday" xml:space="preserve"><value>истекает сегодня</value></data>
+  <data name="ExpiresTomorrow" xml:space="preserve"><value>истекает завтра</value></data>
+  <data name="ExpiringSoon" xml:space="preserve"><value>Скоро истекает</value></data>
+  <data name="ExpiryDates" xml:space="preserve"><value>Сроки годности</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>Экспорт в CSV</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Название поля</value></data>
+  <data name="Fields" xml:space="preserve"><value>Поля</value></data>
+  <data name="FieldsHint" xml:space="preserve"><value>Переименование и перестановка полей сохраняют значения.</value></data>
+  <data name="FillEmailPassword" xml:space="preserve"><value>Введите email и пароль</value></data>
+  <data name="Find" xml:space="preserve"><value>Найти</value></data>
+  <data name="FindByBarcode" xml:space="preserve"><value>Найти по штрихкоду</value></data>
+  <data name="FirmAndManufacturer" xml:space="preserve"><value>Производитель / бренд</value></data>
+  <data name="GuestHint" xml:space="preserve"><value>Можно начать без регистрации: всё хранится на телефоне, а при входе загрузится в аккаунт.</value></data>
+  <data name="GuestModeInfo" xml:space="preserve"><value>Вы работаете без аккаунта. Данные хранятся только на этом устройстве.</value></data>
+  <data name="HaveAcc" xml:space="preserve"><value>Уже есть аккаунт? Войти</value></data>
+  <data name="Hello" xml:space="preserve"><value>Привет!</value></data>
+  <data name="Hide" xml:space="preserve"><value>Скрыть</value></data>
+  <data name="History" xml:space="preserve"><value>История</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Здесь появятся ваши действия</value></data>
+  <data name="HistoryOperation" xml:space="preserve"><value>История операций</value></data>
+  <data name="Home" xml:space="preserve"><value>Главная</value></data>
+  <data name="ItemsTotal" xml:space="preserve"><value>вещей всего</value></data>
+  <data name="Join" xml:space="preserve"><value>Зарегистрироваться</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="Last30Days" xml:space="preserve"><value>За 30 дней</value></data>
+  <data name="LastSync" xml:space="preserve"><value>Последняя синхронизация</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
+  <data name="Location" xml:space="preserve"><value>Место хранения</value></data>
+  <data name="LocationHint" xml:space="preserve"><value>Холодильник, аптечка…</value></data>
+  <data name="Login" xml:space="preserve"><value>Войти</value></data>
+  <data name="LoginFailed" xml:space="preserve"><value>Неверный email или пароль</value></data>
+  <data name="Logout" xml:space="preserve"><value>Выйти</value></data>
+  <data name="LogoutLosesChanges" xml:space="preserve"><value>Сервер недоступен: {0} изменений не синхронизированы и пропадут. Всё равно выйти?</value></data>
+  <data name="Name" xml:space="preserve"><value>Имя</value></data>
+  <data name="NameOfCategory" xml:space="preserve"><value>Название категории</value></data>
+  <data name="NeedsAttention" xml:space="preserve"><value>Требует внимания</value></data>
+  <data name="NeedsServer" xml:space="preserve"><value>Нужно подключение к серверу</value></data>
+  <data name="NewItem" xml:space="preserve"><value>Новая вещь</value></data>
+  <data name="NewPass" xml:space="preserve"><value>Новый пароль</value></data>
+  <data name="NoItemsYet" xml:space="preserve"><value>Пока пусто — добавьте первую вещь кнопкой «+»</value></data>
+  <data name="NoStatsYet" xml:space="preserve"><value>Статистика появится, когда что-то будет использовано или выброшено.</value></data>
+  <data name="NotFound" xml:space="preserve"><value>Страница не найдена</value></data>
+  <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
+  <data name="NothingExpired" xml:space="preserve"><value>Ничего не просрочено</value></data>
+  <data name="NothingFound" xml:space="preserve"><value>Ничего не найдено</value></data>
+  <data name="NothingSoon" xml:space="preserve"><value>В ближайшие дни ничего не истекает</value></data>
+  <data name="Notifications" xml:space="preserve"><value>Уведомления</value></data>
+  <data name="NotificationsDenied" xml:space="preserve"><value>Уведомления запрещены в настройках телефона</value></data>
+  <data name="NotifyExpiring" xml:space="preserve"><value>Напоминать об истекающих сроках</value></data>
+  <data name="OfflinePending" xml:space="preserve"><value>Нет связи с сервером · изменений ждут отправки: {0}</value></data>
+  <data name="OrEnterManually" xml:space="preserve"><value>или введите штрихкод вручную</value></data>
+  <data name="Password" xml:space="preserve"><value>Пароль</value></data>
+  <data name="PasswordRule" xml:space="preserve"><value>Не короче 6 символов: заглавная, строчная буква и цифра</value></data>
+  <data name="PendingChanges" xml:space="preserve"><value>не отправлено: {0}</value></data>
+  <data name="Phone" xml:space="preserve"><value>Телефон</value></data>
+  <data name="PhotoFailed" xml:space="preserve"><value>Не удалось сохранить фото</value></data>
+  <data name="PickPhoto" xml:space="preserve"><value>Из галереи</value></data>
+  <data name="ProductFound" xml:space="preserve"><value>Товар найден</value></data>
+  <data name="ProductNotFound" xml:space="preserve"><value>Товар не найден — заполните вручную</value></data>
+  <data name="Profile" xml:space="preserve"><value>Профиль</value></data>
+  <data name="Quantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="Quote1" xml:space="preserve"><value>Контроль запасов — путь к осознанному потреблению</value></data>
+  <data name="Quote2" xml:space="preserve"><value>Лучшее время начать — сейчас!</value></data>
+  <data name="Quote3" xml:space="preserve"><value>Маленькие шаги ведут к большим переменам.</value></data>
+  <data name="ReasonConsumed" xml:space="preserve"><value>Использовал(а)</value></data>
+  <data name="ReasonRemoved" xml:space="preserve"><value>Просто удалить</value></data>
+  <data name="ReasonWasted" xml:space="preserve"><value>Выбросил(а)</value></data>
+  <data name="RecentOperations" xml:space="preserve"><value>Последние операции</value></data>
+  <data name="Register" xml:space="preserve"><value>Регистрация</value></data>
+  <data name="RemovePhoto" xml:space="preserve"><value>Убрать фото</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательное</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Saved" xml:space="preserve"><value>Сохранено</value></data>
+  <data name="Scan" xml:space="preserve"><value>Сканер</value></data>
+  <data name="ScanBarcode" xml:space="preserve"><value>Сканировать штрихкод</value></data>
+  <data name="ScanTitle" xml:space="preserve"><value>Наведите камеру на штрихкод</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск</value></data>
+  <data name="Searching" xml:space="preserve"><value>Ищем…</value></data>
+  <data name="ServerAddress" xml:space="preserve"><value>Адрес сервера</value></data>
+  <data name="ServerReachable" xml:space="preserve"><value>Сервер доступен</value></data>
+  <data name="ServerUnavailableLogin" xml:space="preserve"><value>Сервер недоступен. Можно продолжить без аккаунта и войти позже.</value></data>
+  <data name="ServerUnreachable" xml:space="preserve"><value>Сервер недоступен</value></data>
+  <data name="Settings" xml:space="preserve"><value>Настройки</value></data>
+  <data name="Share" xml:space="preserve"><value>Поделиться</value></data>
+  <data name="Shopping" xml:space="preserve"><value>Покупки</value></data>
+  <data name="ShoppingEmpty" xml:space="preserve"><value>Список покупок пуст</value></data>
+  <data name="Show" xml:space="preserve"><value>Показать</value></data>
+  <data name="SignInToSync" xml:space="preserve"><value>Войти, чтобы синхронизировать</value></data>
+  <data name="SoonDaysHint" xml:space="preserve"><value>«Скоро» — это {0} дн. или меньше (меняется в настройках)</value></data>
+  <data name="StateLocalOnly" xml:space="preserve"><value>Только на этом устройстве</value></data>
+  <data name="StateOffline" xml:space="preserve"><value>Нет связи с сервером</value></data>
+  <data name="StateSynced" xml:space="preserve"><value>Синхронизировано</value></data>
+  <data name="Sync" xml:space="preserve"><value>Синхронизация</value></data>
+  <data name="SyncError" xml:space="preserve"><value>Ошибка синхронизации</value></data>
+  <data name="SyncInProgress" xml:space="preserve"><value>Синхронизация…</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
+  <data name="TakePhoto" xml:space="preserve"><value>Сфотографировать</value></data>
+  <data name="Title" xml:space="preserve"><value>Название</value></data>
+  <data name="ToBuy" xml:space="preserve"><value>купить</value></data>
+  <data name="ToShoppingList" xml:space="preserve"><value>В покупки</value></data>
+  <data name="TypeBoolean" xml:space="preserve"><value>Да / нет</value></data>
+  <data name="TypeDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="TypeNumber" xml:space="preserve"><value>Число</value></data>
+  <data name="TypeText" xml:space="preserve"><value>Текст</value></data>
+  <data name="Wait" xml:space="preserve"><value>Подождите…</value></data>
+  <data name="Wasted" xml:space="preserve"><value>Выброшено</value></data>
+  <data name="WeightAndVolume" xml:space="preserve"><value>Вес / объём</value></data>
+  <data name="WhatToBuy" xml:space="preserve"><value>Что купить?</value></data>
 </root>

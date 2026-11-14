@@ -1,0 +1,92 @@
+@page "/welcome"
+@inject AccountManager Account
+@inject SyncCoordinator Sync
+
+<div class="auth-page">
+    <img src="images/shelfie-logo.png" alt="Shelfie" class="auth-logo" />
+    <h1>@L["Hello"]</h1>
+
+    <div class="card form">
+        <label>@L["Email"]</label>
+        <input type="email" @bind="email" placeholder="shelfie@email.ru" autocomplete="email" />
+
+        <label>@L["Password"]</label>
+        <div class="password-row">
+            <input type="@(showPassword ? "text" : "password")" @bind="password" placeholder="@L["Password"]" />
+            <button type="button" class="btn-link" @onclick="() => showPassword = !showPassword">@(showPassword ? L["Hide"] : L["Show"])</button>
+        </div>
+
+        @if (error != null)
+        {
+            <p class="error-text">@error</p>
+        }
+
+        <button class="btn-primary wide" disabled="@busy" @onclick="SignIn">@(busy ? L["Wait"] : L["Login"])</button>
+        <button class="btn-secondary wide" @onclick='() => Nav.NavigateTo("/register")'>@L["Register"]</button>
+    </div>
+
+    <div class="guest-box">
+        <p>@L["GuestHint"]</p>
+        <button class="btn-ghost wide" @onclick="ContinueAsGuest">@L["ContinueAsGuest"]</button>
+    </div>
+
+    <details class="server-box">
+        <summary>@L["ServerAddress"]: @Settings.ServerUrl</summary>
+        <input @bind="serverUrl" placeholder="http://192.168.0.10:5111" />
+        <button class="btn-secondary" @onclick="SaveServer">@L["Save"]</button>
+    </details>
+</div>
+
+@code {
+    private string email = "";
+    private string password = "";
+    private string serverUrl = "";
+    private bool showPassword;
+    private bool busy;
+    private string? error;
+
+    protected override void OnInitialized() => serverUrl = Settings.ServerUrl;
+
+    private async Task SignIn()
+    {
+        error = null;
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrEmpty(password))
+        {
+            error = L["FillEmailPassword"];
+            return;
+        }
+
+        busy = true;
+        try
+        {
+            var result = await Account.SignInAsync(email, password);
+            if (!result.Success)
+            {
+                error = result.IsOffline ? L["ServerUnavailableLogin"] : L["LoginFailed"];
+                return;
+            }
+
+            Settings.GuestMode = false;
+            Sync.Start();
+            Nav.NavigateTo("/home", replace: true);
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void ContinueAsGuest()
+    {
+        Settings.GuestMode = true;
+        Sync.Start();
+        Nav.NavigateTo("/home", replace: true);
+    }
+
+    private void SaveServer()
+    {
+        Settings.ServerUrl = serverUrl;
+        serverUrl = Settings.ServerUrl;
+        Toasts.Show(L["Saved"]);
+    }
+}

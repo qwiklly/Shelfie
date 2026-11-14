@@ -1,0 +1,70 @@
+@page "/expiring"
+@implements IDisposable
+
+<header class="page-header">
+    <a class="icon-btn" href="/home"><Icon Name="back" /></a>
+    <h1>@L["ExpiryDates"]</h1>
+</header>
+
+<div class="chips">
+    <button class="chip @(!showExpired ? "active" : "")" @onclick="() => Switch(false)">@L["ExpiringSoon"] (@soon.Count)</button>
+    <button class="chip @(showExpired ? "active" : "")" @onclick="() => Switch(true)">@L["Expired"] (@expired.Count)</button>
+</div>
+
+@{ var list = showExpired ? expired : soon; }
+@if (list.Count == 0)
+{
+    <div class="empty-state">
+        <Icon Name="check" Size="48" />
+        <p>@(showExpired ? L["NothingExpired"] : L["NothingSoon"])</p>
+    </div>
+}
+else
+{
+    <div class="card">
+        @foreach (var item in list)
+        {
+            <div class="row-link">
+                <a class="grow" href="/item/@item.Id">
+                    @item.Name
+                    <span class="muted small">@categoryNames.GetValueOrDefault(item.CategoryId)</span>
+                </a>
+                <ExpiryBadge Date="item.ExpirationDate" />
+                @if (showExpired)
+                {
+                    <button class="icon-btn danger" title="@L["ReasonWasted"]" @onclick="() => Inventory.DeleteItemAsync(item.Id, ChangeTypes.Wasted)"><Icon Name="trash" Size="16" /></button>
+                }
+            </div>
+        }
+    </div>
+    <p class="muted small center">@string.Format(L["SoonDaysHint"], Settings.SoonDays)</p>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "tab")] public string? Tab { get; set; }
+
+    private bool showExpired;
+    private List<ItemDto> soon = new();
+    private List<ItemDto> expired = new();
+    private Dictionary<Guid, string> categoryNames = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        showExpired = Tab == "expired";
+        Inventory.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        categoryNames = (await Inventory.GetCategoriesAsync()).ToDictionary(c => c.Id, c => c.Name);
+        soon = await Inventory.GetItemsAsync(new ItemFilter(Status: ExpiryStatus.Soon), Settings.SoonDays);
+        expired = await Inventory.GetItemsAsync(new ItemFilter(Status: ExpiryStatus.Expired), Settings.SoonDays);
+    }
+
+    private void Switch(bool expiredTab) => showExpired = expiredTab;
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
+
+    public void Dispose() => Inventory.Changed -= OnChanged;
+}

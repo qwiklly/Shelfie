@@ -1,45 +1,114 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject SyncCoordinator Sync
 
-<div class="page">
-    <!-- Основной контент (страница) -->
-    <div class="content">
-        @Body
-    </div>
-
-    <!-- Нижняя панель навигации -->
-    <div class="bottom-nav">
-        <a href="/home" class="nav-icon"><i class="fas fa-home"></i></a>
-        <a href="/product-history" class="nav-icon"><i class="fas fa-chart-bar"></i></a>
-        <a href="/camera" class="nav-icon"><i class="fas fa-camera"></i></a>
-        <a href="/categories" class="nav-icon"><i class="fas fa-book"></i></a>
-        <!-- Иконка профиля -->
-        <a @onclick="ToggleSideMenu" class="nav-icon"><i class="fas fa-user"></i></a>
-    </div>
-
-    <!-- Боковое меню справа -->
-    <div class="right-side-menu @(showSideMenu ? "open" : "")" @onclick="CloseMenuIfClickedOutside">
-        <div class="menu-content" @onclick:stopPropagation="true">
-            <button class="close-btn" @onclick="ToggleSideMenu">X</button>
-            <ul>
-                <li><NavLink href="/profilePage">@Localizer["Profile"]</NavLink></li>
-                <li><NavLink href="/settings">@Localizer["Settings"]</NavLink></li>
-                <li><NavLink href="/logout">@Localizer["Logout"]</NavLink></li>
-            </ul>
+<div class="app-shell">
+    @if (ShowSyncBanner)
+    {
+        <div class="sync-banner @(status.State == SyncState.Error ? "error" : "")" @onclick="SyncNow">
+            <Icon Name="@(status.State == SyncState.Syncing ? "sync" : "offline")" Size="16" Class="@(status.State == SyncState.Syncing ? "spin" : null)" />
+            <span>@BannerText</span>
         </div>
-    </div>
+    }
+
+    <main class="app-content">
+        @Body
+    </main>
+
+    @if (ShowNav)
+    {
+        <nav class="bottom-nav">
+            <NavLink href="/home" class="nav-item" Match="NavLinkMatch.Prefix"><Icon Name="home" /><span>@L["Home"]</span></NavLink>
+            <NavLink href="/categories" class="nav-item"><Icon Name="grid" /><span>@L["Categories"]</span></NavLink>
+            <NavLink href="/scan" class="nav-item nav-scan"><Icon Name="scan" Size="28" /></NavLink>
+            <NavLink href="/shopping" class="nav-item"><Icon Name="cart" /><span>@L["Shopping"]</span></NavLink>
+            <NavLink href="/settings" class="nav-item"><Icon Name="settings" /><span>@L["Settings"]</span></NavLink>
+        </nav>
+    }
+
+    @if (toast != null)
+    {
+        <div class="toast @(toastIsError ? "error" : "")" @onclick="() => toast = null">@toast</div>
+    }
 </div>
 
 @code {
-    private bool showSideMenu;
+    private SyncStatus status = new(SyncState.NotSignedIn, null, 0);
+    private string? toast;
+    private bool toastIsError;
+    private CancellationTokenSource? toastTimer;
 
-    private void ToggleSideMenu()
+    // Start, sign-in and registration screens are full screen.
+    private bool ShowNav
     {
-        showSideMenu = !showSideMenu;
+        get
+        {
+            var path = Nav.ToBaseRelativePath(Nav.Uri).Split('?')[0];
+            return path is not ("" or "welcome" or "register");
+        }
     }
 
-    private void CloseMenuIfClickedOutside()
+    // Shown only when it matters: offline/error with unsynced changes, or while syncing many changes.
+    private bool ShowSyncBanner => ShowNav && status.State switch
     {
-        if (showSideMenu)
-            showSideMenu = false;
+        SyncState.Offline => status.PendingChanges > 0,
+        SyncState.Error => true,
+        SyncState.Syncing => status.PendingChanges > 5,
+        _ => false
+    };
+
+    private string BannerText => status.State switch
+    {
+        SyncState.Syncing => L["SyncInProgress"],
+        SyncState.Error => $"{L["SyncError"]}: {status.Message}",
+        _ => string.Format(L["OfflinePending"], status.PendingChanges)
+    };
+
+    protected override void OnInitialized()
+    {
+        status = Sync.Status;
+        Sync.StatusChanged += OnStatusChanged;
+        Toasts.Shown += OnToast;
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnStatusChanged(object? sender, SyncStatus s)
+    {
+        status = s;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => InvokeAsync(async () =>
+    {
+        StateHasChanged();
+        try { await JS.InvokeVoidAsync("shelfieScrollTop"); } catch (JSException) { }
+    });
+
+    private void OnToast(string message, bool isError)
+    {
+        toast = message;
+        toastIsError = isError;
+        toastTimer?.Cancel();
+        toastTimer = new CancellationTokenSource();
+        var token = toastTimer.Token;
+        _ = Task.Delay(3500, token).ContinueWith(_ =>
+        {
+            if (!token.IsCancellationRequested)
+            {
+                toast = null;
+                InvokeAsync(StateHasChanged);
+            }
+        }, TaskScheduler.Default);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SyncNow() => await Sync.SyncNowAsync();
+
+    public void Dispose()
+    {
+        Sync.StatusChanged -= OnStatusChanged;
+        Toasts.Shown -= OnToast;
+        Nav.LocationChanged -= OnLocationChanged;
+        toastTimer?.Cancel();
     }
 }

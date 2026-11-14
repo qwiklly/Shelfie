@@ -1,0 +1,13 @@
+<div class="history-row @Entry.ChangeType.ToLowerInvariant()">
+    <span class="change">@Widgets.ChangeName(L, Entry.ChangeType)</span>
+    <span class="grow">@Entry.ItemName</span>
+    @if (Entry.QuantityChange != 0)
+    {
+        <span class="qty">@(Entry.QuantityChange > 0 ? "+" : "")@Entry.QuantityChange</span>
+    }
+    <span class="muted small">@Entry.ChangeDate.ToLocalTime().ToString("g")</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public HistoryEntryDto Entry { get; set; } = null!;
+}

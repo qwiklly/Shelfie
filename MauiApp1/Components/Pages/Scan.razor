@@ -1,0 +1,136 @@
+@page "/scan"
+@inject ScannerService Scanner
+@inject ProductLookup Lookup
+
+<header class="page-header">
+    <h1>@L["Scan"]</h1>
+</header>
+
+<div class="card form">
+    @if (Scanner.IsSupported)
+    {
+        <button class="btn-primary wide big" @onclick="ScanAsync"><Icon Name="scan" /> @L["ScanBarcode"]</button>
+        <p class="muted center small">@L["OrEnterManually"]</p>
+    }
+    <div class="inline">
+        <input inputmode="numeric" placeholder="4600000000000" @bind="code" />
+        <button class="btn-secondary" @onclick="ResolveAsync" disabled="@busy">@L["Find"]</button>
+    </div>
+</div>
+
+@if (busy)
+{
+    <p class="muted center">@L["Searching"]</p>
+}
+
+@if (existing.Count > 0)
+{
+    <section class="card">
+        <div class="card-title">@L["AlreadyHave"]</div>
+        @foreach (var item in existing)
+        {
+            <div class="row-link">
+                <a class="grow" href="/item/@item.Id">@item.Name <span class="muted">× @item.Quantity</span></a>
+                <button class="btn-secondary small" @onclick="() => AddOne(item)"><Icon Name="plus" Size="14" /> 1</button>
+            </div>
+        }
+    </section>
+}
+
+@if (resolved)
+{
+    <section class="card form">
+        <div class="card-title">@(info != null ? L["ProductFound"] : L["ProductNotFound"])</div>
+        @if (info != null)
+        {
+            <p><b>@info.Name</b>@(info.Brand != null ? $" · {info.Brand}" : "")@(info.Weight != null ? $" · {info.Weight} {info.WeightUnit}" : "")</p>
+            @if (info.Source == "openfoodfacts")
+            {
+                <p class="muted small">Open Food Facts</p>
+            }
+        }
+        <label>@L["Category"]</label>
+        <select @bind="categoryId">
+            @foreach (var c in categories)
+            {
+                <option value="@c.Id">@c.Name</option>
+            }
+        </select>
+        <button class="btn-primary wide" @onclick="CreateNew"><Icon Name="plus" Size="16" /> @L["AddNewItem"]</button>
+    </section>
+}
+
+@code {
+    private string code = "";
+    private bool busy;
+    private bool resolved;
+    private ProductInfo? info;
+    private List<ItemDto> existing = new();
+    private List<CategoryDto> categories = new();
+    private Guid categoryId = BuiltInCategories.Products;
+
+    protected override async Task OnInitializedAsync() => categories = await Inventory.GetCategoriesAsync();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Opening the tab goes straight to the camera.
+        if (firstRender && Scanner.IsSupported)
+            await ScanAsync();
+    }
+
+    private async Task ScanAsync()
+    {
+        var scanned = await Scanner.ScanAsync(L["ScanTitle"], L["Cancel"]);
+        if (scanned == null)
+            return;
+        code = scanned;
+        await ResolveAsync();
+        StateHasChanged();
+    }
+
+    private async Task ResolveAsync()
+    {
+        code = code.Trim();
+        if (!ProductLookup.IsValidBarcode(code))
+        {
+            Toasts.Show(L["BadBarcode"], isError: true);
+            return;
+        }
+
+        busy = true;
+        resolved = false;
+        try
+        {
+            existing = await Inventory.GetItemsAsync(new ItemFilter(Search: code));
+            existing = existing.Where(i => i.Barcode == code).ToList();
+            info = await Lookup.LookupAsync(code); // own items first (offline), then Open Food Facts
+            if (existing.Count > 0)
+                categoryId = existing[0].CategoryId;
+            resolved = true;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task AddOne(ItemDto item)
+    {
+        await Inventory.AdjustQuantityAsync(item.Id, 1);
+        Toasts.Show($"{item.Name}: +1");
+        existing = (await Inventory.GetItemsAsync(new ItemFilter(Search: code))).Where(i => i.Barcode == code).ToList();
+    }
+
+    private void CreateNew()
+    {
+        var query = new Dictionary<string, object?>
+        {
+            ["barcode"] = code,
+            ["name"] = info?.Name,
+            ["brand"] = info?.Brand,
+            ["weight"] = info?.Weight?.ToString(CultureInfo.InvariantCulture),
+            ["unit"] = info?.WeightUnit
+        };
+        Nav.NavigateTo(Nav.GetUriWithQueryParameters($"/item/new/{categoryId}", query));
+    }
+}

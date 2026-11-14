@@ -1,0 +1,36 @@
+@page "/"
+@inject AccountManager Account
+@inject SyncCoordinator Sync
+
+<div class="splash">
+    <img src="images/shelfie-logo.png" alt="Shelfie" class="splash-logo" />
+    @if (quote != null)
+    {
+        <p class="splash-quote">@quote</p>
+    }
+</div>
+
+@code {
+    private string? quote;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var quotes = QuoteService.GetQuotes(L).Where(q => !string.IsNullOrWhiteSpace(q)).ToList();
+        if (quotes.Count > 0)
+            quote = quotes[Random.Shared.Next(quotes.Count)];
+
+        await Task.Delay(700);
+
+        // The app opens straight into the local data: no server round trip is needed to start.
+        bool signedIn = await Account.GetSignedInEmailAsync() != null;
+        if (signedIn || Settings.GuestMode)
+        {
+            Sync.Start();
+            Nav.NavigateTo("/home", replace: true);
+        }
+        else
+        {
+            Nav.NavigateTo("/welcome", replace: true);
+        }
+    }
+}

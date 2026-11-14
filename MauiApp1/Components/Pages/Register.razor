@@ -1,0 +1,102 @@
+@page "/register"
+@using System.ComponentModel.DataAnnotations
+@inject AccountManager Account
+@inject SyncCoordinator Sync
+
+<div class="auth-page">
+    <h1>@L["Create"]</h1>
+
+    <EditForm Model="model" OnValidSubmit="Submit" class="card form">
+        <DataAnnotationsValidator />
+
+        <label>@L["Name"]</label>
+        <InputText @bind-Value="model.Name" placeholder="@L["Alex"]" />
+        <ValidationMessage For="() => model.Name" class="error-text" />
+
+        <label>@L["Email"]</label>
+        <InputText @bind-Value="model.Email" type="email" placeholder="example@mail.ru" />
+        <ValidationMessage For="() => model.Email" class="error-text" />
+
+        <label>@L["Phone"]</label>
+        <InputText @bind-Value="model.Phone" placeholder="+79991234567" />
+        <ValidationMessage For="() => model.Phone" class="error-text" />
+
+        <label>@L["Birthday"]</label>
+        <InputDate @bind-Value="model.BirthDate" />
+
+        <label>@L["Password"]</label>
+        <InputText @bind-Value="model.Password" type="password" />
+        <small class="hint">@L["PasswordRule"]</small>
+        <ValidationMessage For="() => model.Password" class="error-text" />
+
+        <label>@L["ConfirmPass"]</label>
+        <InputText @bind-Value="model.ConfirmPassword" type="password" />
+        <ValidationMessage For="() => model.ConfirmPassword" class="error-text" />
+
+        @if (error != null)
+        {
+            <p class="error-text">@error</p>
+        }
+
+        <button type="submit" class="btn-primary wide" disabled="@busy">@(busy ? L["Wait"] : L["Join"])</button>
+        <button type="button" class="btn-link wide" @onclick='() => Nav.NavigateTo("/welcome")'>@L["HaveAcc"]</button>
+    </EditForm>
+</div>
+
+@code {
+    private readonly Model model = new();
+    private bool busy;
+    private string? error;
+
+    private sealed class Model
+    {
+        [Required(ErrorMessage = "*")] public string Name { get; set; } = "";
+        [Required(ErrorMessage = "*"), EmailAddress(ErrorMessage = "Email?")] public string Email { get; set; } = "";
+        [RegularExpression(@"^(\+?[1-9]\d{1,14})?$", ErrorMessage = "+79991234567")] public string Phone { get; set; } = "";
+        public DateTime BirthDate { get; set; } = new(2000, 1, 1);
+        [Required(ErrorMessage = "*"), RegularExpression("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{6,}$", ErrorMessage = "Aa1…")]
+        public string Password { get; set; } = "";
+        [Compare(nameof(Password), ErrorMessage = "≠")] public string ConfirmPassword { get; set; } = "";
+    }
+
+    private async Task Submit()
+    {
+        error = null;
+        busy = true;
+        try
+        {
+            var result = await Account.RegisterAsync(new RegisterRequest
+            {
+                Email = model.Email.Trim(),
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword,
+                Name = model.Name.Trim(),
+                Phone = string.IsNullOrWhiteSpace(model.Phone) ? null : model.Phone.Trim(),
+                DateOfBirth = DateOnly.FromDateTime(model.BirthDate)
+            });
+
+            if (!result.Success)
+            {
+                error = result.IsOffline ? L["ServerUnavailableLogin"] : result.Error;
+                return;
+            }
+
+            // Registered: sign in straight away (guest data, if any, is uploaded).
+            var login = await Account.SignInAsync(model.Email, model.Password);
+            if (login.Success)
+            {
+                Settings.GuestMode = false;
+                Sync.Start();
+                Nav.NavigateTo("/home", replace: true);
+            }
+            else
+            {
+                Nav.NavigateTo("/welcome", replace: true);
+            }
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

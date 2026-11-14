@@ -1,0 +1,37 @@
+# Backend + PostgreSQL in one command:
+#   cp .env.example .env   (set a real JWT key and password)
+#   docker compose up -d
+# API: http://localhost:5111/swagger — in the app set the server address to http://<this machine's IP>:5111
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shelfie
+      POSTGRES_USER: shelfie
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - shelfie-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shelfie -d shelfie"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: ShelfieBackend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=shelfie;Username=shelfie;Password=${POSTGRES_PASSWORD}"
+      Jwt__Key: ${JWT_KEY:?set JWT_KEY (32+ characters) in .env}
+      Database__MigrateOnStartup: "true"
+    ports:
+      - "5111:8080"
+
+volumes:
+  shelfie-db:

@@ -1,69 +1,65 @@
-﻿using Blazored.LocalStorage;
-using MauiApp1.Services;
+﻿using MauiApp1.Services;
 using Microsoft.Extensions.Logging;
+using Plugin.LocalNotification;
+using Shelfie.Client;
+using Shelfie.Client.Storage;
 using System.Globalization;
+using ZXing.Net.Maui.Controls;
 
 namespace MauiApp1
 {
 	public static class MauiProgram
 	{
-		/// <summary>
-		/// The Android emulator reaches the host machine through 10.0.2.2; other platforms use localhost.
-		/// </summary>
-		public static string ApiBaseUrl =>
-			DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5111/api/" : "http://localhost:5111/api/";
-
 		public static MauiApp CreateMauiApp()
 		{
 			var builder = MauiApp.CreateBuilder();
 			builder.Logging.AddDebug();
-			builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 			builder
 				.UseMauiApp<App>()
+				.UseLocalNotification()
+				.UseBarcodeReader()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				});
 
 			builder.Services.AddMauiBlazorWebView();
-
-			// One HttpClient for the API; the handler attaches the JWT to every request.
-			builder.Services.AddTransient<AuthHeaderHandler>();
-			builder.Services.AddHttpClient("ShelfieApi", client =>
-				{
-					client.BaseAddress = new Uri(ApiBaseUrl);
-					client.Timeout = TimeSpan.FromSeconds(30);
-				})
-				.AddHttpMessageHandler<AuthHeaderHandler>();
-			builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ShelfieApi"));
-
-			// Services to work with API
-			builder.Services.AddScoped<AuthService>();
-			builder.Services.AddScoped<ProductService>();
-			builder.Services.AddScoped<MedicationService>();
-			builder.Services.AddScoped<CategoryService>();
-			builder.Services.AddScoped<FieldService>();
-			builder.Services.AddScoped<FieldValueService>();
-
 			builder.Services.AddLocalization();
+			builder.Services.AddHttpClient();
 
-			builder.Services.AddBlazoredLocalStorage();
+			// Offline-first core: one local database for the app's lifetime.
+			builder.Services.AddSingleton<AppSettings>();
+			builder.Services.AddSingleton(TimeProvider.System);
+			builder.Services.AddSingleton(_ => new LocalDatabase(Path.Combine(FileSystem.AppDataDirectory, "shelfie.db3")));
+			builder.Services.AddSingleton<LocalInventory>();
+			builder.Services.AddSingleton<ITokenStore, SecureTokenStore>();
+			builder.Services.AddSingleton(sp => new ShelfieApi(
+				sp.GetRequiredService<IHttpClientFactory>().CreateClient("shelfie"),
+				() => sp.GetRequiredService<AppSettings>().ServerUrl,
+				sp.GetRequiredService<ITokenStore>()));
+			builder.Services.AddSingleton<SyncService>();
+			builder.Services.AddSingleton<AccountManager>();
+			builder.Services.AddSingleton(sp => new ProductLookup(
+				sp.GetRequiredService<IHttpClientFactory>().CreateClient("openfoodfacts"),
+				sp.GetRequiredService<LocalInventory>()));
 
-			var language = Preferences.Get("language", "ru-RU");
-			SetCulture(language);
+			// Device features
+			builder.Services.AddSingleton<NotificationScheduler>();
+			builder.Services.AddSingleton<SyncCoordinator>();
+			builder.Services.AddSingleton<ScannerService>();
+			builder.Services.AddSingleton<PhotoService>();
+			builder.Services.AddSingleton<Toasts>();
+
+			var culture = new CultureInfo(Preferences.Get("language", "ru-RU"));
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+			CultureInfo.DefaultThreadCurrentUICulture = culture;
 #if DEBUG
 			builder.Services.AddBlazorWebViewDeveloperTools();
+			builder.Logging.SetMinimumLevel(LogLevel.Debug);
 #endif
 
 			return builder.Build();
-		}
-
-		private static void SetCulture(string language)
-		{
-			var culture = new CultureInfo(language);
-			CultureInfo.DefaultThreadCurrentCulture = culture;
-			CultureInfo.DefaultThreadCurrentUICulture = culture;
 		}
 	}
 }

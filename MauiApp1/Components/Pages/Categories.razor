@@ -1,179 +1,85 @@
-﻿@page "/categories"
-@layout MobileLayout
+@page "/categories"
+@implements IDisposable
 
-<div class="page-background">
-    <h1 class="title">@Localizer["Categories"]</h1>
-    <div class="white-panel">
-        <div class="category_container">
-            <div class="categories-grid">
-                <!-- Предопределённые категории -->
-                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(1)">
-                    <div class="category-card">
-                        <div class="icon-food"></div>
-                    </div>
-                    <span>@Localizer["Products"]</span>
-                </div>
-                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(2)">
-                    <div class="category-card">
-                        <div class="icon-medicine"></div>
-                    </div>
-                    <span>@Localizer["Medication"]</span>
-                </div>
-                <div class="category-card-wrapper" @onclick="() => NavigateToCategory(3)">
-                    <div class="category-card">
-                        <div class="icon-books"></div>
-                    </div>
-                    <span>@Localizer["Books"]</span>
-                </div>
+<header class="page-header">
+    <h1>@L["Categories"]</h1>
+</header>
 
-                <!-- Пользовательские категории -->
-                @if (Categories1 != null)
-                {
-                    @foreach (var category in Categories1)
-                    {
-                        <div class="category-card-wrapper">
-                            <div class="category-card"
-                                 @onpointerdown="(e) => StartPress(category.Id)"
-                                 @onpointerup="CancelPress"
-                                 @onpointerleave="CancelPress"
-                                 @onclick="() => NavigateToCategory(category.Id)">
-                                <div class="icon-custom"></div>
-                            </div>
-                            <span>@category.Name</span>
-                        </div>
-                    }
-                }
-
-                <div class="category-card-wrapper" @onclick="OpenAddCategoryModal">
-                    <div class="category-card add-card">
-                        <div class="icon-plus"></div>
-                    </div>
-                    <span>@Localizer["Add"]</span>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="category-grid">
+    @foreach (var category in categories)
+    {
+        <a class="category-tile" href="/category/@category.Id">
+            <span class="category-icon"><Icon Name="@Icon.ForKind(category.Kind)" Size="30" /></span>
+            <span class="name">@category.Name</span>
+            <span class="muted small">@counts.GetValueOrDefault(category.Id)</span>
+        </a>
+    }
+    <button class="category-tile add" @onclick="() => showAdd = true">
+        <span class="category-icon"><Icon Name="plus" Size="30" /></span>
+        <span class="name">@L["Add"]</span>
+    </button>
 </div>
 
-<!-- Модальное окно добавления категории -->
-@if (ShowAddCategoryModal)
+@if (showAdd)
 {
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3>@Localizer["AddNewCategory"]</h3>
-            <input type="text" @bind-value="NewCategoryName" @bind-value:event="oninput" placeholder=@Localizer["NameOfCategory"] />
-            <div class="buttons">
-                <button @onclick="AddCategory">@Localizer["Save"]</button>
-                <button @onclick="CancelAddCategory">@Localizer["Cancel"]</button>
-            </div>
-        </div>
-    </div>
-}
-
-<!-- Модальное окно подтверждения удаления категории -->
-@if (ShowDeleteCategoryModal)
-{
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3>@Localizer["DeleteLabelCategory"]</h3>
-            <p>@Localizer["ConfirmDeleteCategory"]</p>
-            <div class="buttons">
-                <button @onclick="ConfirmDeleteCategory">@Localizer["DeleteButton"]</button>
-                <button @onclick="() => ShowDeleteCategoryModal = false">@Localizer["Cancel"]</button>
+    <div class="modal-overlay" @onclick="Close">
+        <div class="modal-card" @onclick:stopPropagation="true">
+            <h3>@L["AddNewCategory"]</h3>
+            <input @bind="newName" @bind:event="oninput" placeholder="@L["NameOfCategory"]" />
+            @if (error != null)
+            {
+                <p class="error-text">@error</p>
+            }
+            <div class="modal-actions">
+                <button class="btn-secondary" @onclick="Close">@L["Cancel"]</button>
+                <button class="btn-primary" @onclick="Create">@L["Create"]</button>
             </div>
         </div>
     </div>
 }
 
 @code {
-    private List<CategoryModel> Categories1 = new();
-    private bool ShowAddCategoryModal = false;
-    private bool ShowDeleteCategoryModal = false;
-    private string NewCategoryName = string.Empty;
-    private int _pressedCategoryId;
-    private System.Timers.Timer _pressTimer = new();
-
-    private List<string> editableFields = new(Enumerable.Repeat(string.Empty, 8));
+    private List<CategoryDto> categories = new();
+    private Dictionary<Guid, int> counts = new();
+    private bool showAdd;
+    private string newName = "";
+    private string? error;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCategories();
+        Inventory.Changed += OnChanged;
+        await LoadAsync();
     }
 
-    private async Task LoadCategories()
+    private async Task LoadAsync()
     {
-        Categories1 = await CategoryService.GetCategoriesAsync();
-        StateHasChanged();
+        categories = await Inventory.GetCategoriesAsync();
+        counts = (await Inventory.GetItemsAsync()).GroupBy(i => i.CategoryId).ToDictionary(g => g.Key, g => g.Count());
     }
 
-    private void OpenAddCategoryModal()
+    private async Task Create()
     {
-        ShowAddCategoryModal = true;
-    }
-
-    private void CancelAddCategory()
-    {
-        ShowAddCategoryModal = false;
-        NewCategoryName = string.Empty;
-    }
-
-    private async Task AddCategory()
-    {
-        if (string.IsNullOrWhiteSpace(NewCategoryName))
+        var category = new CategoryDto { Name = newName };
+        var result = await Inventory.SaveCategoryAsync(category);
+        if (!result.Success)
+        {
+            error = result.ErrorText;
             return;
-
-        var success = await CategoryService.AddCategoryAsync(NewCategoryName);
-        if (success)
-        {
-            await LoadCategories();
         }
-        ShowAddCategoryModal = false;
-        NewCategoryName = string.Empty;
+
+        Close();
+        // A new category starts with its fields.
+        Nav.NavigateTo($"/category/{category.Id}/settings");
     }
 
-    private async Task NavigateToCategory(int categoryId)
+    private void Close()
     {
-        var fieldNames = await FieldService.GetFieldsForCategoryAsync(categoryId);
-
-        if (fieldNames != null && fieldNames.Any(f => !string.IsNullOrWhiteSpace(f)))
-        {
-            NavManager.NavigateTo($"/category/{categoryId}/fill");
-        }
-        else
-        {
-            NavManager.NavigateTo($"/category/{categoryId}");
-        }
+        showAdd = false;
+        newName = "";
+        error = null;
     }
 
-    // Запуск таймера при долгом нажатии
-    private void StartPress(int categoryId)
-    {
-        _pressedCategoryId = categoryId;
-        _pressTimer = new System.Timers.Timer(800); 
-        _pressTimer.Elapsed += (sender, args) =>
-        {
-            _pressTimer.Stop();
-            ShowDeleteCategoryModal = true;
-            InvokeAsync(StateHasChanged);
-        };
-        _pressTimer.AutoReset = false;
-        _pressTimer.Start();
-    }
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { await LoadAsync(); StateHasChanged(); });
 
-    // Отмена, если отпустили раньше времени
-    private void CancelPress()
-    {
-        _pressTimer?.Stop();
-        _pressTimer?.Dispose();
-    }
-
-    private async Task ConfirmDeleteCategory()
-    {
-        ShowDeleteCategoryModal = false;
-        var success = await CategoryService.DeleteCategoryAsync(_pressedCategoryId);
-        if (success)
-        {
-            await LoadCategories();
-        }
-    }
+    public void Dispose() => Inventory.Changed -= OnChanged;
 }

@@ -1,0 +1,27 @@
+@if (Date is DateOnly date)
+{
+    var today = Inventory.Today;
+    var status = Expiry.GetStatus(date, today, Settings.SoonDays);
+    var days = Expiry.DaysLeft(date, today);
+    <span class="badge @CssClass(status)" title="@date.ToString("d")">
+        @(status switch
+        {
+            ExpiryStatus.Expired => string.Format(L["ExpiredDaysAgo"], -days),
+            _ when days == 0 => L["ExpiresToday"].Value,
+            _ when days == 1 => L["ExpiresTomorrow"].Value,
+            ExpiryStatus.Soon => string.Format(L["ExpiresInDays"], days),
+            _ => date.ToString("d")
+        })
+    </span>
+}
+
+@code {
+    [Parameter] public DateOnly? Date { get; set; }
+
+    private static string CssClass(ExpiryStatus status) => status switch
+    {
+        ExpiryStatus.Expired => "danger",
+        ExpiryStatus.Soon => "warn",
+        _ => "ok"
+    };
+}

@@ -1,0 +1,52 @@
+@page "/history"
+@implements IDisposable
+
+<header class="page-header">
+    <a class="icon-btn" href="/home"><Icon Name="back" /></a>
+    <h1>@L["HistoryOperation"]</h1>
+    @if (entries.Count > 0)
+    {
+        <button class="icon-btn danger" @onclick="Clear" title="@L["ClearHistory"]"><Icon Name="trash" /></button>
+    }
+</header>
+
+@if (entries.Count == 0)
+{
+    <div class="empty-state">
+        <Icon Name="history" Size="48" />
+        <p>@L["HistoryEmpty"]</p>
+    </div>
+}
+else
+{
+    @foreach (var day in entries.GroupBy(e => DateOnly.FromDateTime(e.ChangeDate.ToLocalTime())))
+    {
+        <div class="day-title">@day.Key.ToString("D")</div>
+        <div class="card">
+            @foreach (var entry in day)
+            {
+                <HistoryRow Entry="entry" />
+            }
+        </div>
+    }
+}
+
+@code {
+    private List<HistoryEntryDto> entries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Inventory.Changed += OnChanged;
+        entries = await Inventory.GetHistoryAsync(500);
+    }
+
+    private async Task Clear()
+    {
+        if (await JS.InvokeAsync<bool>("confirm", L["ConfirmClearHistory"].Value))
+            await Inventory.ClearHistoryAsync();
+    }
+
+    private void OnChanged(object? sender, EventArgs e) => InvokeAsync(async () => { entries = await Inventory.GetHistoryAsync(500); StateHasChanged(); });
+
+    public void Dispose() => Inventory.Changed -= OnChanged;
+}

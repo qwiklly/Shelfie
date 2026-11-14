@@ -1,0 +1,113 @@
+@page "/category/{Id:guid}/settings"
+
+<header class="page-header">
+    <a class="icon-btn" href="/category/@Id"><Icon Name="back" /></a>
+    <h1>@L["CategorySettings"]</h1>
+</header>
+
+@if (category == null)
+{
+    <p class="muted center">@L["Loading"]</p>
+}
+else
+{
+    <div class="card form">
+        <label>@L["NameOfCategory"]</label>
+        <input @bind="category.Name" />
+
+        <div class="card-title">@L["Fields"]</div>
+        <p class="muted small">@L["FieldsHint"]</p>
+
+        @for (int i = 0; i < category.Fields.Count; i++)
+        {
+            var index = i;
+            var field = category.Fields[index];
+            <div class="field-editor">
+                <input class="grow" @bind="field.Name" placeholder="@L["FieldName"]" />
+                <select @bind="field.Type">
+                    @foreach (var type in Enum.GetValues<FieldType>())
+                    {
+                        <option value="@type">@Widgets.FieldTypeName(L, type)</option>
+                    }
+                </select>
+                <label class="switch-row small"><input type="checkbox" @bind="field.Required" /> @L["Required"]</label>
+                <div class="field-buttons">
+                    <button class="icon-btn" disabled="@(index == 0)" @onclick="() => Move(index, -1)"><Icon Name="up" Size="16" /></button>
+                    <button class="icon-btn" disabled="@(index == category.Fields.Count - 1)" @onclick="() => Move(index, 1)"><Icon Name="down" Size="16" /></button>
+                    <button class="icon-btn danger" @onclick="() => category.Fields.RemoveAt(index)"><Icon Name="trash" Size="16" /></button>
+                </div>
+            </div>
+        }
+
+        <button class="btn-secondary" @onclick="AddField"><Icon Name="plus" Size="16" /> @L["AddField"]</button>
+
+        @if (errors.Count > 0)
+        {
+            <div class="error-text">@foreach (var e in errors) { <div>@e</div> }</div>
+        }
+
+        <button class="btn-primary wide" @onclick="Save">@L["Save"]</button>
+
+        @if (!BuiltInCategories.IsBuiltIn(category.Id))
+        {
+            <button class="btn-danger wide" @onclick="Delete"><Icon Name="trash" Size="16" /> @L["DeleteCategory"]</button>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private CategoryDto? category;
+    private List<string> errors = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var stored = await Inventory.GetCategoryAsync(Id);
+        if (stored == null)
+        {
+            Nav.NavigateTo("/categories");
+            return;
+        }
+
+        // Edit a copy; nothing changes until Save.
+        category = new CategoryDto
+        {
+            Id = stored.Id, Name = stored.Name, Kind = stored.Kind,
+            Fields = stored.Fields.OrderBy(f => f.Order).Select(f => f.Clone()).ToList()
+        };
+    }
+
+    private void AddField() => category!.Fields.Add(new FieldDefinition { Name = "", Type = FieldType.Text });
+
+    private void Move(int index, int direction)
+    {
+        var fields = category!.Fields;
+        (fields[index], fields[index + direction]) = (fields[index + direction], fields[index]);
+    }
+
+    private async Task Save()
+    {
+        // Empty rows are just ignored.
+        category!.Fields.RemoveAll(f => string.IsNullOrWhiteSpace(f.Name));
+        var result = await Inventory.SaveCategoryAsync(category);
+        if (!result.Success)
+        {
+            errors = result.Errors.ToList();
+            return;
+        }
+        Toasts.Show(L["Saved"]);
+        Nav.NavigateTo($"/category/{Id}");
+    }
+
+    private async Task Delete()
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", string.Format(L["ConfirmDeleteCategory"], category!.Name)))
+            return;
+        var result = await Inventory.DeleteCategoryAsync(Id);
+        if (result.Success)
+            Nav.NavigateTo("/categories");
+        else
+            Toasts.Show(result.ErrorText, isError: true);
+    }
+}
