@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using ShelfieBackend.DTOs;
 using ShelfieBackend.Middleware;
-using ShelfieBackend.Models;
 using ShelfieBackend.Repositories;
 using ShelfieBackend.Services;
 
@@ -63,26 +62,6 @@ public class UserIdServiceTests
     [Fact]
     public void Missing_claim_gives_null() =>
         Assert.Null(_service.GetUserId(new ClaimsPrincipal()));
-}
-
-public class DescribeRecordTests
-{
-    [Fact]
-    public void Uses_first_non_empty_value_in_field_order()
-    {
-        var values = new[]
-        {
-            new CategoryFieldValue { FieldOrder = 3, Value = "Third" },
-            new CategoryFieldValue { FieldOrder = 1, Value = " " },
-            new CategoryFieldValue { FieldOrder = 2, Value = "Second" },
-        };
-
-        Assert.Equal("Books: Second", CategoryFieldValueRepo.DescribeRecord("Books", values));
-    }
-
-    [Fact]
-    public void Falls_back_to_category_name() =>
-        Assert.Equal("Books", CategoryFieldValueRepo.DescribeRecord("Books", []));
 }
 
 public class GlobalExceptionMiddlewareTests

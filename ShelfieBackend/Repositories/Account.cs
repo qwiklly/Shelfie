@@ -188,17 +188,9 @@ namespace ShelfieBackend.Repositories
                 if (user == null)
                     return new BaseResponse(false, "User not found");
 
-                await using var transaction = await _appDbContext.Database.BeginTransactionAsync();
-
-                // Values of custom categories are not linked by a foreign key, so remove them explicitly.
-                var categoryIds = _appDbContext.Categories.Where(c => c.UserId == user.Id).Select(c => c.Id);
-                await _appDbContext.CategoryFieldValues
-                    .Where(v => categoryIds.Contains(v.CategoryId))
-                    .ExecuteDeleteAsync();
-
+                // Categories, items, shopping list and history are removed by cascade (FK on UserId).
                 _appDbContext.Users.Remove(user);
                 await _appDbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
 
                 return new BaseResponse(true, "User deleted successfully");
             }

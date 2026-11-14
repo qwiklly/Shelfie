@@ -12,6 +12,7 @@ using ShelfieBackend.Services;
 using ShelfieBackend.States;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +27,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 builder.Services.AddRazorPages();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 // Swagger settings
 builder.Services.AddEndpointsApiExplorer();
@@ -100,20 +102,19 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAccount, Account>();
 builder.Services.AddScoped<IUserIdService, UserIdService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
-builder.Services.AddScoped<IProductRepo, ProductRepo>();
-builder.Services.AddScoped<IMedicineRepo, MedicineRepo>();
-builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
-builder.Services.AddScoped<IHistoryRepo, HistoryRepo>();
-builder.Services.AddScoped<ICategoryFieldRepo, CategoryFieldRepo>();
-builder.Services.AddScoped<ICategoryFieldValueRepo, CategoryFieldValueRepo>();
-
-
-
-
-
+builder.Services.AddScoped<InventoryService>();
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddHealthChecks();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// Docker / development: bring the database schema up to date on start.
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -146,6 +147,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+app.MapHealthChecks("/health");
 
 try
 {

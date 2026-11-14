@@ -1,81 +1,74 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Shelfie.Shared;
 using ShelfieBackend.Models;
+using System.Text.Json;
 
 namespace ShelfieBackend.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
         public DbSet<ApplicationUser> Users { get; set; }
-        public DbSet<Product> Products { get; set; }
-        public DbSet<Medication> Medications { get; set; }
-        public DbSet<Category> Categories { get; set; }
-        public DbSet<HistoryRecord> HistoryRecords { get; set; }
-        public DbSet<CategoryField> CategoryFields { get; set; }
-        public DbSet<CategoryFieldValue> CategoryFieldValues { get; set; }
+        public DbSet<ItemCategory> ItemCategories { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<ShoppingItem> ShoppingItems { get; set; }
+        public DbSet<HistoryEntry> HistoryEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // -------------------------------
-            // Связь ApplicationUser -> Category
-            modelBuilder.Entity<Category>()
-                .HasOne(c => c.User)
-                .WithMany() 
-                .HasForeignKey(c => c.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // PostgreSQL stores JSON as jsonb; other providers (SQLite in tests) as text.
+            string? jsonType = Database.IsNpgsql() ? "jsonb" : null;
 
-            // -------------------------------
-            // Связь ApplicationUser -> Product
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.User)
-                .WithMany() 
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ItemCategory>(e =>
+            {
+                ConfigureUserEntity(e);
+                e.Property(c => c.Name).HasMaxLength(100);
+                e.Property(c => c.Kind).HasConversion<string>().HasMaxLength(20);
+                e.Property(c => c.Fields)
+                    .HasConversion(Json<List<FieldDefinition>>())
+                    .Metadata.SetValueComparer(JsonComparer<List<FieldDefinition>>());
+                if (jsonType != null) e.Property(c => c.Fields).HasColumnType(jsonType);
+            });
 
-            // -------------------------------
-            // Связь ApplicationUser -> HistoryRecord
-            modelBuilder.Entity<HistoryRecord>()
-                .HasOne(hr => hr.User)
-                .WithMany() 
-                .HasForeignKey(hr => hr.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Item>(e =>
+            {
+                ConfigureUserEntity(e);
+                e.Property(i => i.Name).HasMaxLength(ItemRules.MaxNameLength);
+                e.Property(i => i.Fields)
+                    .HasConversion(Json<Dictionary<string, string>>())
+                    .Metadata.SetValueComparer(JsonComparer<Dictionary<string, string>>());
+                if (jsonType != null) e.Property(i => i.Fields).HasColumnType(jsonType);
+                e.HasIndex(i => new { i.UserId, i.Barcode });
+            });
 
-            // -------------------------------
-            // Связь ApplicationUser -> CustomItem
-            modelBuilder.Entity<CustomItem>()
-                .HasOne(ci => ci.User)
-                .WithMany() 
-                .HasForeignKey(ci => ci.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ShoppingItem>(ConfigureUserEntity);
 
-            // -------------------------------
-            // Связь Category -> Product
-            // При удалении категории удаляются все продукты, привязанные к ней.
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.Category)
-                .WithMany() 
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // -------------------------------
-            // Связь Category -> CategoryField
-            // При удалении категории удаляются все её поля.
-            modelBuilder.Entity<CategoryField>()
-                .HasOne<Category>()
-                .WithMany() 
-                .HasForeignKey(cf => cf.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // -------------------------------
-            // Связь Category -> CustomItem
-            // При удалении категории удаляются и связанные кастомные элементы.
-            modelBuilder.Entity<CustomItem>()
-                .HasOne(ci => ci.Category)
-                .WithMany() 
-                .HasForeignKey(ci => ci.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            modelBuilder.Entity<HistoryEntry>(e =>
+            {
+                ConfigureUserEntity(e);
+                e.Property(h => h.ChangeType).HasMaxLength(20);
+                e.HasIndex(h => new { h.UserId, h.ChangeDate });
+            });
         }
+
+        private static void ConfigureUserEntity<T>(EntityTypeBuilder<T> e) where T : class, IUserEntity
+        {
+            e.HasKey(x => new { x.UserId, x.Id });
+            e.HasIndex(x => new { x.UserId, x.ServerModifiedAt });
+            // Deleting a user removes all of their data.
+            e.HasOne<ApplicationUser>().WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        }
+
+        private static Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<T, string> Json<T>() where T : new() =>
+            new(v => JsonSerializer.Serialize(v, ShelfieJson.Options),
+                v => string.IsNullOrEmpty(v) ? new T() : JsonSerializer.Deserialize<T>(v, ShelfieJson.Options) ?? new T());
+
+        private static ValueComparer<T> JsonComparer<T>() where T : new() =>
+            new((a, b) => JsonSerializer.Serialize(a, ShelfieJson.Options) == JsonSerializer.Serialize(b, ShelfieJson.Options),
+                v => JsonSerializer.Serialize(v, ShelfieJson.Options).GetHashCode(),
+                v => JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(v, ShelfieJson.Options), ShelfieJson.Options) ?? new T());
     }
 }

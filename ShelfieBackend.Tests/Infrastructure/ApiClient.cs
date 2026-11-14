@@ -10,7 +10,7 @@ namespace ShelfieBackend.Tests.Infrastructure;
 /// <summary>Helpers for talking to the in-memory API as a particular user.</summary>
 public static class ApiClient
 {
-    public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    public static readonly JsonSerializerOptions Json = Shelfie.Shared.ShelfieJson.Options;
 
     public const string DefaultPassword = "Secret123";
 

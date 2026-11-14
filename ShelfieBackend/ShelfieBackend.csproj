@@ -11,6 +11,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="../Shelfie.Shared/Shelfie.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<InternalsVisibleTo Include="ShelfieBackend.Tests" />
 	</ItemGroup>
 

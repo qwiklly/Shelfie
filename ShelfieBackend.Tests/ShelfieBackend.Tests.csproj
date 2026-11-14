@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\ShelfieBackend\ShelfieBackend.csproj" />
+		<ProjectReference Include="../Shelfie.Client/Shelfie.Client.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -234,17 +234,19 @@ public class AccountTests(ShelfieApiFactory factory) : IClassFixture<ShelfieApiF
     public async Task User_can_delete_own_account_with_all_data()
     {
         var (client, email) = await factory.CreateUserAsync();
-        await client.PostAsJsonAsync("api/category/createCategory", new AddCategoryDTO { Name = "Books" }, CT);
-        var category = (await client.GetJsonAsync<List<GetCategoriesDTO>>("api/category/getAllCategories")).Single();
-        await client.PostAsJsonAsync($"api/category/{category.Id}/addOrChangeFields", new[] { "Title" }, CT);
-        await client.PostAsJsonAsync($"api/categoryValue/{category.Id}/save-values",
-            new Models.FieldValuesRequest { FieldValues = new() { [1] = "Dune" } }, CT);
+        var category = await (await client.PostAsJsonAsync("api/categories",
+            new Shelfie.Shared.CategoryDto { Name = "Wine" }, Json, CT)).ReadAsync<Shelfie.Shared.CategoryDto>();
+        await client.PostAsJsonAsync("api/items", new Shelfie.Shared.ItemDto { CategoryId = category.Id, Name = "Merlot" }, Json, CT);
+        await client.PostAsJsonAsync("api/shopping", new Shelfie.Shared.ShoppingItemDto { Name = "Bread" }, Json, CT);
+        var userId = await factory.WithDbAsync(db => Task.FromResult(db.Users.Single(u => u.Email == email).Id));
 
         var response = await client.DeleteAsync($"api/application/deleteUser?email={Uri.EscapeDataString(email)}", CT);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await factory.CreateClient().LoginAsync(email, DefaultPassword)).StatusCode);
-        var leftovers = await factory.WithDbAsync(db => Task.FromResult(db.CategoryFieldValues.Count(v => v.CategoryId == category.Id)));
+        var leftovers = await factory.WithDbAsync(db => Task.FromResult(
+            db.Items.Count(i => i.UserId == userId) + db.ItemCategories.Count(c => c.UserId == userId)
+            + db.ShoppingItems.Count(s => s.UserId == userId) + db.HistoryEntries.Count(h => h.UserId == userId)));
         Assert.Equal(0, leftovers);
     }
 }

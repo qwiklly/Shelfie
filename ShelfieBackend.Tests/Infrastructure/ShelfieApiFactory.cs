@@ -21,7 +21,7 @@ public sealed class ShelfieApiFactory : WebApplicationFactory<Program>
     public const string AdminEmail = "admin@shelfie.test";
     public const string AdminPassword = "Admin123";
 
-    private readonly SqliteConnection _connection = new("DataSource=:memory:");
+    private readonly SqliteConnection _connection = new("DataSource=:memory:;Foreign Keys=True");
 
     public ShelfieApiFactory()
     {
@@ -60,13 +60,9 @@ public sealed class ShelfieApiFactory : WebApplicationFactory<Program>
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Database.EnsureCreated();
 
-        if (!db.Categories.Any())
+        // Built-in categories are virtual (well-known ids), only the admin needs seeding.
+        if (!db.Users.Any(u => u.Email == AdminEmail))
         {
-            db.Categories.AddRange(
-                new Category { Id = Constants.ProductsCategoryId, Name = "Продукты", Type = "Product" },
-                new Category { Id = Constants.MedicationsCategoryId, Name = "Медикаменты", Type = "Medication" },
-                new Category { Id = 3, Name = "Книги", Type = "Book" });
-
             db.Users.Add(new ApplicationUser
             {
                 Name = "Admin",

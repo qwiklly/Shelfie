@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>Shelfie.Client</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Shelfie.Client.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Local offline database (SQLitePCLRaw 3.x: patched SQLite, Android 16 KB pages). -->
+		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../Shelfie.Shared/Shelfie.Shared.csproj" />
+	</ItemGroup>
+
+</Project>
