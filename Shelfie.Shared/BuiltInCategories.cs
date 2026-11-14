@@ -19,21 +19,35 @@ public static class BuiltInCategories
         id == Books ? CategoryKind.Books :
         CategoryKind.Custom;
 
-    /// <summary>Default definitions (fresh copies on every call).</summary>
+    private static readonly Dictionary<Guid, string> NameKeys = new()
+    {
+        [Products] = "CatProducts",
+        [Medications] = "CatMedications",
+        [Books] = "CatBooks",
+    };
+
+    private static readonly Dictionary<string, string> BookFieldKeys = new()
+    {
+        ["author"] = "FieldAuthor",
+        ["year"] = "FieldYear",
+        ["genre"] = "FieldGenre",
+    };
+
+    /// <summary>Default definitions in the current UI language (fresh copies on every call).</summary>
     public static IReadOnlyList<CategoryDto> Defaults() =>
     [
-        new CategoryDto { Id = Products, Name = "Продукты", Kind = CategoryKind.Products },
-        new CategoryDto { Id = Medications, Name = "Медикаменты", Kind = CategoryKind.Medications },
+        new CategoryDto { Id = Products, Name = Texts.Get("CatProducts"), Kind = CategoryKind.Products },
+        new CategoryDto { Id = Medications, Name = Texts.Get("CatMedications"), Kind = CategoryKind.Medications },
         new CategoryDto
         {
             Id = Books,
-            Name = "Книги",
+            Name = Texts.Get("CatBooks"),
             Kind = CategoryKind.Books,
             Fields =
             [
-                new FieldDefinition { Key = "author", Name = "Автор", Type = FieldType.Text, Order = 1 },
-                new FieldDefinition { Key = "year", Name = "Год", Type = FieldType.Number, Order = 2 },
-                new FieldDefinition { Key = "genre", Name = "Жанр", Type = FieldType.Text, Order = 3 },
+                new FieldDefinition { Key = "author", Name = Texts.Get("FieldAuthor"), Type = FieldType.Text, Order = 1 },
+                new FieldDefinition { Key = "year", Name = Texts.Get("FieldYear"), Type = FieldType.Number, Order = 2 },
+                new FieldDefinition { Key = "genre", Name = Texts.Get("FieldGenre"), Type = FieldType.Text, Order = 3 },
             ]
         },
     ];
@@ -50,6 +64,7 @@ public static class BuiltInCategories
             {
                 overridden.Kind = builtIn.Kind;
                 overridden.IsDeleted = false; // built-ins cannot be deleted
+                Localize(overridden);
                 result.Add(overridden);
             }
             else
@@ -61,11 +76,30 @@ public static class BuiltInCategories
         result.AddRange(byId.Values.Where(c => !c.IsDeleted).OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase));
         return result;
     }
+
+    /// <summary>
+    /// An override that still carries a default name (in any language) shows the name in the current language;
+    /// names the user typed are kept as they are.
+    /// </summary>
+    private static void Localize(CategoryDto category)
+    {
+        if (NameKeys.TryGetValue(category.Id, out var nameKey) && Texts.AllVariants(nameKey).Contains(category.Name))
+            category.Name = Texts.Get(nameKey);
+
+        if (category.Id != Books)
+            return;
+
+        foreach (var field in category.Fields)
+        {
+            if (BookFieldKeys.TryGetValue(field.Key, out var fieldKey) && Texts.AllVariants(fieldKey).Contains(field.Name))
+                field.Name = Texts.Get(fieldKey);
+        }
+    }
 }
 
-/// <summary>Suggested storage locations; users may type any other.</summary>
+/// <summary>Suggested storage locations (current UI language); users may type any other.</summary>
 public static class StorageLocations
 {
-    public static readonly IReadOnlyList<string> Suggestions =
-        ["Холодильник", "Морозилка", "Кладовая", "Аптечка", "Шкаф", "Полка"];
+    public static IReadOnlyList<string> Suggestions =>
+        new[] { "LocFridge", "LocFreezer", "LocPantry", "LocFirstAid", "LocCupboard", "LocShelf" }.Select(Texts.Get).ToList();
 }

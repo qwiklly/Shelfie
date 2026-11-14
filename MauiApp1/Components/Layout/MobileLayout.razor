@@ -11,7 +11,7 @@
         </div>
     }
 
-    <main class="app-content">
+    <main class="app-content @(ShowNav ? "" : "bare")">
         @Body
     </main>
 
@@ -70,6 +70,15 @@
         Sync.StatusChanged += OnStatusChanged;
         Toasts.Shown += OnToast;
         Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try { await JS.InvokeVoidAsync("shelfieSetLang", CultureInfo.CurrentUICulture.TwoLetterISOLanguageName); }
+            catch (JSException) { }
+        }
     }
 
     private void OnStatusChanged(object? sender, SyncStatus s)

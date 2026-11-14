@@ -61,7 +61,7 @@ else
                         <option value="">—</option>
                         @foreach (var unit in Widgets.Units)
                         {
-                            <option value="@unit">@unit</option>
+                            <option value="@unit">@Widgets.Unit(unit)</option>
                         }
                     </select>
                 </div>

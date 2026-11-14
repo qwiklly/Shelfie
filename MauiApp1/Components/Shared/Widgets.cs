@@ -27,7 +27,18 @@ namespace MauiApp1.Components.Shared
             _ => l["TypeText"]
         };
 
-        /// <summary>Weight units offered in forms (stored as written).</summary>
+        /// <summary>Weight units offered in forms. Stored in this canonical form, shown in the UI language.</summary>
         public static readonly string[] Units = ["г", "кг", "мл", "л", "шт"];
+
+        private static readonly Dictionary<string, string> UnitsEn = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["г"] = "g", ["кг"] = "kg", ["мл"] = "ml", ["л"] = "l", ["шт"] = "pcs"
+        };
+
+        /// <summary>A stored unit as the user should read it ("г" → "g" in English).</summary>
+        public static string Unit(string? unit) =>
+            string.IsNullOrEmpty(unit) ? string.Empty
+            : Texts.IsRussian ? unit
+            : UnitsEn.GetValueOrDefault(unit, unit);
     }
 }

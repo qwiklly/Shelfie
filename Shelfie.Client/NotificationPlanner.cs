@@ -40,8 +40,8 @@ public static class NotificationPlanner
             }
 
             var names = group.Select(x => x.Item).OrderBy(i => i.ExpirationDate).Select(i => i.Name).ToList();
-            var body = string.Join(", ", names.Take(3)) + (names.Count > 3 ? $" и ещё {names.Count - 3}" : string.Empty);
-            var title = names.Count == 1 ? "Скоро истекает срок годности" : $"Скоро истекает срок: {names.Count} шт.";
+            var body = string.Join(", ", names.Take(3)) + (names.Count > 3 ? Texts.Format("NotifyAndMore", names.Count - 3) : string.Empty);
+            var title = names.Count == 1 ? Texts.Get("NotifyOne") : Texts.Format("NotifyMany", names.Count);
 
             result.Add(new PlannedNotification(group.Key.DayNumber, when, title, body));
             if (result.Count == MaxNotifications)

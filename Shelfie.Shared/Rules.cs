@@ -29,14 +29,14 @@ public static class ItemRules
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(item.Name))
-            errors.Add("Название не может быть пустым");
+            errors.Add(Texts.Get("NameRequired"));
         else if (item.Name.Trim().Length > MaxNameLength)
-            errors.Add($"Название не может быть длиннее {MaxNameLength} символов");
+            errors.Add(Texts.Format("NameTooLong", MaxNameLength));
 
         if (item.Quantity < 0)
-            errors.Add("Количество не может быть отрицательным");
+            errors.Add(Texts.Get("QuantityNegative"));
         if (item.Weight < 0)
-            errors.Add("Вес не может быть отрицательным");
+            errors.Add(Texts.Get("WeightNegative"));
 
         if (category != null && !item.IsDeleted)
         {
@@ -46,12 +46,12 @@ public static class ItemRules
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     if (field.Required)
-                        errors.Add($"Поле «{field.Name}» обязательно");
+                        errors.Add(Texts.Format("FieldRequired", field.Name));
                     continue;
                 }
 
                 if (!FieldValues.IsValid(field.Type, value))
-                    errors.Add($"Поле «{field.Name}»: неверное значение");
+                    errors.Add(Texts.Format("FieldInvalid", field.Name));
             }
         }
 
@@ -78,16 +78,16 @@ public static class ItemRules
     {
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(category.Name))
-            errors.Add("Название категории не может быть пустым");
+            errors.Add(Texts.Get("CategoryNameRequired"));
         else if (category.Name.Trim().Length > 100)
-            errors.Add("Название категории не может быть длиннее 100 символов");
+            errors.Add(Texts.Format("CategoryNameTooLong", 100));
 
         if (category.Fields.Count > MaxFields)
-            errors.Add($"У категории может быть не больше {MaxFields} полей");
+            errors.Add(Texts.Format("TooManyFields", MaxFields));
         if (category.Fields.Any(f => string.IsNullOrWhiteSpace(f.Key) || string.IsNullOrWhiteSpace(f.Name)))
-            errors.Add("У каждого поля должны быть ключ и название");
+            errors.Add(Texts.Get("FieldNeedsName"));
         if (category.Fields.Select(f => f.Key).Distinct().Count() != category.Fields.Count)
-            errors.Add("Ключи полей должны быть уникальными");
+            errors.Add(Texts.Get("FieldKeysUnique"));
 
         return errors;
     }
@@ -166,7 +166,7 @@ public static class CsvExporter
             .ToList();
 
         var sb = new StringBuilder();
-        var header = new List<string> { "Категория", "Название", "Бренд", "Количество", "Вес", "Ед.", "Годен до", "Место", "Штрихкод", "Заметки" };
+        var header = new[] { "CsvCategory", "CsvName", "CsvBrand", "CsvQuantity", "CsvWeight", "CsvUnit", "CsvExpires", "CsvLocation", "CsvBarcode", "CsvNotes" }.Select(Texts.Get).ToList();
         header.AddRange(extraFields);
         AppendRow(sb, header);
 

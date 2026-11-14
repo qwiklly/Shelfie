@@ -87,7 +87,7 @@ public sealed class SyncService
                 if (result.IsOffline)
                     return await SetStatusAsync(SyncState.Offline, result.Error);
                 if (result.Status == System.Net.HttpStatusCode.Unauthorized)
-                    return await SetStatusAsync(SyncState.NotSignedIn, "Сессия истекла — войдите снова");
+                    return await SetStatusAsync(SyncState.NotSignedIn, Texts.Get("SessionExpired"));
                 return await SetStatusAsync(SyncState.Error, result.Error);
             }
 
@@ -99,7 +99,7 @@ public sealed class SyncService
                 _inventory.RaiseChanged();
 
             var rejected = result.Value!.Rejected.Count;
-            return await SetStatusAsync(SyncState.Synced, rejected > 0 ? $"Сервер отклонил изменений: {rejected}" : null);
+            return await SetStatusAsync(SyncState.Synced, rejected > 0 ? Texts.Format("ServerRejected", rejected) : null);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {

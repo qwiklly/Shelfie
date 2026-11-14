@@ -10,7 +10,7 @@ It keeps track of food, medicines, books and any custom categories, warns before
 
 ## ✨ Features
 
-- 📴 **Offline-first** — local SQLite database on the device; use it without an account (guest mode) and sign in later to upload everything
+- 📴 **Local-first** — everything lives in a SQLite database on the phone; no account or server is needed. A server is optional: sign in later and your data is uploaded
 - 🔄 **Sync between devices** — changes are queued while offline and synchronised when the server is back (last write wins)
 - ⏰ **Expiry tracking** — "expiring soon" and "expired" lists plus local notifications N days before
 - 📷 **Barcode scanner** — finds your own items offline, otherwise fills name/brand/weight from Open Food Facts
@@ -86,7 +86,7 @@ cp .env.example .env   # then edit the password and JWT key
 docker compose up -d
 ```
 
-The API listens on port `5111`, migrations are applied on start. On a real phone set **Settings → Server address** to `http://<your PC's IP>:5111`.
+The API listens on port `5111`, migrations are applied on start. In the app open **Settings → Account & sync** (at the bottom), enter `<your PC's IP>:5111`, tap **Check** and sign in.
 
 ## 🚀 Running Locally
 
@@ -110,7 +110,7 @@ dotnet run --launch-profile http
 
 The backend refuses to start without a `Jwt:Key` of at least 32 characters.
 
-3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. By default it uses `http://10.0.2.2:5111` (the host machine as seen from the emulator); change it in **Settings → Server address**.
+3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. The app starts in local mode; to sync, set **Settings → Account & sync → Server address** to `10.0.2.2:5111` (the host machine as seen from the emulator).
 
 > ⚠️ Upgrading an existing database: the `UnifiedInventory` migration moves products, medications, custom categories and history into the new tables and drops the old ones. Back up the database first (`pg_dump`). It also disables the password of the `admin@example.com` account created by the first migration, because that password is published in this repository.
 

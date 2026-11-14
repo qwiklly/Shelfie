@@ -43,7 +43,7 @@
         <div class="card-title">@(info != null ? L["ProductFound"] : L["ProductNotFound"])</div>
         @if (info != null)
         {
-            <p><b>@info.Name</b>@(info.Brand != null ? $" · {info.Brand}" : "")@(info.Weight != null ? $" · {info.Weight} {info.WeightUnit}" : "")</p>
+            <p><b>@info.Name</b>@(info.Brand != null ? $" · {info.Brand}" : "")@(info.Weight != null ? $" · {info.Weight} {Widgets.Unit(info.WeightUnit)}" : "")</p>
             @if (info.Source == "openfoodfacts")
             {
                 <p class="muted small">Open Food Facts</p>

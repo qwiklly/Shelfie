@@ -8,7 +8,7 @@ namespace MauiApp1
         {
             InitializeComponent();
 
-            var language = Preferences.Get("language", "ru-RU");
+            var language = Preferences.Get("language", Services.AppSettings.DefaultLanguage);
 
             SetCulture(language);
         }

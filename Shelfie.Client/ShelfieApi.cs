@@ -110,7 +110,7 @@ public sealed class ShelfieApi
         if (!result.Success)
             return new ApiResult<string>(false, null, result.Error, result.IsOffline, result.Status);
         if (result.Value is not { Flag: true } login || string.IsNullOrEmpty(login.JwtToken))
-            return new ApiResult<string>(false, null, result.Value?.Message ?? "Неверный email или пароль");
+            return new ApiResult<string>(false, null, result.Value?.Message ?? Texts.Get("WrongCredentials"));
 
         await _tokens.SetAsync(login.JwtToken);
         return ApiResult<string>.Ok(login.JwtToken);
@@ -152,7 +152,7 @@ public sealed class ShelfieApi
             {
                 var token = await GetValidTokenAsync();
                 if (token == null)
-                    return new ApiResult<T>(false, default, "Войдите в аккаунт", Status: HttpStatusCode.Unauthorized);
+                    return new ApiResult<T>(false, default, Texts.Get("SignInRequired"), Status: HttpStatusCode.Unauthorized);
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
@@ -161,7 +161,7 @@ public sealed class ShelfieApi
             {
                 var value = await response.Content.ReadFromJsonAsync<T>(ShelfieJson.Options, ct);
                 return value == null
-                    ? new ApiResult<T>(false, default, "Пустой ответ сервера", Status: response.StatusCode)
+                    ? new ApiResult<T>(false, default, Texts.Get("EmptyResponse"), Status: response.StatusCode)
                     : ApiResult<T>.Ok(value);
             }
 
@@ -177,7 +177,7 @@ public sealed class ShelfieApi
             // Cancelled by the caller → propagate; cancelled by our timeout → the server is unreachable.
             if (callerCt.IsCancellationRequested)
                 throw;
-            return new ApiResult<T>(false, default, "Сервер недоступен", IsOffline: true);
+            return new ApiResult<T>(false, default, Texts.Get("ServerUnavailable"), IsOffline: true);
         }
     }
 
@@ -212,10 +212,10 @@ public sealed class ShelfieApi
 
         return response.StatusCode switch
         {
-            HttpStatusCode.Unauthorized => "Требуется вход",
-            HttpStatusCode.Forbidden => "Нет доступа",
-            HttpStatusCode.NotFound => "Не найдено",
-            _ => $"Ошибка сервера ({(int)response.StatusCode})"
+            HttpStatusCode.Unauthorized => Texts.Get("Unauthorized"),
+            HttpStatusCode.Forbidden => Texts.Get("Forbidden"),
+            HttpStatusCode.NotFound => Texts.Get("NotFound"),
+            _ => Texts.Format("ServerError", (int)response.StatusCode)
         };
     }
 

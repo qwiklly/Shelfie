@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <div id="app"></div>
+    <div id="app"><div class="boot-splash"><img src="images/shelfie-logo.png" alt="" /></div></div>
 
     <div id="blazor-error-ui">
         Произошла ошибка. / An unhandled error has occurred.
@@ -20,7 +20,11 @@
         <a class="dismiss">🗙</a>
     </div>
 
-    <script>window.shelfieScrollTop = function () { window.scrollTo(0, 0); };</script>
+    <script>
+        window.shelfieScrollTop = function () { window.scrollTo(0, 0); };
+        // Correct hyphenation (hyphens: auto) needs the document language.
+        window.shelfieSetLang = function (lang) { document.documentElement.lang = lang; };
+    </script>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 </body>
 

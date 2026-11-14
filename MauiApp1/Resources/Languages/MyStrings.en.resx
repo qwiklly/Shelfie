@@ -3,8 +3,7 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Account" xml:space="preserve"><value>Account</value></data>
-  <data name="Add" xml:space="preserve"><value>Add</value></data>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Add" xml:space="preserve"><value>Add</value></data>
   <data name="AddField" xml:space="preserve"><value>Add field</value></data>
   <data name="AddNewCategory" xml:space="preserve"><value>New category</value></data>
   <data name="AddNewItem" xml:space="preserve"><value>Add item</value></data>
@@ -38,7 +37,6 @@
   <data name="ConfirmDeleteCategory" xml:space="preserve"><value>Delete category &quot;{0}&quot; with all its items?</value></data>
   <data name="ConfirmPass" xml:space="preserve"><value>Repeat password</value></data>
   <data name="Consumed" xml:space="preserve"><value>Used up</value></data>
-  <data name="ContinueAsGuest" xml:space="preserve"><value>Continue without an account</value></data>
   <data name="Create" xml:space="preserve"><value>Create</value></data>
   <data name="Data" xml:space="preserve"><value>Data</value></data>
   <data name="DaysBefore" xml:space="preserve"><value>Warn this many days before</value></data>
@@ -67,10 +65,7 @@
   <data name="Find" xml:space="preserve"><value>Find</value></data>
   <data name="FindByBarcode" xml:space="preserve"><value>Look up barcode</value></data>
   <data name="FirmAndManufacturer" xml:space="preserve"><value>Brand / manufacturer</value></data>
-  <data name="GuestHint" xml:space="preserve"><value>You can start without signing up: data stays on the phone and is uploaded when you sign in.</value></data>
-  <data name="GuestModeInfo" xml:space="preserve"><value>You are using Shelfie without an account. Data is stored on this device only.</value></data>
   <data name="HaveAcc" xml:space="preserve"><value>Already have an account? Sign in</value></data>
-  <data name="Hello" xml:space="preserve"><value>Hello!</value></data>
   <data name="Hide" xml:space="preserve"><value>Hide</value></data>
   <data name="History" xml:space="preserve"><value>History</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>Your actions will appear here</value></data>
@@ -147,7 +142,6 @@
   <data name="StateLocalOnly" xml:space="preserve"><value>This device only</value></data>
   <data name="StateOffline" xml:space="preserve"><value>No server connection</value></data>
   <data name="StateSynced" xml:space="preserve"><value>Synced</value></data>
-  <data name="Sync" xml:space="preserve"><value>Sync</value></data>
   <data name="SyncError" xml:space="preserve"><value>Sync error</value></data>
   <data name="SyncInProgress" xml:space="preserve"><value>Syncing…</value></data>
   <data name="SyncNow" xml:space="preserve"><value>Sync now</value></data>
@@ -163,4 +157,13 @@
   <data name="Wasted" xml:space="preserve"><value>Thrown away</value></data>
   <data name="WeightAndVolume" xml:space="preserve"><value>Weight / volume</value></data>
   <data name="WhatToBuy" xml:space="preserve"><value>What to buy?</value></data>
+  <data name="SignInTitle" xml:space="preserve"><value>Sign in</value></data>
+  <data name="SignInWhy" xml:space="preserve"><value>An account is only needed to sync between devices. Without one, everything works on this phone.</value></data>
+  <data name="Change" xml:space="preserve"><value>change</value></data>
+  <data name="SignedIn" xml:space="preserve"><value>Signed in, your data is syncing</value></data>
+  <data name="AccountAndSync" xml:space="preserve"><value>Account &amp; sync</value></data>
+  <data name="LocalModeInfo" xml:space="preserve"><value>Your data is stored on this phone. If you run a Shelfie server, enter its address and sign in to sync devices.</value></data>
+  <data name="ServerNeededHint" xml:space="preserve"><value>Enter the server address and tap &quot;Check&quot; first.</value></data>
+  <data name="SignedOut" xml:space="preserve"><value>Signed out</value></data>
+  <data name="AccountDeleted" xml:space="preserve"><value>Account deleted</value></data>
 </root>

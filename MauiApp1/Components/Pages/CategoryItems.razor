@@ -50,7 +50,7 @@ else
                         <div class="item-sub">
                             @if (!string.IsNullOrEmpty(item.Brand)) { <span>@item.Brand</span> }
                             @if (!string.IsNullOrEmpty(item.Location)) { <span>· @item.Location</span> }
-                            @if (item.Weight is double w && w > 0) { <span>· @w @item.WeightUnit</span> }
+                            @if (item.Weight is double w && w > 0) { <span>· @w @Widgets.Unit(item.WeightUnit)</span> }
                         </div>
                         @if (category != null && category.Fields.Count > 0)
                         {
@@ -121,7 +121,8 @@ else
 
     private async Task SetStatus(ExpiryStatus? value)
     {
-        status = value;
+        // Tapping the active chip again turns the filter off.
+        status = status == value ? null : value;
         await LoadAsync();
     }
 

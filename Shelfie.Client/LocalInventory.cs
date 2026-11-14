@@ -108,7 +108,7 @@ public sealed class LocalInventory
         var errors = ItemRules.ValidateCategory(category);
         var existing = await GetCategoriesAsync();
         if (existing.Any(c => c.Id != category.Id && string.Equals(c.Name, category.Name, StringComparison.CurrentCultureIgnoreCase)))
-            errors.Add("Категория с таким названием уже существует");
+            errors.Add(Texts.Get("CategoryExists"));
         if (errors.Count > 0)
             return new SaveResult(false, errors);
 
@@ -126,11 +126,11 @@ public sealed class LocalInventory
     public Task<SaveResult> DeleteCategoryAsync(Guid id) => WriteAsync(async () =>
     {
         if (BuiltInCategories.IsBuiltIn(id))
-            return SaveResult.Fail("Встроенную категорию нельзя удалить");
+            return SaveResult.Fail(Texts.Get("BuiltInCannotDelete"));
 
         var row = await _db.Connection.FindAsync<CategoryRow>(id);
         if (row == null || row.IsDeleted)
-            return SaveResult.Fail("Категория не найдена");
+            return SaveResult.Fail(Texts.Get("CategoryNotFound"));
 
         var now = Now;
         row.IsDeleted = true;
@@ -212,7 +212,7 @@ public sealed class LocalInventory
     {
         var category = await GetCategoryAsync(item.CategoryId);
         if (category == null)
-            return SaveResult.Fail("Категория не найдена");
+            return SaveResult.Fail(Texts.Get("CategoryNotFound"));
 
         ItemRules.Normalize(item, category);
         item.IsDeleted = false;
@@ -322,7 +322,7 @@ public sealed class LocalInventory
     {
         name = name?.Trim() ?? string.Empty;
         if (name.Length == 0)
-            return SaveResult.Fail("Название не может быть пустым");
+            return SaveResult.Fail(Texts.Get("NameRequired"));
 
         if (itemId != null && (await AllAsync<ShoppingRow>()).Any(r => r.ItemId == itemId && !r.IsDeleted && !r.IsChecked))
             return SaveResult.Ok(); // already listed

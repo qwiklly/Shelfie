@@ -3,12 +3,16 @@
 @inject SyncCoordinator Sync
 
 <div class="auth-page">
+    <div class="auth-top">
+        <a class="icon-btn" href="/settings"><Icon Name="back" /></a>
+    </div>
     <img src="images/shelfie-logo.png" alt="Shelfie" class="auth-logo" />
-    <h1>@L["Hello"]</h1>
+    <h1>@L["SignInTitle"]</h1>
+    <p class="muted">@L["SignInWhy"]</p>
 
     <div class="card form">
         <label>@L["Email"]</label>
-        <input type="email" @bind="email" placeholder="shelfie@email.ru" autocomplete="email" />
+        <input type="email" @bind="email" placeholder="shelfie@email.com" autocomplete="email" />
 
         <label>@L["Password"]</label>
         <div class="password-row">
@@ -25,27 +29,15 @@
         <button class="btn-secondary wide" @onclick='() => Nav.NavigateTo("/register")'>@L["Register"]</button>
     </div>
 
-    <div class="guest-box">
-        <p>@L["GuestHint"]</p>
-        <button class="btn-ghost wide" @onclick="ContinueAsGuest">@L["ContinueAsGuest"]</button>
-    </div>
-
-    <details class="server-box">
-        <summary>@L["ServerAddress"]: @Settings.ServerUrl</summary>
-        <input @bind="serverUrl" placeholder="http://192.168.0.10:5111" />
-        <button class="btn-secondary" @onclick="SaveServer">@L["Save"]</button>
-    </details>
+    <p class="muted small">@L["ServerAddress"]: @Settings.ServerUrl · <a class="link" href="/settings">@L["Change"]</a></p>
 </div>
 
 @code {
     private string email = "";
     private string password = "";
-    private string serverUrl = "";
     private bool showPassword;
     private bool busy;
     private string? error;
-
-    protected override void OnInitialized() => serverUrl = Settings.ServerUrl;
 
     private async Task SignIn()
     {
@@ -66,27 +58,13 @@
                 return;
             }
 
-            Settings.GuestMode = false;
             Sync.Start();
+            Toasts.Show(L["SignedIn"]);
             Nav.NavigateTo("/home", replace: true);
         }
         finally
         {
             busy = false;
         }
-    }
-
-    private void ContinueAsGuest()
-    {
-        Settings.GuestMode = true;
-        Sync.Start();
-        Nav.NavigateTo("/home", replace: true);
-    }
-
-    private void SaveServer()
-    {
-        Settings.ServerUrl = serverUrl;
-        serverUrl = Settings.ServerUrl;
-        Toasts.Show(L["Saved"]);
     }
 }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Shelfie.Client;
 using Shelfie.Client.Storage;
 using Shelfie.Shared;
@@ -80,6 +81,7 @@ public sealed class LocalInventoryTests : IAsyncLifetime
     [Fact]
     public async Task Validation_is_the_same_as_on_the_server()
     {
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
         var noName = await _inventory.SaveItemAsync(new ItemDto { CategoryId = BuiltInCategories.Products, Name = "  " });
         var badYear = await _inventory.SaveItemAsync(new ItemDto { CategoryId = BuiltInCategories.Books, Name = "Dune", Fields = { ["year"] = "abc" } });
         var unknownCategory = await _inventory.SaveItemAsync(new ItemDto { CategoryId = Guid.NewGuid(), Name = "X" });
@@ -238,6 +240,7 @@ public sealed class LocalInventoryTests : IAsyncLifetime
     [Fact]
     public async Task Csv_export_works_offline()
     {
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
         await AddAsync(Milk());
 
         var csv = await _inventory.ExportCsvAsync();

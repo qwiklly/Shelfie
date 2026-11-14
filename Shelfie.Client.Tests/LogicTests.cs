@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using Shelfie.Client;
 using Shelfie.Shared;
@@ -49,6 +50,7 @@ public class NotificationPlannerTests
     [Fact]
     public void Long_lists_are_shortened()
     {
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
         var items = Enumerable.Range(1, 5).Select(i => Item($"Item{i}", 7)).ToList();
 
         var body = Assert.Single(NotificationPlanner.Plan(items, Now, 2, TenAm, false)).Body;
@@ -143,7 +145,7 @@ public class ApiErrorTests
 
     [Fact]
     public async Task Falls_back_to_status_text() =>
-        Assert.Equal("Ошибка сервера (502)", await Read(HttpStatusCode.BadGateway, "<html>bad gateway</html>"));
+        Assert.Equal(Texts.Format("ServerError", 502), await Read(HttpStatusCode.BadGateway, "<html>bad gateway</html>"));
 
     [Fact]
     public async Task Server_that_never_answers_times_out_as_offline()
@@ -223,6 +225,7 @@ public class SharedRulesTests
     [Fact]
     public void Merge_keeps_built_ins_first_and_hides_deleted_custom_categories()
     {
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
         var overridden = new CategoryDto { Id = BuiltInCategories.Books, Name = "Библиотека", IsDeleted = true };
         var custom = new CategoryDto { Id = Guid.NewGuid(), Name = "Вино" };
         var deleted = new CategoryDto { Id = Guid.NewGuid(), Name = "Старое", IsDeleted = true };
@@ -265,5 +268,55 @@ public class SharedRulesTests
         };
 
         Assert.NotEmpty(ItemRules.ValidateCategory(category));
+    }
+}
+
+public class LocalizationTests
+{
+    [Fact]
+    public void Built_in_names_follow_the_ui_language()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+        var en = BuiltInCategories.Defaults();
+        Assert.Equal(["Food", "Medicines", "Books"], en.Select(c => c.Name));
+        Assert.Equal(["Author", "Year", "Genre"], en[2].Fields.Select(f => f.Name));
+
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
+        Assert.Equal(["Продукты", "Медикаменты", "Книги"], BuiltInCategories.Defaults().Select(c => c.Name));
+    }
+
+    [Fact]
+    public void Default_names_saved_in_another_language_are_translated_but_custom_names_are_kept()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+        var products = new CategoryDto { Id = BuiltInCategories.Products, Name = "Продукты" };   // saved while in Russian
+        var books = new CategoryDto
+        {
+            Id = BuiltInCategories.Books, Name = "Моя библиотека",                              // renamed by the user
+            Fields = [new FieldDefinition { Key = "year", Name = "Год" }, new FieldDefinition { Key = "isbn", Name = "ISBN" }]
+        };
+
+        var merged = BuiltInCategories.Merge([products, books]);
+
+        Assert.Equal("Food", merged[0].Name);
+        Assert.Equal("Моя библиотека", merged[2].Name);
+        Assert.Equal(["Year", "ISBN"], merged[2].Fields.Select(f => f.Name));
+    }
+
+    [Fact]
+    public void Validation_messages_follow_the_ui_language()
+    {
+        CultureInfo.CurrentUICulture = new CultureInfo("en-US");
+        Assert.Contains("Name cannot be empty", ItemRules.Validate(new ItemDto { Name = " " }, null));
+
+        CultureInfo.CurrentUICulture = new CultureInfo("ru-RU");
+        Assert.Contains("Название не может быть пустым", ItemRules.Validate(new ItemDto { Name = " " }, null));
+    }
+
+    [Fact]
+    public void Unknown_cultures_fall_back_to_english()
+    {
+        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+        Assert.Equal("Fridge", StorageLocations.Suggestions[0]);
     }
 }

@@ -3,8 +3,7 @@
   <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Account" xml:space="preserve"><value>Аккаунт</value></data>
-  <data name="Add" xml:space="preserve"><value>Добавить</value></data>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>  <data name="Add" xml:space="preserve"><value>Добавить</value></data>
   <data name="AddField" xml:space="preserve"><value>Добавить поле</value></data>
   <data name="AddNewCategory" xml:space="preserve"><value>Новая категория</value></data>
   <data name="AddNewItem" xml:space="preserve"><value>Добавить вещь</value></data>
@@ -38,7 +37,6 @@
   <data name="ConfirmDeleteCategory" xml:space="preserve"><value>Удалить категорию «{0}» вместе со всеми вещами?</value></data>
   <data name="ConfirmPass" xml:space="preserve"><value>Повторите пароль</value></data>
   <data name="Consumed" xml:space="preserve"><value>Использовано</value></data>
-  <data name="ContinueAsGuest" xml:space="preserve"><value>Продолжить без аккаунта</value></data>
   <data name="Create" xml:space="preserve"><value>Создать</value></data>
   <data name="Data" xml:space="preserve"><value>Данные</value></data>
   <data name="DaysBefore" xml:space="preserve"><value>За сколько дней предупреждать</value></data>
@@ -67,10 +65,7 @@
   <data name="Find" xml:space="preserve"><value>Найти</value></data>
   <data name="FindByBarcode" xml:space="preserve"><value>Найти по штрихкоду</value></data>
   <data name="FirmAndManufacturer" xml:space="preserve"><value>Производитель / бренд</value></data>
-  <data name="GuestHint" xml:space="preserve"><value>Можно начать без регистрации: всё хранится на телефоне, а при входе загрузится в аккаунт.</value></data>
-  <data name="GuestModeInfo" xml:space="preserve"><value>Вы работаете без аккаунта. Данные хранятся только на этом устройстве.</value></data>
   <data name="HaveAcc" xml:space="preserve"><value>Уже есть аккаунт? Войти</value></data>
-  <data name="Hello" xml:space="preserve"><value>Привет!</value></data>
   <data name="Hide" xml:space="preserve"><value>Скрыть</value></data>
   <data name="History" xml:space="preserve"><value>История</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>Здесь появятся ваши действия</value></data>
@@ -147,7 +142,6 @@
   <data name="StateLocalOnly" xml:space="preserve"><value>Только на этом устройстве</value></data>
   <data name="StateOffline" xml:space="preserve"><value>Нет связи с сервером</value></data>
   <data name="StateSynced" xml:space="preserve"><value>Синхронизировано</value></data>
-  <data name="Sync" xml:space="preserve"><value>Синхронизация</value></data>
   <data name="SyncError" xml:space="preserve"><value>Ошибка синхронизации</value></data>
   <data name="SyncInProgress" xml:space="preserve"><value>Синхронизация…</value></data>
   <data name="SyncNow" xml:space="preserve"><value>Синхронизировать сейчас</value></data>
@@ -163,4 +157,13 @@
   <data name="Wasted" xml:space="preserve"><value>Выброшено</value></data>
   <data name="WeightAndVolume" xml:space="preserve"><value>Вес / объём</value></data>
   <data name="WhatToBuy" xml:space="preserve"><value>Что купить?</value></data>
+  <data name="SignInTitle" xml:space="preserve"><value>Вход в аккаунт</value></data>
+  <data name="SignInWhy" xml:space="preserve"><value>Аккаунт нужен только для синхронизации между устройствами. Без него всё работает на этом телефоне.</value></data>
+  <data name="Change" xml:space="preserve"><value>изменить</value></data>
+  <data name="SignedIn" xml:space="preserve"><value>Вы вошли, данные синхронизируются</value></data>
+  <data name="AccountAndSync" xml:space="preserve"><value>Аккаунт и синхронизация</value></data>
+  <data name="LocalModeInfo" xml:space="preserve"><value>Данные хранятся на этом телефоне. Если у вас есть сервер Shelfie, укажите его адрес и войдите, чтобы синхронизировать устройства.</value></data>
+  <data name="ServerNeededHint" xml:space="preserve"><value>Сначала укажите адрес сервера и нажмите «Проверить».</value></data>
+  <data name="SignedOut" xml:space="preserve"><value>Вы вышли из аккаунта</value></data>
+  <data name="AccountDeleted" xml:space="preserve"><value>Аккаунт удалён</value></data>
 </root>

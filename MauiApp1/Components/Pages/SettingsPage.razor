@@ -9,51 +9,7 @@
     <h1>@L["Settings"]</h1>
 </header>
 
-<section class="card">
-    <div class="card-title"><Icon Name="user" Size="18" /> @L["Account"]</div>
-    @if (email != null)
-    {
-        <p>@email</p>
-        <div class="two-cols">
-            <a class="btn-secondary" href="/profile">@L["Profile"]</a>
-            <button class="btn-secondary" @onclick="SignOut">@L["Logout"]</button>
-        </div>
-        <button class="btn-link danger small" @onclick="DeleteAccount">@L["DeleteAccount"]</button>
-    }
-    else
-    {
-        <p class="muted">@L["GuestModeInfo"]</p>
-        <a class="btn-primary wide" href="/welcome">@L["SignInToSync"]</a>
-    }
-</section>
-
-<section class="card">
-    <div class="card-title"><Icon Name="sync" Size="18" /> @L["Sync"]</div>
-    <p>
-        <b>@StateText</b>
-        @if (status.PendingChanges > 0) { <span class="muted"> · @string.Format(L["PendingChanges"], status.PendingChanges)</span> }
-    </p>
-    @if (status.LastSyncUtc is DateTime last)
-    {
-        <p class="muted small">@L["LastSync"]: @last.ToLocalTime().ToString("g")</p>
-    }
-    @if (!string.IsNullOrEmpty(status.Message))
-    {
-        <p class="muted small">@status.Message</p>
-    }
-    @if (email != null)
-    {
-        <button class="btn-secondary wide" @onclick="SyncNow" disabled="@(status.State == SyncState.Syncing)">@L["SyncNow"]</button>
-    }
-
-    <label>@L["ServerAddress"]</label>
-    <div class="inline">
-        <input class="grow" @bind="serverUrl" />
-        <button class="btn-secondary" @onclick="SaveServer">@L["Check"]</button>
-    </div>
-</section>
-
-<section class="card">
+<section class="card form">
     <div class="card-title"><Icon Name="bell" Size="18" /> @L["Notifications"]</div>
     <label class="switch-row">
         <input type="checkbox" checked="@Settings.NotificationsEnabled" @onchange="ToggleNotifications" />
@@ -61,24 +17,75 @@
     </label>
     <label>@L["DaysBefore"]</label>
     <input type="number" min="0" max="30" value="@Settings.SoonDays" @onchange="SetSoonDays" />
+</section>
+
+<section class="card form">
+    <div class="card-title"><Icon Name="cart" Size="18" /> @L["Shopping"]</div>
     <label class="switch-row">
         <input type="checkbox" checked="@Settings.AutoShoppingList" @onchange="e => Settings.AutoShoppingList = e.Value is true" />
         <span>@L["AutoShopping"]</span>
     </label>
 </section>
 
-<section class="card">
-    <div class="card-title">@L["Language"]</div>
+<section class="card form">
+    <div class="card-title"><Icon Name="globe" Size="18" /> @L["Language"]</div>
     <select value="@Settings.Language" @onchange="ChangeLanguage">
-        <option value="ru-RU">Русский</option>
         <option value="en-US">English</option>
+        <option value="ru-RU">Русский</option>
     </select>
 </section>
 
-<section class="card">
+<section class="card form">
     <div class="card-title"><Icon Name="share" Size="18" /> @L["Data"]</div>
     <button class="btn-secondary wide" @onclick="ExportCsv">@L["ExportCsv"]</button>
     <a class="btn-link wide" href="/history">@L["History"]</a>
+</section>
+
+@* The server is optional, so everything about it lives at the very bottom. *@
+<section class="card form">
+    <div class="card-title"><Icon Name="sync" Size="18" /> @L["AccountAndSync"]</div>
+
+    @if (email != null)
+    {
+        <p><b>@email</b></p>
+        <p>
+            @StateText
+            @if (status.PendingChanges > 0) { <span class="muted"> · @string.Format(L["PendingChanges"], status.PendingChanges)</span> }
+        </p>
+        @if (status.LastSyncUtc is DateTime last)
+        {
+            <p class="muted small">@L["LastSync"]: @last.ToLocalTime().ToString("g")</p>
+        }
+        @if (!string.IsNullOrEmpty(status.Message))
+        {
+            <p class="muted small">@status.Message</p>
+        }
+        <button class="btn-secondary wide" @onclick="SyncNow" disabled="@(status.State == SyncState.Syncing)">@L["SyncNow"]</button>
+        <div class="two-cols">
+            <a class="btn-secondary" href="/profile">@L["Profile"]</a>
+            <button class="btn-secondary" @onclick="SignOut">@L["Logout"]</button>
+        </div>
+        <button class="btn-link danger small wide" @onclick="DeleteAccount">@L["DeleteAccount"]</button>
+    }
+    else
+    {
+        <p class="muted">@L["LocalModeInfo"]</p>
+    }
+
+    <label>@L["ServerAddress"]</label>
+    <div class="inline">
+        <input class="grow" @bind="serverUrl" placeholder="http://192.168.0.10:5111" inputmode="url" />
+        <button class="btn-secondary" @onclick="SaveServer">@L["Check"]</button>
+    </div>
+
+    @if (email == null)
+    {
+        <button class="btn-primary wide" disabled="@(!Settings.HasServer)" @onclick='() => Nav.NavigateTo("/welcome")'>@L["SignInToSync"]</button>
+        @if (!Settings.HasServer)
+        {
+            <p class="muted small">@L["ServerNeededHint"]</p>
+        }
+    }
 </section>
 
 <p class="muted small center">Shelfie @AppInfo.Current.VersionString</p>
@@ -103,7 +110,8 @@
         serverUrl = Settings.ServerUrl;
         Sync.StatusChanged += OnStatus;
         status = Sync.Status;
-        await Sync.SyncNowAsync();
+        if (email != null)
+            _ = Sync.SyncNowAsync();
     }
 
     private void OnStatus(object? sender, SyncStatus s)
@@ -118,9 +126,15 @@
     {
         Settings.ServerUrl = serverUrl;
         serverUrl = Settings.ServerUrl;
+        if (!Settings.HasServer)
+        {
+            Toasts.Show(L["Saved"]);
+            return;
+        }
+
         bool reachable = await Api.IsReachableAsync();
         Toasts.Show(reachable ? L["ServerReachable"] : L["ServerUnreachable"], isError: !reachable);
-        if (reachable)
+        if (reachable && email != null)
             await Sync.SyncNowAsync();
     }
 
@@ -147,7 +161,7 @@
 
     private void ChangeLanguage(ChangeEventArgs e)
     {
-        var language = e.Value?.ToString() ?? "ru-RU";
+        var language = e.Value?.ToString() ?? AppSettings.DefaultLanguage;
         Settings.Language = language;
         var culture = new CultureInfo(language);
         CultureInfo.DefaultThreadCurrentCulture = culture;
@@ -173,8 +187,8 @@
             return;
 
         await Account.SignOutAsync();
-        Settings.GuestMode = false;
-        Nav.NavigateTo("/welcome", replace: true);
+        email = null;
+        Toasts.Show(L["SignedOut"]);
     }
 
     private async Task DeleteAccount()
@@ -188,8 +202,8 @@
             Toasts.Show(result.IsOffline ? L["NeedsServer"] : result.Error ?? L["SyncError"], isError: true);
             return;
         }
-        Settings.GuestMode = false;
-        Nav.NavigateTo("/welcome", replace: true);
+        email = null;
+        Toasts.Show(L["AccountDeleted"]);
     }
 
     public void Dispose() => Sync.StatusChanged -= OnStatus;

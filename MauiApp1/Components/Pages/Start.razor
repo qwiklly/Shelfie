@@ -1,5 +1,4 @@
 @page "/"
-@inject AccountManager Account
 @inject SyncCoordinator Sync
 
 <div class="splash">
@@ -21,16 +20,9 @@
 
         await Task.Delay(700);
 
-        // The app opens straight into the local data: no server round trip is needed to start.
-        bool signedIn = await Account.GetSignedInEmailAsync() != null;
-        if (signedIn || Settings.GuestMode)
-        {
-            Sync.Start();
-            Nav.NavigateTo("/home", replace: true);
-        }
-        else
-        {
-            Nav.NavigateTo("/welcome", replace: true);
-        }
+        // The app is local-first: it opens straight into the data on this device.
+        // An account (and a server) is optional and set up from Settings.
+        Sync.Start();
+        Nav.NavigateTo("/home", replace: true);
     }
 }

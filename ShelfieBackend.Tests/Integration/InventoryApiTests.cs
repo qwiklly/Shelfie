@@ -283,7 +283,7 @@ public class InventoryApiTests(ShelfieApiFactory factory) : IClassFixture<Shelfi
         var csv = await response.Content.ReadAsStringAsync(CT);
         Assert.Contains("\"Milk; fresh\"", csv);
         Assert.Contains("'=cmd", csv);        // formula injection neutralised
-        Assert.Contains("Автор", csv);
+        Assert.Contains(Texts.Get("FieldAuthor"), csv); // header in the server's UI language
         Assert.Contains("Herbert", csv);
     }
 

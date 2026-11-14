@@ -4,8 +4,8 @@
 	<application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
-        android:icon="@mipmap/shelfieround"
-        android:roundIcon="@mipmap/shelfieround"
+        android:icon="@mipmap/appicon"
+        android:roundIcon="@mipmap/appicon_round"
         android:supportsRtl="true">
 	</application>
 

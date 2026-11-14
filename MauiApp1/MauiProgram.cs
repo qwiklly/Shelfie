@@ -51,7 +51,7 @@ namespace MauiApp1
 			builder.Services.AddSingleton<PhotoService>();
 			builder.Services.AddSingleton<Toasts>();
 
-			var culture = new CultureInfo(Preferences.Get("language", "ru-RU"));
+			var culture = new CultureInfo(Preferences.Get("language", Services.AppSettings.DefaultLanguage));
 			CultureInfo.DefaultThreadCurrentCulture = culture;
 			CultureInfo.DefaultThreadCurrentUICulture = culture;
 #if DEBUG

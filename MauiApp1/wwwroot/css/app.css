@@ -1,4 +1,4 @@
-﻿/* Shelfie — mobile UI. Palette from the original design: green #2cd687, dark #26b050, background #f1fff3. */
+/* Shelfie — mobile UI. Palette from the original design: green #2cd687, dark #26b050, background #f1fff3. */
 :root {
     --green: #2cd687;
     --green-dark: #1f9e5a;
@@ -48,7 +48,8 @@ p { margin: 6px 0; }
 
 .page-header {
     display: flex; align-items: center; gap: 8px;
-    padding: 16px 0 12px;
+    margin: 0 -16px;
+    padding: 16px 16px 12px;
     position: sticky; top: 0; z-index: 5;
     background: var(--bg);
 }
@@ -102,6 +103,9 @@ p { margin: 6px 0; }
     box-shadow: 0 1px 3px rgba(31, 45, 36, .08);
 }
 .card-title { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 10px; }
+.form .card-title, .form > p + .card-title { margin-top: 24px; }
+.form .card-title:first-child { margin-top: 0; }
+.app-content.bare { padding: 0; max-width: none; } /* full-screen pages: splash, sign-in */
 .card-title .more { margin-left: auto; font-weight: 400; font-size: 14px; color: var(--green-dark); }
 
 .form label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; }
@@ -152,7 +156,7 @@ button:disabled { opacity: .5; cursor: default; }
 .splash-logo { width: 140px; }
 .splash-quote { color: #fff; text-align: center; font-size: 17px; max-width: 320px; }
 
-.auth-page { max-width: 420px; margin: 0 auto; padding: 32px 0; text-align: center; }
+.auth-page { max-width: 420px; margin: 0 auto; padding: 32px 16px; text-align: center; }
 .auth-page .card { text-align: left; }
 .auth-logo { width: 96px; margin-bottom: 8px; }
 .auth-page h1 { margin-bottom: 16px; }
@@ -193,7 +197,7 @@ button:disabled { opacity: .5; cursor: default; }
     padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px;
     text-align: center; box-shadow: 0 1px 3px rgba(31,45,36,.08); color: var(--text);
 }
-.category-tile .name { font-size: 14px; font-weight: 600; word-break: break-word; }
+.category-tile .name { font-size: 13px; font-weight: 600; max-width: 100%; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto; }
 .category-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--green-soft); color: var(--green-dark); display: flex; align-items: center; justify-content: center; }
 .category-tile.add .category-icon { background: transparent; border: 2px dashed var(--green); }
 
@@ -215,7 +219,8 @@ button:disabled { opacity: .5; cursor: default; }
 .item-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .item-name { font-weight: 600; }
 .item-sub, .item-fields { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; }
-.qty-control { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.qty-control { display: flex; align-items: center; gap: 8px; flex: none; }
+.qty-control b { min-width: 20px; text-align: center; }
 .round { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--green-soft); color: var(--green-dark); display: flex; align-items: center; justify-content: center; padding: 0; }
 
 .fab {
@@ -235,8 +240,8 @@ button:disabled { opacity: .5; cursor: default; }
 .photo-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .field-editor { border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.field-editor .grow { flex: 1 1 100%; }
-.field-editor select { flex: 1 1 100%; min-width: 0; }
+.field-editor .grow { flex: 1 1 55%; min-width: 0; }
+.field-editor select { flex: 1 1 35%; min-width: 0; }
 .field-buttons { display: flex; gap: 6px; margin-left: auto; }
 
 /* ---------- shopping & history ---------- */
@@ -268,3 +273,10 @@ button:disabled { opacity: .5; cursor: default; }
 body:has(input:focus:not([type=checkbox]), textarea:focus, select:focus) .bottom-nav,
 body:has(input:focus:not([type=checkbox]), textarea:focus, select:focus) .fab { display: none; }
 body:has(input:focus:not([type=checkbox]), textarea:focus, select:focus) .app-content { padding-bottom: 24px; }
+
+.auth-top { display: flex; justify-content: flex-start; margin-bottom: 8px; }
+.link { color: var(--green-dark); text-decoration: underline; }
+
+/* Static splash in index.html, shown while the web view starts (same look as the native splash). */
+.boot-splash { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--green); }
+.boot-splash img { width: 140px; }

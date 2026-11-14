@@ -78,7 +78,7 @@ public sealed class AccountManager
     {
         var email = await GetSignedInEmailAsync();
         if (email == null)
-            return new ApiResult<Shelfie.Shared.ApiMessage>(false, null, "Войдите в аккаунт");
+            return new ApiResult<Shelfie.Shared.ApiMessage>(false, null, Shelfie.Shared.Texts.Get("SignInRequired"));
 
         var result = await _api.DeleteAccountAsync(email, ct);
         if (result.Success)

@@ -5,26 +5,29 @@ namespace MauiApp1.Services
     /// <summary>User preferences stored on the device.</summary>
     public sealed class AppSettings
     {
-        public static string DefaultServerUrl =>
-            DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5111" : "http://localhost:5111";
+        public const string DefaultLanguage = "en-US";
 
+        /// <summary>
+        /// Address of the optional sync server. Empty by default: the app is fully local until the user sets it.
+        /// </summary>
         public string ServerUrl
         {
-            get => Preferences.Get("server_url", DefaultServerUrl);
-            set => Preferences.Set("server_url", string.IsNullOrWhiteSpace(value) ? DefaultServerUrl : value.Trim().TrimEnd('/'));
+            get => Preferences.Get("server_url", "");
+            set
+            {
+                var url = (value ?? "").Trim().TrimEnd('/');
+                if (url.Length > 0 && !url.Contains("://"))
+                    url = "http://" + url; // "192.168.0.10:5111" is what people type
+                Preferences.Set("server_url", url);
+            }
         }
+
+        public bool HasServer => !string.IsNullOrWhiteSpace(ServerUrl);
 
         public string Language
         {
-            get => Preferences.Get("language", "ru-RU");
+            get => Preferences.Get("language", DefaultLanguage);
             set => Preferences.Set("language", value);
-        }
-
-        /// <summary>Use the app without an account; data stays on this device until the user signs in.</summary>
-        public bool GuestMode
-        {
-            get => Preferences.Get("guest_mode", false);
-            set => Preferences.Set("guest_mode", value);
         }
 
         public bool NotificationsEnabled

@@ -57,7 +57,9 @@ namespace MauiApp1.Services
 
         public async Task<SyncStatus> SyncNowAsync()
         {
-            if (Connectivity.Current.NetworkAccess == NetworkAccess.None)
+            // No server configured: the app is purely local, nothing to try.
+            if (!Preferences.Get("server_url", "").Contains("://")
+                || Connectivity.Current.NetworkAccess == NetworkAccess.None)
                 return await _sync.RefreshStatusAsync();
 
             try

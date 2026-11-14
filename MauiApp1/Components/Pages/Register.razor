@@ -4,6 +4,9 @@
 @inject SyncCoordinator Sync
 
 <div class="auth-page">
+    <div class="auth-top">
+        <a class="icon-btn" href="/welcome"><Icon Name="back" /></a>
+    </div>
     <h1>@L["Create"]</h1>
 
     <EditForm Model="model" OnValidSubmit="Submit" class="card form">
@@ -85,13 +88,12 @@
             var login = await Account.SignInAsync(model.Email, model.Password);
             if (login.Success)
             {
-                Settings.GuestMode = false;
                 Sync.Start();
                 Nav.NavigateTo("/home", replace: true);
             }
             else
             {
-                Nav.NavigateTo("/welcome", replace: true);
+                Nav.NavigateTo("/welcome", replace: true); // registered, but sign-in failed: let the user retry
             }
         }
         finally
