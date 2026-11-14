@@ -5,6 +5,7 @@ using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Pages
 {
+	[Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 	public class UsersPageModel : PageModel
 	{
 		private readonly IAccount _applicationService;
@@ -35,7 +36,7 @@ namespace ShelfieBackend.Pages
 
 			Delete.Email = email;
 
-			var response = await _applicationService.DeleteUserAsync(Delete);
+			var response = await _applicationService.DeleteUserAsync(Delete, User);
 			if (response.Flag == true)
 			{
 

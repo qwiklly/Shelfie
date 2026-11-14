@@ -1,29 +1,20 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShelfieBackend.DTOs;
-using ShelfieBackend.Services;
+using ShelfieBackend.Repositories.Interfaces;
 using ShelfieBackend.States;
 
 namespace ShelfieBackend.Pages
 {
     [AllowAnonymous]
-    public class LoginModel : PageModel
+    public class LoginModel(IAccount account, AuthenticationStateProvider authStateProvider) : PageModel
     {
         [BindProperty]
         public LoginDTO Login { get; set; } = new LoginDTO();
 
-        public bool IsUserLoggedIn { get; set; } = false;
-
-        private readonly IAccountService _accountService;
-        private readonly AuthenticationStateProvider _authStateProvider;
-
-        public LoginModel(IAccountService accountService, AuthenticationStateProvider authStateProvider)
-        {
-            _accountService = accountService;
-            _authStateProvider = authStateProvider;
-        }
+        public bool IsUserLoggedIn { get; set; }
 
         public void OnGet()
         {
@@ -37,7 +28,7 @@ namespace ShelfieBackend.Pages
                 return Page();
             }
 
-            var response = await _accountService.LoginAsync(Login);
+            var response = await account.LoginAsync(Login);
 
             if (!response.Flag)
             {
@@ -45,10 +36,7 @@ namespace ShelfieBackend.Pages
                 return Page();
             }
 
-            var customAuthStateProvider = (AuthenticationProvider)_authStateProvider;
-            await customAuthStateProvider.UpdateAuthenticationState(response.JWTToken);
-
-            IsUserLoggedIn = true;
+            await ((AuthenticationProvider)authStateProvider).UpdateAuthenticationState(response.JWTToken);
             return RedirectToPage("/Index");
         }
     }

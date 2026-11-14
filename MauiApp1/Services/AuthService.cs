@@ -3,12 +3,16 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
 using MauiApp1.Models;
+using MauiApp1.Services;
 using Microsoft.Extensions.Logging;
 
 public class AuthService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
+
     private readonly HttpClient _httpClient;
     private readonly ILogger<AuthService> _logger;
+
     public AuthService(HttpClient httpClient, ILogger<AuthService> logger)
     {
         _httpClient = httpClient;
@@ -22,53 +26,33 @@ public class AuthService
             var loginRequest = new LoginRequest { Email = email, Password = password };
             var response = await _httpClient.PostAsJsonAsync("application/login", loginRequest);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                var result = await response.Content.ReadFromJsonAsync<LoginResponse>(options);
+            if (!response.IsSuccessStatusCode)
+                return false;
 
-                if (result?.Flag == true && !string.IsNullOrEmpty(result.JWTToken))
-                {
-                    await SecureStorage.Default.SetAsync("auth_token", result.JWTToken);
-                    return true;
-                }
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>(JsonOptions);
+            if (result?.Flag == true && !string.IsNullOrEmpty(result.JWTToken))
+            {
+                await TokenStore.SaveAsync(result.JWTToken);
+                return true;
             }
 
             return false;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при отправке запроса к API");
-            throw;
+            _logger.LogError(ex, "Ошибка при входе");
+            return false;
         }
+    }
 
+    public Task LogoutAsync()
+    {
+        TokenStore.Clear();
+        return Task.CompletedTask;
     }
 
-    public async Task LogoutAsync()
-    {
-        try
-        {
-            SecureStorage.Default.Remove("auth_token");
-            await Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при отправке запроса к API");
-            throw;
-        }
-    }
-    public async Task<string?> GetTokenAsync()
-    {
-        try
-        {
-            return await SecureStorage.Default.GetAsync("auth_token");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при получении токена");
-            throw;
-        }
-    }
+    /// <summary>The stored token, or null when the user is not logged in or the token has expired.</summary>
+    public Task<string?> GetTokenAsync() => TokenStore.GetValidTokenAsync();
 
     public async Task<bool> RegisterAsync(string email, string password, string confirmPassword, string name, int role, string phone, DateOnly dateOfBirth)
     {
@@ -86,35 +70,27 @@ public class AuthService
             };
             var response = await _httpClient.PostAsJsonAsync("application/register", registerRequest);
 
+            // The API now answers 400 for "user exists", weak password etc. — previously it was always 200.
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при отправке запроса к API");
-            throw;
+            _logger.LogError(ex, "Ошибка при регистрации");
+            return false;
         }
     }
 
-    public async Task<string> GetUserEmailAsync()
+    /// <summary>E-mail from the stored token, or null when not logged in.</summary>
+    public async Task<string?> GetUserEmailAsync()
     {
-        try
-        {
-            var token = await GetTokenAsync();
-            if (string.IsNullOrEmpty(token))
-                return "Email not found";
+        var token = await GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+            return null;
 
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-
-            var emailClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email);
-            return emailClaim?.Value ?? "Email not found";
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Ошибка при отправке запроса к API");
-            throw new Exception("Ошибка при получении данных пользователя", ex);
-        }
+        var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        return jwtToken.Claims.FirstOrDefault(c => c.Type == "email" || c.Type == ClaimTypes.Email)?.Value;
     }
+
     public async Task<UserProfileModel?> GetUserDataAsync()
     {
         try
@@ -123,14 +99,16 @@ public class AuthService
             if (string.IsNullOrEmpty(email))
                 return null;
 
-            return await _httpClient.GetFromJsonAsync<UserProfileModel>($"application/getUser?email={email}");
+            return await _httpClient.GetFromJsonAsync<UserProfileModel>(
+                $"application/getUser?email={Uri.EscapeDataString(email)}", JsonOptions);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Ошибка загрузки данных пользователя: {ex.Message}");
+            _logger.LogError(ex, "Ошибка загрузки данных пользователя");
             return null;
         }
     }
+
     public async Task<bool> DeleteAccountAsync()
     {
         try
@@ -139,13 +117,17 @@ public class AuthService
             if (string.IsNullOrEmpty(email))
                 return false;
 
-            var response = await _httpClient.DeleteAsync($"application/deleteUser?email={email}");
-            return response.IsSuccessStatusCode;
+            var response = await _httpClient.DeleteAsync($"application/deleteUser?email={Uri.EscapeDataString(email)}");
+            if (!response.IsSuccessStatusCode)
+                return false;
 
+            // The account is gone — the token must not keep the app "logged in".
+            await LogoutAsync();
+            return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Ошибка удаления аккаунта: {ex.Message}");
+            _logger.LogError(ex, "Ошибка удаления аккаунта");
             return false;
         }
     }
@@ -154,30 +136,21 @@ public class AuthService
     {
         try
         {
-            var token = await GetTokenAsync();
-            if (string.IsNullOrEmpty(token))
-                return false;
-
-            var updateRequest = new RegisterRequest
+            // Only the fields that may change. Sending a full RegisterRequest used to send Role = 0,
+            // which demoted admins and made the update fail for workers.
+            var updateRequest = new UpdateUserRequest
             {
                 Name = name,
                 Phone = phone,
-                Password = password ?? string.Empty
+                Password = string.IsNullOrEmpty(password) ? null : password
             };
 
-            var request = new HttpRequestMessage(HttpMethod.Put, $"application/updateUser/{email}")
-            {
-                Content = JsonContent.Create(updateRequest)
-            };
-
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-
-            var response = await _httpClient.SendAsync(request);
+            var response = await _httpClient.PutAsJsonAsync($"application/updateUser/{Uri.EscapeDataString(email)}", updateRequest);
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при обновлении данных аккаунта"); ;
+            _logger.LogError(ex, "Ошибка при обновлении данных аккаунта");
             return false;
         }
     }

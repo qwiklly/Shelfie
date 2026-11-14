@@ -1,4 +1,4 @@
-﻿using ShelfieBackend.Models;
+﻿using ShelfieBackend.DTOs;
 using System.Security.Claims;
 using static ShelfieBackend.Responses.CustomResponses;
 
@@ -8,5 +8,6 @@ namespace ShelfieBackend.Repositories.Interfaces
     {
         Task<BaseResponse> SaveCategoryFieldsAsync(int categoryId, List<string> fieldNames, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<List<string>> GetCategoryFieldsAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
+        Task<List<CategoryFieldDTO>> GetCategoryFieldDefinitionsAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
     }
 }

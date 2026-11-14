@@ -42,7 +42,11 @@
 
     private async Task Delete()
     {
-        await AuthService.DeleteAccountAsync();
+        if (!await AuthService.DeleteAccountAsync())
+        {
+            await JS.InvokeVoidAsync("alert", "Не удалось удалить аккаунт");
+            return;
+        }
         NavManager.NavigateTo("/login", forceLoad: true);
     }
 }

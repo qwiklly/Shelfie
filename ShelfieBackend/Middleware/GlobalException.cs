@@ -4,25 +4,30 @@ using System.Text.Json;
 
 namespace ShelfieBackend.Middleware
 {
+    /// <summary>
+    /// Turns unhandled exceptions and empty error responses (401/403/404/... without a body) into JSON ProblemDetails.
+    /// Successful responses and error responses that already have a body are left untouched.
+    /// </summary>
     public class GlobalException
     {
+        private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
         private readonly RequestDelegate _next;
 
         public GlobalException(RequestDelegate next)
         {
             _next = next;
         }
+
         public async Task InvokeAsync(HttpContext context)
         {
             try
             {
                 await _next(context);
 
-                // Если ответ уже начат или является редиректом, ничего не делаем
-                if (context.Response.HasStarted || (context.Response.StatusCode >= 300 && context.Response.StatusCode < 400))
+                int statusCode = context.Response.StatusCode;
+                if (context.Response.HasStarted || statusCode < 400 || !string.IsNullOrEmpty(context.Response.ContentType))
                     return;
 
-                int statusCode = context.Response.StatusCode;
                 string title = statusCode switch
                 {
                     StatusCodes.Status429TooManyRequests => "Warning",
@@ -41,11 +46,14 @@ namespace ShelfieBackend.Middleware
                     _ => "Server error occurred"
                 };
 
-                Log.Warning("HTTP Error: {StatusCode} - {Message}", statusCode, message);
+                Log.Warning("HTTP Error: {StatusCode} - {Message} ({Path})", statusCode, message, context.Request.Path);
 
-                context.Response.Clear();
-                context.Response.StatusCode = statusCode;
-                await ModifyHeader(context, title, message, statusCode);
+                // Headers such as WWW-Authenticate are kept: only the body is filled in.
+                await WriteProblemAsync(context, title, message, statusCode);
+            }
+            catch (Exception ex) when (ex is OperationCanceledException && context.RequestAborted.IsCancellationRequested)
+            {
+                // The client went away — nothing to answer.
             }
             catch (Exception ex)
             {
@@ -76,21 +84,20 @@ namespace ShelfieBackend.Middleware
                 {
                     context.Response.Clear();
                     context.Response.StatusCode = statusCode;
-                    await ModifyHeader(context, title, message, statusCode);
+                    await WriteProblemAsync(context, title, message, statusCode);
                 }
             }
         }
 
-        private static async Task ModifyHeader(HttpContext context, string title, string message, int statusCode)
+        private static async Task WriteProblemAsync(HttpContext context, string title, string message, int statusCode)
         {
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new ProblemDetails()
+            context.Response.ContentType = "application/problem+json";
+            await context.Response.WriteAsync(JsonSerializer.Serialize(new ProblemDetails
             {
                 Title = title,
                 Detail = message,
                 Status = statusCode
-            }), CancellationToken.None);
+            }, JsonOptions), CancellationToken.None);
         }
     }
 }
-

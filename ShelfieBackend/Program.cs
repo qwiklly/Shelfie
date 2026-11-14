@@ -2,15 +2,16 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using Serilog;
 using ShelfieBackend.Data;
 using ShelfieBackend.Middleware;
 using ShelfieBackend.Repositories;
+using ShelfieBackend.Repositories.Interfaces;
 using ShelfieBackend.Services;
 using ShelfieBackend.States;
-using System.Text;
 using System.Reflection;
-using ShelfieBackend.Repositories.Interfaces;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,12 +32,12 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "My API", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Shelfie API", Version = "v1" });
     options.EnableAnnotations();
-    options.IncludeXmlComments(xmlPath);
+
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, $"{Assembly.GetExecutingAssembly().GetName().Name}.xml");
+    if (File.Exists(xmlPath))
+        options.IncludeXmlComments(xmlPath);
 });
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -45,6 +46,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 });
 
 // JWT settings
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+{
+    throw new InvalidOperationException(
+        "Jwt:Key is missing or shorter than 32 bytes. Set it with: dotnet user-secrets set \"Jwt:Key\" \"<random string of 32+ characters>\"");
+}
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -60,36 +68,49 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
-            if (context.Request.Cookies.ContainsKey("AuthToken"))
+            // The Authorization header (mobile app) wins; the cookie is used by the admin Razor pages.
+            if (string.IsNullOrEmpty(context.Request.Headers.Authorization) &&
+                context.Request.Cookies.TryGetValue(Constants.AuthCookieName, out var cookieToken))
             {
-                context.Token = context.Request.Cookies["AuthToken"];
+                context.Token = cookieToken;
+            }
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            // Razor pages: send the browser to the login page instead of a bare 401.
+            if (!context.Request.Path.StartsWithSegments("/api") &&
+                !context.Request.Path.StartsWithSegments("/swagger"))
+            {
+                context.HandleResponse();
+                context.Response.Redirect("/Login");
             }
             return Task.CompletedTask;
         }
     };
 });
+builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IAccount, Account>();
-builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserIdService, UserIdService>();
 builder.Services.AddScoped<AuthenticationStateProvider, AuthenticationProvider>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IMedicineRepo, MedicineRepo>();
-builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
 builder.Services.AddScoped<IHistoryRepo, HistoryRepo>();
 builder.Services.AddScoped<ICategoryFieldRepo, CategoryFieldRepo>();
 builder.Services.AddScoped<ICategoryFieldValueRepo, CategoryFieldValueRepo>();
-builder.Services.AddHttpClient<IAccountService, AccountService>(client =>
-{
-    client.BaseAddress = new Uri("http://localhost:5111");
-});
+
+
+
+
+
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
@@ -99,6 +120,8 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
+
+app.UseGlobalExceptionMiddleware();
 
 app.UseCors(policy =>
 {
@@ -111,13 +134,11 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseGlobalExceptionMiddleware();
-
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API");
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Shelfie API");
 });
 
 app.UseAuthentication();
@@ -126,6 +147,14 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapRazorPages();
 
-app.Run();
+try
+{
+    app.Run();
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
-Log.CloseAndFlush();
+/// <summary>Entry point; partial so integration tests can reference it.</summary>
+public partial class Program;

@@ -1,23 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShelfieBackend.DTOs;
-using ShelfieBackend.Services;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Pages
 {
-    public class AddUserModel : PageModel
+    [Authorize(Roles = "Admin")]
+    public class AddUserModel(IAccount account) : PageModel
     {
         [BindProperty]
         public RegisterDTO Register { get; set; } = new RegisterDTO();
 
         public bool IsUserAdded { get; set; } = false;
-
-        private readonly IAccountService _accountService;
-
-        public AddUserModel(IAccountService accountService)
-        {
-            _accountService = accountService;
-        }
 
         public void OnGet()
         {
@@ -32,7 +27,8 @@ namespace ShelfieBackend.Pages
                 return Page();
             }
 
-            var response = await _accountService.RegisterAsync(Register);
+            // The admin's own principal is passed so Admin/Worker accounts can be created.
+            var response = await account.RegisterAsync(Register, User);
 
             if (!response.Flag)
             {
@@ -40,8 +36,8 @@ namespace ShelfieBackend.Pages
                 return Page();
             }
 
-            IsUserAdded = true;  
-            return Page(); 
+            IsUserAdded = true;
+            return Page();
         }
     }
 }

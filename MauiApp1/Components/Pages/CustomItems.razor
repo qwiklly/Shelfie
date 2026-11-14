@@ -169,18 +169,18 @@
                 .ToDictionary(f => f.Key, f => f.Value);
         }
 
-        var fieldNames = await FieldService.GetFieldsForCategoryAsync(CategoryId);
-        customFields = fieldNames.Select((name, index) => new FieldDefinition { FieldOrder = index + 1, Name = name }).ToList();
+        // FieldOrder comes from the server: after a field is removed the keys are no longer 1..N,
+        // so computing them from the list index mapped values to the wrong fields.
+        customFields = await FieldService.GetFieldDefinitionsAsync(CategoryId);
         displayedFieldValues = fieldValues;
-    }  
+    }
 
     // Метод для открытия модального окна добавления товара
     private void ShowAddModal()
     {
-        int newRecordId = fieldValues.Count + 1;
         newProduct = new FieldValuesRequest
             {
-                RecordId = newRecordId,
+                RecordId = 0, // the server assigns the next free id ("Count + 1" collided after a delete)
                 FieldValues = new Dictionary<int, string>()
             };
 
@@ -203,7 +203,11 @@
 
         try
         {
-            await FieldValueService.SaveFieldValuesForCategoryAsync(CategoryId, newProduct);
+            if (!await FieldValueService.SaveFieldValuesForCategoryAsync(CategoryId, newProduct))
+            {
+                commonError = true;
+                return;
+            }
             CloseAddModal();
             await LoadFieldValues();
         }
@@ -229,6 +233,9 @@
                 RecordId = request.RecordId,
                 FieldValues = request.FieldValues.ToDictionary(entry => entry.Key, entry => entry.Value)
             };
+        // Every field rendered in the form must have a key, otherwise FieldValues[key] throws.
+        foreach (var field in customFields)
+            editProduct.FieldValues.TryAdd(field.FieldOrder, string.Empty);
         commonError = false;
         showEditModal = true;
     }
@@ -237,13 +244,16 @@
     {
         try
         {
-            await FieldValueService.UpdateFieldValuesForCategoryAsync(CategoryId, editProduct);
+            if (!await FieldValueService.UpdateFieldValuesForCategoryAsync(CategoryId, editProduct))
+            {
+                commonError = true;
+                return;
+            }
             CloseEditModal();
             await LoadFieldValues();
         }
         catch
         {
-            await JS.InvokeVoidAsync("alert", $"Ошибка при редактировании: ");
             commonError = true;
         }
     }
@@ -272,6 +282,7 @@
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
             displayedFieldValues = fieldValues;
+            return;
         }
 
         displayedFieldValues = fieldValues

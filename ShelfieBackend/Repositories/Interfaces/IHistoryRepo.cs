@@ -8,6 +8,6 @@ namespace ShelfieBackend.Repositories.Interfaces
     {
         Task AddHistoryRecordAsync(HistoryRecordDTO model, CancellationToken cancellationToken);
         Task<List<HistoryRecordDTO>> GetUserHistoryAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken);
-        Task<BaseResponse> ClearHistoryAsync(CancellationToken cancellationToken);
+        Task<BaseResponse> ClearHistoryAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken);
     }
 }

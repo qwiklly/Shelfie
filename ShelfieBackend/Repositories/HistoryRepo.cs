@@ -15,8 +15,8 @@ namespace ShelfieBackend.Repositories
         private readonly ApplicationDbContext _appDbContext;
         private readonly IUserIdService _userService;
 
-        public HistoryRepo(ApplicationDbContext appDbContext, IUserIdService userService) 
-        { 
+        public HistoryRepo(ApplicationDbContext appDbContext, IUserIdService userService)
+        {
             _appDbContext = appDbContext;
             _userService = userService;
         }
@@ -33,45 +33,48 @@ namespace ShelfieBackend.Repositories
                 QuantityChange = model.QuantityChange,
                 UserId = model.UserId
             };
-            await _appDbContext.HistoryRecords.AddAsync(history);
+            await _appDbContext.HistoryRecords.AddAsync(history, cancellationToken);
             await _appDbContext.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<List<HistoryRecordDTO>> GetUserHistoryAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
+            int? userId = _userService.GetUserId(currentUser);
+            if (userId == null)
+                return new List<HistoryRecordDTO>();
+
+            return await _appDbContext.HistoryRecords
+                .AsNoTracking()
+                .Where(p => p.UserId == userId.Value)
+                .OrderByDescending(h => h.ChangeDate)
+                .ThenByDescending(h => h.Id)
+                .Select(h => new HistoryRecordDTO
+                {
+                    Id = h.Id,
+                    ItemId = h.ItemId,
+                    ItemType = h.ItemType,
+                    ItemName = h.ItemName,
+                    ChangeDate = h.ChangeDate,
+                    ChangeType = h.ChangeType,
+                    QuantityChange = h.QuantityChange,
+                    UserId = h.UserId,
+                })
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<BaseResponse> ClearHistoryAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
+        {
             try
             {
                 int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
-                    return new List<HistoryRecordDTO>();
+                    return new BaseResponse(false, "Пользователь не найден.");
 
-                return await _appDbContext.HistoryRecords
-                    .AsNoTracking()
-                    .Where(p => p.UserId == userId.Value)
-                     .Select(h => new HistoryRecordDTO
-                     {
-                         Id = h.Id,
-                         ItemId = h.ItemId,
-                         ItemType = h.ItemType,
-                         ItemName = h.ItemName,
-                         ChangeDate = h.ChangeDate,
-                         ChangeType = h.ChangeType,
-                         QuantityChange = h.QuantityChange,
-                     })
-                .ToListAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred while getting history operations");
-                throw new Exception("Error while getting history operations", ex);
-            }
-        }
+                // Only the history of the current user — never the whole table.
+                await _appDbContext.HistoryRecords
+                    .Where(h => h.UserId == userId.Value)
+                    .ExecuteDeleteAsync(cancellationToken);
 
-        public async Task<BaseResponse> ClearHistoryAsync(CancellationToken cancellationToken)
-        {
-            try
-            {
-                await _appDbContext.HistoryRecords.ExecuteDeleteAsync(cancellationToken);
                 return new BaseResponse(true, "История успешно очищена");
             }
             catch (Exception ex)

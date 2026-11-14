@@ -1,78 +1,60 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.DTOs;
-using Swashbuckle.AspNetCore.Annotations;
 using ShelfieBackend.Repositories.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers
 {
+    [Authorize]
     [Route("api/application")]
-    [ApiController]
-    public class ProductController(IProductRepo _productRepo) : ControllerBase
+    public class ProductController(IProductRepo _productRepo) : ApiControllerBase
     {
-
-        [Authorize]
         [HttpPost("add")]
         [SwaggerOperation(Summary = "Add a new product", Description = "Adds a new product to the inventory.")]
         public async Task<IActionResult> AddProductAsync([FromBody] AddProductDTO model)
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.AddProductAsync(model, currentUser, cancellationToken);
-            return Ok(result);
+            var result = await _productRepo.AddProductAsync(model, User, HttpContext.RequestAborted);
+            return FromResponse(result);
         }
-        [Authorize]
+
         [HttpGet("getAll")]
         [SwaggerOperation(Summary = "Get all products", Description = "Retrieves all products.")]
         public async Task<IActionResult> GetProductsAsync()
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.GetProductsAsync(currentUser, cancellationToken);
+            var result = await _productRepo.GetProductsAsync(User, HttpContext.RequestAborted);
             return Ok(result);
         }
 
-        [Authorize]
         [HttpGet("get/{name}")]
         [SwaggerOperation(Summary = "Get product by name", Description = "Retrieves a product by its name.")]
         public async Task<IActionResult> GetProductAsync(string name)
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.GetProductAsync(name, currentUser, cancellationToken);
-            return Ok(result);
+            var result = await _productRepo.GetProductAsync(name, User, HttpContext.RequestAborted);
+            return result != null ? Ok(result) : NotFound();
         }
 
-        [Authorize]
         [HttpPut("update/{currentName}")]
         [SwaggerOperation(Summary = "Update a product", Description = "Updates a product's details.")]
         public async Task<IActionResult> UpdateProductAsync(string currentName, [FromBody] UpdateProductDTO model)
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.UpdateProductAsync(currentName, model, currentUser, cancellationToken);
-            return Ok(result);
+            var result = await _productRepo.UpdateProductAsync(currentName, model, User, HttpContext.RequestAborted);
+            return FromResponse(result);
         }
 
-        [Authorize]
         [HttpDelete("delete/{name}")]
         [SwaggerOperation(Summary = "Delete a product", Description = "Deletes a product by its name.")]
         public async Task<IActionResult> DeleteProductAsync(string name)
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.DeleteProductAsync(name, currentUser, cancellationToken);
-            return Ok(result);
+            var result = await _productRepo.DeleteProductAsync(name, User, HttpContext.RequestAborted);
+            return FromResponse(result);
         }
 
-        [Authorize]
         [HttpGet("getExpiredProducts")]
         [SwaggerOperation(Summary = "Get all expired products", Description = "Retrieves all expired products.")]
         public async Task<IActionResult> GetExpiredProducts()
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _productRepo.GetExpiredProductsAsync(currentUser, cancellationToken);
+            var result = await _productRepo.GetExpiredProductsAsync(User, HttpContext.RequestAborted);
             return Ok(result);
         }
     }

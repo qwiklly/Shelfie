@@ -1,23 +1,18 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShelfieBackend.DTOs;
-using ShelfieBackend.Services;
+using ShelfieBackend.Repositories.Interfaces;
 
 namespace ShelfieBackend.Pages
 {
-    public class RegistrationModel : PageModel
+    [AllowAnonymous]
+    public class RegistrationModel(IAccount account) : PageModel
     {
         [BindProperty]
         public RegisterDTO Register { get; set; } = new RegisterDTO();
 
         public bool IsUserAdded { get; set; } = false;
-
-        private readonly IAccountService _accountService;
-
-        public RegistrationModel(IAccountService accountService)
-        {
-            _accountService = accountService;
-        }
 
         public void OnGet()
         {
@@ -28,12 +23,12 @@ namespace ShelfieBackend.Pages
 
         public async Task<IActionResult> OnPostAsync()
         {
-
-			if (!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return Page();
             }
-			var response = await _accountService.RegisterAsync(Register);
+
+            var response = await account.RegisterAsync(Register, User);
 
             if (!response.Flag)
             {
@@ -41,8 +36,8 @@ namespace ShelfieBackend.Pages
                 return Page();
             }
 
-            IsUserAdded = true;  
-            return Page(); 
+            IsUserAdded = true;
+            return Page();
         }
     }
 }

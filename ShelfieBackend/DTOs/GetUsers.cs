@@ -14,8 +14,8 @@ namespace ShelfieBackend.DTOs
 		[Required]
 		public UserRole Role { get; set; }
 
-        [Phone]
-        public string Phone { get; set; } = string.Empty;
+
+        public string? Phone { get; set; }
 
         [Required, DataType(DataType.Date)]
         public DateOnly DateOfBirth { get; set; }

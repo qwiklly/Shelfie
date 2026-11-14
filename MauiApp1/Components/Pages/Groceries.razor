@@ -36,7 +36,7 @@
                     <div class="product-creator">@product.Creator</div>
                     <div class="product-dates">
                         <span>@Localizer["Created"] @product.CreatedAt.ToString("yyyy-MM-dd")</span><br />
-                        <span>@Localizer["ExpiresOn"] @product.ExpirationDate.ToString("yyyy-MM-dd")</span>
+                        <span>@Localizer["ExpiresOn"] @product.ExpirationDate?.ToString("yyyy-MM-dd")</span>
                     </div>
                 </div>
                 <div class="weight-quantity">
@@ -220,6 +220,7 @@
     // Открыть модальное окно для добавления
     private void OpenAddModal()
     {
+        commonError = false;
         showAddModal = true;
         newProduct = new()
             {
@@ -245,7 +246,8 @@
         isSaving = true;
         try
         {
-            await ProductService.AddProductAsync(
+            // The result used to be ignored, so a rejected product (e.g. duplicate name) looked like a success.
+            bool success = await ProductService.AddProductAsync(
                 newProduct.Name,
                 newProduct.Creator,
                 newProduct.ExpirationDate,
@@ -253,6 +255,12 @@
                 newProduct.Weight,
                 newProduct.WeightUnit
             );
+
+            if (!success)
+            {
+                commonError = true;
+                return;
+            }
 
             CloseAddModal();
             await LoadProducts();
@@ -270,6 +278,7 @@
     // Открыть модальное окно редактирования
     private void OpenEditModal(ProductModel product)
     {
+        commonError = false;
         originalProductName = product.Name;
         editingProduct = new ProductModel
             {

@@ -62,7 +62,7 @@ namespace MauiApp1.Services
                 {
                     Name = name,
                     Creator = creator,
-                    CategoryId = 1,
+                    CategoryId = 2, // predefined "Medication" category
                     ExpirationDate = expirationDate,
                     Quantity = quantity,
                     Weight = weight ?? 0,

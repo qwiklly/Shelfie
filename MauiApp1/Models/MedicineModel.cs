@@ -5,7 +5,7 @@
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Creator { get; set; } = string.Empty;
-        public DateOnly ExpirationDate { get; set; }
+        public DateOnly? ExpirationDate { get; set; }
         public int CategoryId { get; set; }
         public DateOnly CreatedAt { get; set; }
         public int Quantity { get; set; }

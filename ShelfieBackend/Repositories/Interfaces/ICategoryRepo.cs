@@ -10,6 +10,6 @@ namespace ShelfieBackend.Repositories.Interfaces
         Task<BaseResponse> CreateCategoryAsync(string categoryName, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<List<GetCategoriesDTO>> GetAllCategories(ClaimsPrincipal currentUser, CancellationToken cancellationToken);
         Task<BaseResponse> DeleteCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
-        Task<Category?> GetCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
+        Task<GetCategoriesDTO?> GetCategoryAsync(int categoryId, ClaimsPrincipal currentUser, CancellationToken cancellationToken);
     }
 }

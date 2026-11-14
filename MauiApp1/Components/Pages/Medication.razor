@@ -37,7 +37,7 @@
                     <div class="product-creator">@medicament.Creator</div>
                     <div class="product-dates">
                         <span>@Localizer["Created"] @medicament.CreatedAt.ToString("yyyy-MM-dd")</span><br />
-                        <span>@Localizer["ExpiresOn"] @medicament.ExpirationDate.ToString("yyyy-MM-dd")</span>
+                        <span>@Localizer["ExpiresOn"] @medicament.ExpirationDate?.ToString("yyyy-MM-dd")</span>
                     </div>
                 </div>
                 <div class="weight-quantity">
@@ -219,6 +219,7 @@
     // Открыть модальное окно для добавления
     private void OpenAddModal()
     {
+        commonError = false;
         showAddModal = true;
         newMedicament = new()
             {
@@ -244,7 +245,8 @@
         isSaving = true;
         try
         {
-            await MedicationService.AddMedicineAsync(
+            // The result used to be ignored, so a rejected medicament looked like a success.
+            bool success = await MedicationService.AddMedicineAsync(
                 newMedicament.Name,
                 newMedicament.Creator,
                 newMedicament.ExpirationDate,
@@ -252,6 +254,12 @@
                 newMedicament.Weight,
                 newMedicament.WeightUnit
             );
+
+            if (!success)
+            {
+                commonError = true;
+                return;
+            }
 
             CloseAddModal();
             await LoadMedicaments();
@@ -269,6 +277,7 @@
     // Открыть модальное окно редактирования
     private void OpenEditModal(MedicineModel medicament)
     {
+        commonError = false;
         originalMedicamentName = medicament.Name;
         editingMedicament = new MedicineModel
             {

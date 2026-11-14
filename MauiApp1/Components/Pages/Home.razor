@@ -137,7 +137,7 @@
         foreach (var cat in Categories)
         {
             var fieldValues = await FieldValueService.GetFieldValuesForCategoryAsync(cat.Id);
-            CategoryCounts[cat.Id] = fieldValues.Sum(v => v.RecordId);
+            CategoryCounts[cat.Id] = fieldValues.Count; // was Sum(RecordId), i.e. 1+2+3... instead of the number of items
         }
         await SaveStatisticsToStorage();
 

@@ -42,7 +42,11 @@
     private async Task SaveFields()
     {
         var activeFields = editableFields.Where(f => !string.IsNullOrWhiteSpace(f)).ToList();
-        await FieldService.SaveCategoryFieldsAsync(CategoryId, activeFields);
+        if (!await FieldService.SaveCategoryFieldsAsync(CategoryId, activeFields))
+        {
+            await JS.InvokeVoidAsync("alert", "Не удалось сохранить поля");
+            return;
+        }
 
         NavManager.NavigateTo($"/category/{CategoryId}/fill");
     }

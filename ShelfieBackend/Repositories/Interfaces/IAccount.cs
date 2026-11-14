@@ -11,7 +11,8 @@ namespace ShelfieBackend.Repositories.Interfaces
 		Task<LoginResponse> LoginAsync(LoginDTO model);
 		Task<List<GetUsersDTO>> GetUsersAsync();
 		Task<ApplicationUser?> GetUserAsync(string email);
-		Task<BaseResponse> DeleteUserAsync(DeleteUserDTO model);
+		Task<UserProfileDTO?> GetUserProfileAsync(string email);
+		Task<BaseResponse> DeleteUserAsync(DeleteUserDTO model, ClaimsPrincipal currentUser);
 		Task<RegisterResponse> UpdateUserAsync(string email, UpdateUserDTO model, ClaimsPrincipal currentUser);
 	}
 }

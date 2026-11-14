@@ -43,14 +43,12 @@ namespace ShelfieBackend.States
             var claimsPrincipal = new ClaimsPrincipal();
             if (!string.IsNullOrEmpty(jwtToken))
             {
-                Constants.JWTToken = jwtToken;
                 var getUserClaims = DecryptToken(jwtToken);
                 claimsPrincipal = SetClaimPrincipal(getUserClaims);
                 await SetJwtTokenInCookie(jwtToken);
             }
             else
             {
-                Constants.JWTToken = null!;
                 RemoveJwtTokenFromCookie();
             }
 
@@ -63,18 +61,18 @@ namespace ShelfieBackend.States
             {
 
                 HttpOnly = true,
-                Secure = false,
-                Expires = DateTime.UtcNow.AddDays(4),
+                Secure = _httpContextAccessor.HttpContext?.Request.IsHttps == true,
+                Expires = DateTime.UtcNow.AddDays(2),
                 SameSite = SameSiteMode.Lax // http -> https
             };
-            _httpContextAccessor.HttpContext?.Response.Cookies.Append("AuthToken", token, cookieOptions);
+            _httpContextAccessor.HttpContext?.Response.Cookies.Append(Constants.AuthCookieName, token, cookieOptions);
             return Task.CompletedTask;
 
         }
 
         private string? GetJwtTokenFromCookie()
         {
-            if (_httpContextAccessor.HttpContext?.Request.Cookies.TryGetValue("AuthToken", out string? token) == true)
+            if (_httpContextAccessor.HttpContext?.Request.Cookies.TryGetValue(Constants.AuthCookieName, out string? token) == true)
             {
                 return token;
             }
@@ -84,9 +82,9 @@ namespace ShelfieBackend.States
 
         private void RemoveJwtTokenFromCookie()
         {
-            if (_httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey("AuthToken") == true)
+            if (_httpContextAccessor.HttpContext?.Request.Cookies.ContainsKey(Constants.AuthCookieName) == true)
             {
-                _httpContextAccessor.HttpContext.Response.Cookies.Delete("AuthToken");
+                _httpContextAccessor.HttpContext.Response.Cookies.Delete(Constants.AuthCookieName);
             }
         }
 

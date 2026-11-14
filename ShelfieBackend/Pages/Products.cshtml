@@ -28,6 +28,10 @@
         <input type="text" id="name" required />
     </div>
     <div>
+        <label>Производитель:</label>
+        <input type="text" id="creator" required />
+    </div>
+    <div>
         <label>Категория:</label>
         <input type="number" id="categoryId" required />
     </div>
@@ -51,14 +55,14 @@
             const productId = document.getElementById("productId").value;
             const product = {
                 name: document.getElementById("name").value,
+                creator: document.getElementById("creator").value,
                 categoryId: parseInt(document.getElementById("categoryId").value),
                 expirationDate: document.getElementById("expirationDate").value,
                 quantity: parseInt(document.getElementById("quantity").value)
             };
 
             if (productId) {
-                product.id = parseInt(productId);
-                await fetch("/api/application/update", {
+                await fetch("/api/application/update/" + encodeURIComponent(productId), {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(product)
@@ -92,7 +96,7 @@
             const editButton = document.createElement("button");
             //editButton.textContent = "Изменить";
             editButton.onclick = function () {
-                document.getElementById("productId").value = product.id;
+                document.getElementById("productId").value = product.name; // products are addressed by name
                 document.getElementById("name").value = product.name;
                 document.getElementById("categoryId").value = product.categoryId;
                 document.getElementById("expirationDate").value = product.expirationDate;
@@ -102,10 +106,8 @@
             const deleteButton = document.createElement("button");
             deleteButton.textContent = "Удалить";
             deleteButton.onclick = async function () {
-                await fetch("/api/application/delete", {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ name: product.name })
+                await fetch("/api/application/delete/" + encodeURIComponent(product.name), {
+                    method: "DELETE"
                 });
                 loadProducts();
             };

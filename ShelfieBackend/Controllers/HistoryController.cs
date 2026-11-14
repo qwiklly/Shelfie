@@ -1,34 +1,28 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 using ShelfieBackend.Repositories.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers
 {
+    [Authorize]
     [Route("api/application")]
-    [ApiController]
-    public class HistoryController(IHistoryRepo _historyRepo) : ControllerBase
+    public class HistoryController(IHistoryRepo _historyRepo) : ApiControllerBase
     {
-        [Authorize]
         [HttpGet("getAllHistory")]
-        [SwaggerOperation(Summary = "Get all history", Description = "Retrieves all items history.")]
+        [SwaggerOperation(Summary = "Get all history", Description = "History of the current user, newest first.")]
         public async Task<IActionResult> GetAllHistoryAsync()
         {
-            var currentUser = HttpContext.User;
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _historyRepo.GetUserHistoryAsync(currentUser, cancellationToken);
+            var result = await _historyRepo.GetUserHistoryAsync(User, HttpContext.RequestAborted);
             return Ok(result);
         }
 
-        [Authorize]
         [HttpDelete("clear")]
-        [SwaggerOperation(Summary = "Clear all history", Description = "Clear all items history.")]
+        [SwaggerOperation(Summary = "Clear history", Description = "Clears the history of the current user.")]
         public async Task<IActionResult> ClearHistory()
         {
-            var cancellationToken = HttpContext.RequestAborted;
-            var result = await _historyRepo.ClearHistoryAsync(cancellationToken);
-            return Ok(result);
+            var result = await _historyRepo.ClearHistoryAsync(User, HttpContext.RequestAborted);
+            return FromResponse(result);
         }
-
     }
 }

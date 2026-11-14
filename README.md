@@ -67,7 +67,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 🚀 Running Locally
 
-You need the .NET 8 SDK with the MAUI workload, PostgreSQL and an Android emulator.
+You need the .NET 10 SDK with the MAUI workload, PostgreSQL and an Android emulator.
 
 1. Create a PostgreSQL user and database, then set your connection string and JWT key:
 
@@ -84,4 +84,14 @@ dotnet ef database update
 dotnet run --launch-profile http
 ```
 
-3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. It connects to the backend at `http://10.0.2.2:5111/api/`.
+The backend refuses to start without a `Jwt:Key` of at least 32 characters.
+
+3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. It connects to the backend at `http://10.0.2.2:5111/api/` (on Windows: `http://localhost:5111/api/`).
+
+## 🧪 Tests
+
+The backend is covered by unit and integration tests (`ShelfieBackend.Tests`, xUnit v3). Integration tests run the real API in memory on SQLite, so no PostgreSQL is needed:
+
+```bash
+dotnet test --project ShelfieBackend.Tests
+```

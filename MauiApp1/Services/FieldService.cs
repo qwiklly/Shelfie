@@ -49,6 +49,28 @@ namespace MauiApp1.Services
             }
         }
 
+        /// <summary>Fields with their server-side FieldOrder — the key of the record values.</summary>
+        public async Task<List<MauiApp1.Models.FieldDefinition>> GetFieldDefinitionsAsync(int categoryId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"category/{categoryId}/fields", cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Ошибка при получении полей категории {CategoryId}: {StatusCode}", categoryId, response.StatusCode);
+                    return [];
+                }
+
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return await response.Content.ReadFromJsonAsync<List<MauiApp1.Models.FieldDefinition>>(options, cancellationToken) ?? [];
+            }
+            catch (Exception ex) when (ex is HttpRequestException or JsonException)
+            {
+                _logger.LogError(ex, "Ошибка при получении полей категории {CategoryId}", categoryId);
+                return [];
+            }
+        }
+
         public async Task<bool> SaveCategoryFieldsAsync(int categoryId, List<string> fieldNames, CancellationToken cancellationToken = default)
         {
             try

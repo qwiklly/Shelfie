@@ -5,6 +5,8 @@ using ShelfieBackend.DTOs;
 using ShelfieBackend.Models;
 using ShelfieBackend.Repositories.Interfaces;
 using ShelfieBackend.Services;
+using ShelfieBackend.States;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using static ShelfieBackend.Responses.CustomResponses;
 
@@ -13,10 +15,10 @@ namespace ShelfieBackend.Repositories
     public class ProductRepo : IProductRepo
     {
         private readonly ApplicationDbContext _appDbContext;
-        private readonly IHistoryRepo _historyRepository;   
+        private readonly IHistoryRepo _historyRepository;
         private readonly IUserIdService _userService;
 
-        public ProductRepo(ApplicationDbContext appDbContext, IConfiguration config, IHistoryRepo historyRepository, IUserIdService userService)
+        public ProductRepo(ApplicationDbContext appDbContext, IHistoryRepo historyRepository, IUserIdService userService)
         {
             _appDbContext = appDbContext;
             _historyRepository = historyRepository;
@@ -29,42 +31,52 @@ namespace ShelfieBackend.Repositories
             {
                 int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
-                    return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
+                    return new BaseResponse(false, "Пользователь не найден.");
 
-                var category = await _appDbContext.Categories.FindAsync(model.CategoryId, cancellationToken);
-                var categoryId = category != null ? model.CategoryId : 1;
+                var name = model.Name?.Trim() ?? string.Empty;
+                if (name.Length == 0)
+                    return new BaseResponse(false, "Название продукта не может быть пустым.");
+
+                // Products are addressed by name in the API, so names must be unique per user.
+                bool exists = await _appDbContext.Products
+                    .AnyAsync(p => p.UserId == userId.Value && p.Name == name, cancellationToken);
+                if (exists)
+                    return new BaseResponse(false, "Продукт с таким названием уже существует.");
+
+                var categoryId = await CategoryResolver.ResolveAsync(_appDbContext, model.CategoryId, userId.Value, Constants.ProductsCategoryId, cancellationToken);
 
                 var product = new Product
                 {
-                    Name = model.Name,
-                    Creator = model.Creator,
+                    Name = name,
+                    Creator = model.Creator?.Trim() ?? string.Empty,
+                    Description = model.Description,
                     CategoryId = categoryId,
                     ExpirationDate = model.ExpirationDate,
                     Quantity = model.Quantity,
                     UserId = userId.Value,
                     CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
                     Weight = model.Weight,
-                    WeightUnit = model.WeightUnit,
+                    WeightUnit = model.WeightUnit ?? string.Empty,
                 };
 
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
+                await using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
                 await _appDbContext.Products.AddAsync(product, cancellationToken);
                 await _appDbContext.SaveChangesAsync(cancellationToken);
 
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
-                    ItemType = "Product",
-                    ItemName = product.Name, 
+                    ItemType = Constants.ItemTypeProduct,
+                    ItemName = product.Name,
                     ItemId = product.Id,
                     CategoryId = product.CategoryId,
-                    ChangeType = "Added",
+                    ChangeType = Constants.ChangeAdded,
                     QuantityChange = product.Quantity,
                     UserId = userId.Value
                 }, cancellationToken);
 
                 await transaction.CommitAsync(cancellationToken);
 
-                return new BaseResponse { Flag = true, Message = "Продукт успешно добавлен." };
+                return new BaseResponse(true, "Продукт успешно добавлен.");
             }
             catch (Exception ex)
             {
@@ -75,42 +87,29 @@ namespace ShelfieBackend.Repositories
 
         public async Task<List<GetProductDTO>> GetProductsAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
-            try
-            {
-                int? userId = _userService.GetUserId(currentUser);
-                if (userId == null)
-                    return new List<GetProductDTO>();
+            int? userId = _userService.GetUserId(currentUser);
+            if (userId == null)
+                return new List<GetProductDTO>();
 
-                return await _appDbContext.Products
-                    .Where(p => p.UserId == userId.Value)
-                    .Select(p => new GetProductDTO
-                    {
-                        Name = p.Name,
-                        Creator = p.Creator,
-                        CategoryId = p.CategoryId,
-                        ExpirationDate = p.ExpirationDate,
-                        Quantity = p.Quantity,
-                        CreatedAt = p.CreatedAt,
-                        Weight = p.Weight,
-                        WeightUnit = p.WeightUnit,
-                    })
-                    .ToListAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred while getting products");
-                throw new Exception("Error while getting products");
-            }
+            return await _appDbContext.Products
+                .AsNoTracking()
+                .Where(p => p.UserId == userId.Value)
+                .OrderBy(p => p.Name)
+                .Select(ToDto)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<Product?> GetProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
+        public async Task<GetProductDTO?> GetProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
             int? userId = _userService.GetUserId(currentUser);
             if (userId == null)
                 return null;
 
             return await _appDbContext.Products
-                .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value, cancellationToken);
+                .AsNoTracking()
+                .Where(p => p.Name == name && p.UserId == userId.Value)
+                .Select(ToDto)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task<BaseResponse> DeleteProductAsync(string name, ClaimsPrincipal currentUser, CancellationToken cancellationToken)
@@ -119,25 +118,23 @@ namespace ShelfieBackend.Repositories
             {
                 int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
-                    return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
+                    return new BaseResponse(false, "Пользователь не найден.");
 
                 var product = await _appDbContext.Products
                     .FirstOrDefaultAsync(p => p.Name == name && p.UserId == userId.Value, cancellationToken);
                 if (product == null)
-                    return new BaseResponse { Flag = false, Message = "Продукт не найден." };
+                    return new BaseResponse(false, "Продукт не найден.");
 
-                // Сохранить количество для истории
-                int quantity = product.Quantity;
-
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
+                await using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
 
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
-                    ItemType = "Product",
-                    ItemName = product.Creator,
+                    ItemType = Constants.ItemTypeProduct,
+                    ItemName = product.Name,
                     ItemId = product.Id,
-                    ChangeType = "Removed",
-                    QuantityChange = -quantity,
+                    CategoryId = product.CategoryId,
+                    ChangeType = Constants.ChangeRemoved,
+                    QuantityChange = -product.Quantity,
                     UserId = userId.Value
                 }, cancellationToken);
 
@@ -146,7 +143,7 @@ namespace ShelfieBackend.Repositories
 
                 await transaction.CommitAsync(cancellationToken);
 
-                return new BaseResponse { Flag = true, Message = "Продукт успешно удалён." };
+                return new BaseResponse(true, "Продукт успешно удалён.");
             }
             catch (Exception ex)
             {
@@ -161,39 +158,50 @@ namespace ShelfieBackend.Repositories
             {
                 int? userId = _userService.GetUserId(currentUser);
                 if (userId == null)
-                    return new BaseResponse { Flag = false, Message = "Пользователь не найден." };
+                    return new BaseResponse(false, "Пользователь не найден.");
 
                 var product = await _appDbContext.Products
                     .FirstOrDefaultAsync(p => p.Name == currentName && p.UserId == userId.Value, cancellationToken);
                 if (product == null)
-                    return new BaseResponse { Flag = false, Message = "Продукт не найден." };
+                    return new BaseResponse(false, "Продукт не найден.");
+
+                if (model.Quantity < 0 || model.Weight < 0)
+                    return new BaseResponse(false, "Количество и вес не могут быть отрицательными.");
+
+                var newName = string.IsNullOrWhiteSpace(model.Name) ? product.Name : model.Name.Trim();
+                if (newName != product.Name &&
+                    await _appDbContext.Products.AnyAsync(p => p.UserId == userId.Value && p.Name == newName, cancellationToken))
+                {
+                    return new BaseResponse(false, "Продукт с таким названием уже существует.");
+                }
 
                 int oldQuantity = product.Quantity;
 
-                product.Name = model.Name ?? product.Name;
-                product.Creator = model.Creator ?? product.Creator;
+                product.Name = newName;
+                product.Creator = model.Creator?.Trim() ?? product.Creator;
+                product.Description = model.Description ?? product.Description;
                 product.ExpirationDate = model.ExpirationDate ?? product.ExpirationDate;
                 product.Quantity = model.Quantity ?? product.Quantity;
-                product.Weight = model.Weight == 0 ? product.Weight : model.Weight;
-                product.WeightUnit = model.WeightUnit ?? product.WeightUnit;
+                product.Weight = model.Weight is null or 0 ? product.Weight : model.Weight.Value;
+                product.WeightUnit = string.IsNullOrWhiteSpace(model.WeightUnit) ? product.WeightUnit : model.WeightUnit;
 
-                using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
-                int quantityChange = product.Quantity - oldQuantity;
+                await using var transaction = await _appDbContext.Database.BeginTransactionAsync(cancellationToken);
 
                 await _historyRepository.AddHistoryRecordAsync(new HistoryRecordDTO
                 {
-                    ItemType = "Product",
+                    ItemType = Constants.ItemTypeProduct,
                     ItemName = product.Name,
                     ItemId = product.Id,
-                    ChangeType = "Updated",
-                    QuantityChange = quantityChange,
+                    CategoryId = product.CategoryId,
+                    ChangeType = Constants.ChangeUpdated,
+                    QuantityChange = product.Quantity - oldQuantity,
                     UserId = userId.Value
                 }, cancellationToken);
 
                 await _appDbContext.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
 
-                return new BaseResponse { Flag = true, Message = "Продукт успешно обновлён." };
+                return new BaseResponse(true, "Продукт успешно обновлён.");
             }
             catch (Exception ex)
             {
@@ -204,32 +212,32 @@ namespace ShelfieBackend.Repositories
 
         public async Task<List<GetProductDTO>> GetExpiredProductsAsync(ClaimsPrincipal currentUser, CancellationToken cancellationToken)
         {
-            try
-            {
-                int? userId = _userService.GetUserId(currentUser);
-                if (userId == null)
-                    return new List<GetProductDTO>();
+            int? userId = _userService.GetUserId(currentUser);
+            if (userId == null)
+                return new List<GetProductDTO>();
 
-                DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
+            DateOnly today = DateOnly.FromDateTime(DateTime.UtcNow);
 
-                return await _appDbContext.Products
-                    .Where(p => p.UserId == userId.Value && p.ExpirationDate != null && p.ExpirationDate < today)
-                    .Select(p => new GetProductDTO
-                    {
-                        Name = p.Name,
-                        Creator = p.Creator,
-                        CategoryId = p.CategoryId,
-                        ExpirationDate = p.ExpirationDate,
-                        Quantity = p.Quantity,
-                        CreatedAt = p.CreatedAt,
-                    })
-                    .ToListAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "An error occurred while getting expired products");
-                throw new Exception("Error while getting expired products");
-            }
+            return await _appDbContext.Products
+                .AsNoTracking()
+                .Where(p => p.UserId == userId.Value && p.ExpirationDate != null && p.ExpirationDate < today)
+                .OrderBy(p => p.ExpirationDate)
+                .Select(ToDto)
+                .ToListAsync(cancellationToken);
         }
+
+        private static readonly Expression<Func<Product, GetProductDTO>> ToDto = p => new GetProductDTO
+        {
+            Id = p.Id,
+            Name = p.Name,
+            Creator = p.Creator,
+            CategoryId = p.CategoryId,
+            ExpirationDate = p.ExpirationDate,
+            Quantity = p.Quantity,
+            CreatedAt = p.CreatedAt,
+            Description = p.Description,
+            Weight = p.Weight,
+            WeightUnit = p.WeightUnit,
+        };
     }
 }

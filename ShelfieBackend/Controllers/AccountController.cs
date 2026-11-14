@@ -1,85 +1,68 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ShelfieBackend.DTOs;
-using Swashbuckle.AspNetCore.Annotations;
-using Microsoft.AspNetCore.Authorization;
+using ShelfieBackend.Repositories;
 using ShelfieBackend.Repositories.Interfaces;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ShelfieBackend.Controllers
 {
 	[Route("api/application")]
-	[ApiController]
-	public class AccountController(IAccount _accountrepo) : ControllerBase
+	public class AccountController(IAccount _accountrepo) : ApiControllerBase
 	{
-        [Authorize]
-        [HttpGet("getUsers")]
-        [SwaggerOperation(
-           Summary = "Get all users",
-           Description = "Retrieves a list of all registered users."
-        )]
-        public async Task<IActionResult> GetUsersAsync()
+		[Authorize(Roles = "Admin")]
+		[HttpGet("getUsers")]
+		[SwaggerOperation(Summary = "Get all users", Description = "Retrieves a list of all registered users. Admins only.")]
+		public async Task<IActionResult> GetUsersAsync()
 		{
 			var result = await _accountrepo.GetUsersAsync();
 			return Ok(result);
 		}
 
-        [HttpGet("getUser")]
-        [SwaggerOperation(
-            Summary = "Get a user by email",
-            Description = "Retrieves a single user by their email address."
-        )]
-        public async Task<IActionResult> GetUserAsync(string email)
+		[Authorize]
+		[HttpGet("getUser")]
+		[SwaggerOperation(Summary = "Get a user by email", Description = "Retrieves the profile of the current user (admins: of any user).")]
+		public async Task<IActionResult> GetUserAsync([FromQuery] string email)
 		{
-			var result = await _accountrepo.GetUserAsync(email);
-            return result != null ? Ok(result) : NotFound("User not found");
-        }
+			if (!Account.CanManage(User, email))
+				return Forbid();
+
+			var result = await _accountrepo.GetUserProfileAsync(email);
+			return result != null ? Ok(result) : NotFound("User not found");
+		}
 
 		[HttpPost("register")]
-		[SwaggerOperation(
-			Summary = "Register a new user",
-			Description = "Creates a new user account"
-        )]
-        public async Task<IActionResult> RegisterAsync([FromBody] RegisterDTO model)
-        {
-            var currentUser = HttpContext.User;
+		[SwaggerOperation(Summary = "Register a new user", Description = "Creates a new user account")]
+		public async Task<IActionResult> RegisterAsync([FromBody] RegisterDTO model)
+		{
+			var result = await _accountrepo.RegisterAsync(model, User);
+			return FromResponse(result);
+		}
 
-            var result = await _accountrepo.RegisterAsync(model, currentUser);
-            return Ok(result);
-        }
-
-        [HttpPost("login")]
-		[SwaggerOperation(
-			Summary = "Login a user",
-			Description = "Authenticate a user with email and password."
-		)]
-		public async Task<IActionResult> LoginAsync(LoginDTO model)
+		[HttpPost("login")]
+		[SwaggerOperation(Summary = "Login a user", Description = "Authenticate a user with email and password.")]
+		public async Task<IActionResult> LoginAsync([FromBody] LoginDTO model)
 		{
 			var result = await _accountrepo.LoginAsync(model);
-			return Ok(result);
+			return result.Flag ? Ok(result) : Unauthorized(result);
 		}
 
-        [Authorize]
-        [HttpDelete("deleteUser")]
-		[SwaggerOperation(
-			Summary = "Delete a user",
-			Description = "Delete a user."
-		)]
-		public async Task<IActionResult> DeleteUserAsync(DeleteUserDTO model)
+		[Authorize]
+		[HttpDelete("deleteUser")]
+		[SwaggerOperation(Summary = "Delete a user", Description = "Deletes the current user's account (admins: any account).")]
+		public async Task<IActionResult> DeleteUserAsync([FromQuery] string email)
 		{
-			var result = await _accountrepo.DeleteUserAsync(model);
-			return Ok(result);
+			var result = await _accountrepo.DeleteUserAsync(new DeleteUserDTO { Email = email }, User);
+			return FromResponse(result);
 		}
 
-        [Authorize]
-        [HttpPut("updateUser/{email}")]
-		[SwaggerOperation(
-			Summary = "Update a user",
-			Description = "Update a user's information, such as name, role, or password."
-		)]
-		public async Task<IActionResult> UpdateUserAsync(string email, UpdateUserDTO model)
+		[Authorize]
+		[HttpPut("updateUser/{email}")]
+		[SwaggerOperation(Summary = "Update a user", Description = "Update a user's information, such as name, role, or password.")]
+		public async Task<IActionResult> UpdateUserAsync(string email, [FromBody] UpdateUserDTO model)
 		{
-            var currentUser = HttpContext.User;
-            var result = await _accountrepo.UpdateUserAsync(email, model, currentUser);
-			return Ok(result);
+			var result = await _accountrepo.UpdateUserAsync(email, model, User);
+			return FromResponse(result);
 		}
-    }
+	}
 }

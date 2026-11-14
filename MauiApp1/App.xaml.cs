@@ -11,12 +11,13 @@ namespace MauiApp1
             var language = Preferences.Get("language", "ru-RU");
 
             SetCulture(language);
-
-            MainPage = new MainPage();
         }
 
+        // MainPage setter is obsolete since .NET MAUI 9: the root page is provided through CreateWindow.
+        protected override Window CreateWindow(IActivationState? activationState) => new(new MainPage());
+
         // Метод установки культуры
-        private void SetCulture(string language)
+        private static void SetCulture(string language)
         {
             var culture = new CultureInfo(language);
             CultureInfo.DefaultThreadCurrentCulture = culture;
