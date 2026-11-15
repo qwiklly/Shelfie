@@ -66,11 +66,19 @@ else
                     }
                     <div class="item-text">
                         <div class="item-name">@item.Name</div>
-                        <div class="item-sub">
-                            @if (!string.IsNullOrEmpty(item.Brand)) { <span>@item.Brand</span> }
-                            @if (!string.IsNullOrEmpty(item.Location)) { <span>· @item.Location</span> }
-                            @if (item.Weight is double w && w > 0) { <span>· @w @Widgets.Unit(item.WeightUnit)</span> }
-                        </div>
+                        @{
+                            // Only the parts that are filled in, so there is never a stray leading "·".
+                            var sub = string.Join(" · ", new[]
+                            {
+                                item.Brand,
+                                item.Location,
+                                item.Weight is double w && w > 0 ? $"{w} {Widgets.Unit(item.WeightUnit)}" : null
+                            }.Where(p => !string.IsNullOrWhiteSpace(p)));
+                        }
+                        @if (sub.Length > 0)
+                        {
+                            <div class="item-sub">@sub</div>
+                        }
                         @if (category != null && category.Fields.Count > 0)
                         {
                             <div class="item-fields">

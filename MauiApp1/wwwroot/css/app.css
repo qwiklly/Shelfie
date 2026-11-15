@@ -219,6 +219,8 @@ button:disabled { opacity: .5; cursor: default; }
 .item-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; align-items: flex-start; }
 .item-name { font-weight: 600; }
 .item-sub, .item-fields { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 8px; }
+/* ✓/✗ come from a fallback font with a taller line box: line the values up by their text. */
+.item-fields { align-items: baseline; line-height: 1.4; }
 .qty-control { display: flex; align-items: center; gap: 8px; flex: none; }
 .qty-control b { min-width: 20px; text-align: center; }
 .round { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--green-soft); color: var(--green-dark); display: flex; align-items: center; justify-content: center; padding: 0; }
