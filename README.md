@@ -1,124 +1,98 @@
-# 📦 Shelfie – Smart Inventory App
+# 📦 Shelfie: smart home inventory
 
-Shelfie is a smart home inventory app built with .NET MAUI and ASP.NET Core.  
-It keeps track of food, medicines, books and any custom categories, warns before things expire and builds your shopping list.
-**It works fully offline**: everything is stored on the phone and synchronised with the server whenever it is reachable.
+[![CI](https://github.com/qwiklly/Shelfie/actions/workflows/ci.yml/badge.svg)](https://github.com/qwiklly/Shelfie/actions/workflows/ci.yml)
 
-![ShelfieCard](https://github.com/user-attachments/assets/774ceda1-9f56-4318-91a9-209e9e65cbdb)
+**English** · [Русский](README.ru.md)
+
+Shelfie keeps track of what you have at home and reminds you before things go off. Food, medicines, books and anything else are stored on your phone, so you don't need an account or an internet connection. A server is optional and is only used to sync several devices.
+
+![Shelfie](docs/banner_en.png)
+
+Scan a barcode and the name, brand and size are filled in for you. Tap **−** when you use something. When an item runs out, it goes to the shopping list, and once you tick it off there, it is back in stock. A few days before something expires you get a notification, and the home screen shows how much you used and how much you threw away this month.
+
+<p align="center">
+  <img src="docs/demo.gif" alt="Shelfie in action" width="300" />
+</p>
 
 ---
 
 ## ✨ Features
 
-- 📴 **Local-first** — everything lives in a SQLite database on the phone; no account or server is needed. A server is optional: sign in later and your data is uploaded
-- 🔄 **Sync between devices** — changes are queued while offline and synchronised when the server is back (last write wins)
-- ⏰ **Expiry tracking** — "expiring soon" and "expired" lists plus local notifications N days before
-- 📷 **Barcode scanner** — finds your own items offline, otherwise fills name/brand/weight from Open Food Facts
-- 🛒 **Shopping list** — quick −/+ on every item; when something runs out it goes to the list, "bought" restocks it
-- 📍 **Storage locations & photos** — fridge, freezer, first-aid kit…; photos stay on the device
-- 🧩 **Categories with typed fields** — Products, Medications, Books built in; custom categories with text / number / date / yes-no fields; rename or reorder fields without losing values
-- 📊 **Dashboard & statistics** — used vs. thrown away over 30 days, history of all operations
-- 📤 **CSV export** — from the app (works offline) or `GET /api/items/export`
-- 🌐 Russian / English
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend**: .NET MAUI (Blazor)
-- **Backend**: ASP.NET Core 
-- **Database**: PostgreSQL, Entity Framework Core
-- **Auth**: JWT-based authentication
-- **Languages**: C#, JS, Razor, HTML/CSS
+- 📴 **Works offline.** Data is stored in SQLite on the phone. You can sign in to a server later, and your data will be uploaded then.
+- 🔄 **Sync between devices.** Changes made offline are queued and sent when the server is available again.
+- ⏰ **Expiry dates.** Lists of items that expire soon or have already expired, and a notification a set number of days before.
+- 📷 **Barcode scanner.** Looks for the item in your inventory first, then in Open Food Facts for the name, brand and weight.
+- 🛒 **Shopping list.** Items are added when they run out, the list can be shared, and **Bought the checked ones** puts them back in stock.
+- 🧩 **Custom categories.** Food, Medicines and Books are built in. You can add your own categories with text, number, date or yes / no fields.
+- 📍 **Storage places and photos.** Fridge, freezer, first-aid kit and so on. Photos stay on the device.
+- 📊 **Statistics and history.** How much was used and thrown away in the last 30 days, and a log of every change.
+- 👋 **First launch.** A short intro with a language choice, and hints on empty screens.
+- 📤 **CSV export** and 🌐 **English and Russian** interface.
 
 ---
 
 ## 📷 Screenshots
 
-### Custom Category View  
-![Analysis](https://github.com/user-attachments/assets/ee190b47-fcae-4aa2-81d0-d3c338a30988)
+![Dashboard, expiry dates and a category](docs/screens_track_en.png)
 
-<div align="center">
-  
-| Categories Page                  | Dashboard                        |
-|----------------------------------|----------------------------------|
-| <img src="https://github.com/user-attachments/assets/386c7078-9f42-4a7b-accb-57e240c4b037" width="300"/> | <img src="https://github.com/user-attachments/assets/cf613a7b-0adb-4e78-b288-d57fac75b530" width="300"/> |
+![Shopping list, scanner and history](docs/screens_shop_en.png)
 
-| Authorization                    | Registration                     |
-|----------------------------------|----------------------------------|
-| <img src="https://github.com/user-attachments/assets/ec982a8b-797c-4c71-bea2-161ce1df3bc6" width="300"/> | <img src="https://github.com/user-attachments/assets/f1c41b9a-d9f9-4191-bf15-8bb33721620b" width="300"/> |
-
-| Account edit Page                | Logout Page                      |
-|----------------------------------|----------------------------------|
-| <img src="https://github.com/user-attachments/assets/d2df9fe0-a95f-4919-84a4-80a09b26299e" width="300"/> | <img src="https://github.com/user-attachments/assets/6b57578e-e36f-4424-8b51-cfe4dc2f5f4d" width="300"/> |
-
-</div>
-
-### Swagger window 
-![Screenshot 2025-04-05 230704](https://github.com/user-attachments/assets/df4693e6-bbfb-4cd4-bb79-9e8974b69039)
+![Custom categories](docs/custom-categories_en.png)
 
 ---
+
+## 🛠️ Tech stack
+
+- **App:** .NET 10 MAUI Blazor Hybrid (Android), SQLite, ZXing barcode scanner, local notifications
+- **Backend (optional):** ASP.NET Core 10 Web API, EF Core, PostgreSQL, JWT, Swagger
+- **Tests and CI:** xUnit v3 (the API in memory and the offline core), GitHub Actions, Docker Compose
+
+---
+
 ## 📦 Download
 
-You can download the latest APK [here](https://github.com/qwiklly/Shelfie/releases/tag/v1.0.1-beta).
+The latest APK is on the [Releases](https://github.com/qwiklly/Shelfie/releases/latest) page. The app works on its own. You only need a server to sync several devices.
 
----
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 🏗️ Project structure
-
-| Project | What it is |
-|---|---|
-| `Shelfie.Shared` | Contracts and rules shared by server and app (DTOs, built-in categories, validation, CSV export) |
-| `ShelfieBackend` | ASP.NET Core API + PostgreSQL (REST by id, `/api/sync`, admin pages) |
-| `Shelfie.Client` | Offline core of the app: local SQLite inventory, sync engine, account handling, barcode lookup — plain .NET, fully unit-tested |
-| `MauiApp1` | The .NET MAUI Blazor app (UI, camera, notifications) |
-| `*.Tests` | xUnit v3 tests |
-
-## 🐳 Running the server with Docker
+## 🐳 Running the sync server
 
 ```bash
-cp .env.example .env   # then edit the password and JWT key
+cp .env.example .env    # set the database password and the JWT key
 docker compose up -d
 ```
 
-The API listens on port `5111`, migrations are applied on start. In the app open **Settings → Account & sync** (at the bottom), enter `<your PC's IP>:5111`, tap **Check** and sign in.
+The API starts on port `5111` (docs at `/swagger`). In the app, open **Settings → Account & sync**, enter `<your PC's IP>:5111` and sign in.
 
-## 🚀 Running Locally
+<details>
+<summary><b>For developers</b>: project structure, running without Docker, tests</summary>
 
-You need the .NET 10 SDK with the MAUI workload, PostgreSQL and an Android emulator.
-The app itself works without the server — the server is only needed for accounts and sync.
+| Project | What it is |
+|---|---|
+| `Shelfie.Shared` | Contracts and rules shared by server and app |
+| `ShelfieBackend` | ASP.NET Core API + PostgreSQL |
+| `Shelfie.Client` | Offline core of the app: local database, sync, barcode lookup (plain .NET, unit-tested) |
+| `MauiApp1` | The .NET MAUI Blazor app |
+| `*.Tests` | xUnit v3 tests |
 
-1. Create a PostgreSQL user and database, then set your connection string and JWT key:
+**Without Docker** you need the .NET 10 SDK with the MAUI workload and PostgreSQL:
 
 ```bash
 cd ShelfieBackend
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=shelfie_backend_db;Username=shelfie_user;Password=YOUR_PASSWORD;TrustServerCertificate=true;"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Database=shelfie_backend_db;Username=shelfie_user;Password=YOUR_PASSWORD"
 dotnet user-secrets set "Jwt:Key" "A_RANDOM_KEY_OF_AT_LEAST_32_CHARACTERS"
-```
-
-2. Apply the migrations and start the backend:
-
-```bash
 dotnet ef database update
 dotnet run --launch-profile http
 ```
 
-The backend refuses to start without a `Jwt:Key` of at least 32 characters.
+Then run `MauiApp1` on an Android emulator. The emulator reaches your PC at `10.0.2.2:5111`.
 
-3. Open `Shelfie.sln` and run `MauiApp1` on the Android emulator. The app starts in local mode; to sync, set **Settings → Account & sync → Server address** to `10.0.2.2:5111` (the host machine as seen from the emulator).
+**Tests:** `dotnet test --project ShelfieBackend.Tests` and `dotnet test --project Shelfie.Client.Tests`. No PostgreSQL needed.
 
-> ⚠️ Upgrading an existing database: the `UnifiedInventory` migration moves products, medications, custom categories and history into the new tables and drops the old ones. Back up the database first (`pg_dump`). It also disables the password of the `admin@example.com` account created by the first migration, because that password is published in this repository.
+**Upgrading a database from version 1.x:** back it up first (`pg_dump`). The `UnifiedInventory` migration moves the old tables into the new model and turns off the password of the demo `admin@example.com` account.
 
-## 🧪 Tests
+</details>
 
-```bash
-dotnet test --project ShelfieBackend.Tests
-dotnet test --project Shelfie.Client.Tests
-```
+---
 
-`ShelfieBackend.Tests` runs the real API in memory on SQLite (no PostgreSQL needed), including end-to-end offline sync between two simulated devices. `Shelfie.Client.Tests` covers the offline inventory, notifications planning, barcode parsing and shared rules. CI runs both on every push (`.github/workflows/ci.yml`).
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
