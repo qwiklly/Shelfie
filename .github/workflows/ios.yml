@@ -32,6 +32,7 @@ jobs:
         run: >
           dotnet build MauiApp1/MauiApp1.csproj
           -f net10.0-ios -c Release
+          -p:TargetFrameworks=net10.0-ios
           -p:RuntimeIdentifier=ios-arm64
           -p:EnableCodeSigning=false
 
