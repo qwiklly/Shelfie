@@ -1,0 +1,51 @@
+name: iOS build
+
+# Builds an unsigned Shelfie.ipa on a macOS runner. It can be installed on an iPhone with
+# Sideloadly or AltStore, which sign it with your own Apple ID.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios-build]
+
+jobs:
+  ios:
+    name: Unsigned iOS app (.ipa)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode on the runner
+        run: |
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install MAUI iOS workload
+        run: dotnet workload install maui-ios
+
+      - name: Build the app for iPhone (no code signing)
+        run: >
+          dotnet build MauiApp1/MauiApp1.csproj
+          -f net10.0-ios -c Release
+          -p:RuntimeIdentifier=ios-arm64
+          -p:EnableCodeSigning=false
+
+      - name: Pack into an .ipa
+        run: |
+          APP=$(find MauiApp1/bin/Release/net10.0-ios/ios-arm64 -maxdepth 1 -name "*.app" | head -1)
+          echo "App bundle: $APP"
+          mkdir -p ipa/Payload
+          cp -R "$APP" ipa/Payload/
+          (cd ipa && zip -qry ../Shelfie-unsigned.ipa Payload)
+          ls -lh Shelfie-unsigned.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Shelfie-ios
+          path: Shelfie-unsigned.ipa
+          if-no-files-found: error

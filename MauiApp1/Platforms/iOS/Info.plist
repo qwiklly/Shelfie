@@ -28,5 +28,27 @@
     </array>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
+
+    <!-- Russian texts for these prompts are in Resources/ru.lproj/InfoPlist.strings. -->
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>ru</string>
+    </array>
+    <key>NSCameraUsageDescription</key>
+    <string>Shelfie uses the camera to scan barcodes and take photos of your items.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Shelfie lets you pick a photo of an item from your library.</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Shelfie connects to your own sync server on the local network.</string>
+
+    <!-- The optional sync server is usually a home PC reached over plain http://IP:5111. -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 </dict>
 </plist>

@@ -1,0 +1,4 @@
+/* English texts of the iOS permission prompts (same as in Info.plist). */
+"NSCameraUsageDescription" = "Shelfie uses the camera to scan barcodes and take photos of your items.";
+"NSPhotoLibraryUsageDescription" = "Shelfie lets you pick a photo of an item from your library.";
+"NSLocalNetworkUsageDescription" = "Shelfie connects to your own sync server on the local network.";

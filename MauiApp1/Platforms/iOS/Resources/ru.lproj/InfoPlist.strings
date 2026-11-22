@@ -1,0 +1,4 @@
+/* Russian texts of the iOS permission prompts (the English ones are in Info.plist). */
+"NSCameraUsageDescription" = "Shelfie использует камеру, чтобы сканировать штрихкоды и фотографировать вещи.";
+"NSPhotoLibraryUsageDescription" = "Shelfie позволяет выбрать фото вещи из галереи.";
+"NSLocalNetworkUsageDescription" = "Shelfie подключается к вашему серверу синхронизации в домашней сети.";
