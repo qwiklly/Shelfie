@@ -17,7 +17,8 @@ jobs:
       - name: Use the newest Xcode on the runner
         run: |
           ls -d /Applications/Xcode*.app
-          XCODE=$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)
+          # Newest Xcode 26.x, the version the pinned iOS packs below are made for.
+          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
 
@@ -26,14 +27,25 @@ jobs:
           global-json-file: global.json
 
       # The project also targets Android and Mac Catalyst, and restore needs all of their workloads.
+      # iOS / Mac Catalyst are pinned to 26.5 (built for Xcode 26.x): the newest packs require an Xcode
+      # that the runner may not have yet.
       - name: Install the MAUI workloads the project needs
-        run: dotnet workload restore MauiApp1/MauiApp1.csproj
+        run: |
+          cat > rollback.json <<'JSON'
+          {
+            "microsoft.net.sdk.ios": "26.5.10301/10.0.100",
+            "microsoft.net.sdk.maccatalyst": "26.5.10301/10.0.100"
+          }
+          JSON
+          dotnet workload install maui-ios maui-maccatalyst maui-android --from-rollback-file rollback.json
+          dotnet workload list
 
       - name: Build the app for iPhone (no code signing)
         run: |
           set +e
           dotnet build MauiApp1/MauiApp1.csproj -f net10.0-ios -c Release \
-            -p:RuntimeIdentifier=ios-arm64 -p:EnableCodeSigning=false 2>&1 | tee build.log
+            -p:RuntimeIdentifier=ios-arm64 -p:EnableCodeSigning=false \
+            -p:ValidateXcodeVersion=false 2>&1 | tee build.log
           code=${PIPESTATUS[0]}
           # Surface the build errors as annotations so they show up on the run page.
           grep -E ": error |error MT|error :|clang: error|ld: " build.log | sort -u | head -10 | while read -r line; do echo "::error::$line"; done
