@@ -30,11 +30,14 @@ jobs:
         run: dotnet workload restore MauiApp1/MauiApp1.csproj
 
       - name: Build the app for iPhone (no code signing)
-        run: >
-          dotnet build MauiApp1/MauiApp1.csproj
-          -f net10.0-ios -c Release
-          -p:RuntimeIdentifier=ios-arm64
-          -p:EnableCodeSigning=false
+        run: |
+          set +e
+          dotnet build MauiApp1/MauiApp1.csproj -f net10.0-ios -c Release \
+            -p:RuntimeIdentifier=ios-arm64 -p:EnableCodeSigning=false 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          # Surface the build errors as annotations so they show up on the run page.
+          grep -E ": error |error MT|error :|clang: error|ld: " build.log | sort -u | head -10 | while read -r line; do echo "::error::$line"; done
+          exit $code
 
       - name: Pack into an .ipa
         run: |
