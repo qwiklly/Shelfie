@@ -25,14 +25,14 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Install MAUI iOS workload
-        run: dotnet workload install maui-ios
+      # The project also targets Android and Mac Catalyst, and restore needs all of their workloads.
+      - name: Install the MAUI workloads the project needs
+        run: dotnet workload restore MauiApp1/MauiApp1.csproj
 
       - name: Build the app for iPhone (no code signing)
         run: >
           dotnet build MauiApp1/MauiApp1.csproj
           -f net10.0-ios -c Release
-          -p:TargetFrameworks=net10.0-ios
           -p:RuntimeIdentifier=ios-arm64
           -p:EnableCodeSigning=false
 
