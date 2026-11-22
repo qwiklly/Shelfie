@@ -16,11 +16,20 @@ jobs:
 
       - name: Use the newest Xcode on the runner
         run: |
-          ls -d /Applications/Xcode*.app
-          # Newest Xcode 26.x, the version the pinned iOS packs below are made for.
-          XCODE=$(ls -d /Applications/Xcode_26*.app | sort -V | tail -1)
+          echo "::notice::Xcodes on the runner: $(ls -d /Applications/Xcode*.app | xargs -n1 basename | tr '\n' ' ')"
+          # Newest *complete* Xcode 26.x (the pinned iOS packs below are made for it):
+          # some preinstalled Xcodes miss the SDKs.
+          XCODE=""
+          for x in $(ls -d /Applications/Xcode_26*.app | sort -rV); do
+            dev="$x/Contents/Developer"
+            if [ -d "$dev/Platforms/iPhoneOS.platform/Developer/SDKs" ] && [ -d "$dev/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" ]; then
+              XCODE="$x"; break
+            fi
+          done
+          if [ -z "$XCODE" ]; then echo "::error::No complete Xcode 26 found"; exit 1; fi
           sudo xcode-select -s "$XCODE"
-          xcodebuild -version
+          sudo xcodebuild -runFirstLaunch || true
+          echo "::notice::Using $(basename "$XCODE"): $(xcodebuild -version | tr '\n' ' '), iOS SDK $(xcrun --sdk iphoneos --show-sdk-version)"
 
       - uses: actions/setup-dotnet@v4
         with:
